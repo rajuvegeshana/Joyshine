@@ -779,6 +779,30 @@ function recordOrder(channel, items, totals, paymentId, buyer) {
   });
 }
 
+/* ===== REVIEWS ============================================
+   Anyone may write one; nobody may publish their own. The
+   database enforces that, not this function.                 */
+async function sendReview(id) {
+  const name = $('#rv_name').value.trim();
+  const body = $('#rv_body').value.trim();
+  const fail = (el, msg) => { el.setAttribute('aria-invalid', 'true');
+    const u = el.parentElement.querySelector('u'); if (u) u.textContent = msg;
+    el.focus(); toast(msg, I.info); };
+  if (name.length < 2) return fail($('#rv_name'), 'A name to put under it');
+  if (body.length < 12) return fail($('#rv_body'), 'A sentence or two, so it helps someone');
+
+  const btn = $('#rv_send'); btn.disabled = true; btn.textContent = 'Sending…';
+  const row = await window.CATALOGUE.logReview({
+    product_id: id, name, rating: +$('#rv_rating').value || 5,
+    title: $('#rv_title').value.trim() || null, body,
+  });
+  const box = $('#revForm');
+  if (box) box.outerHTML = `<div class="done done--sm">${I.check}
+    <h4>Thank you — that is with us.</h4>
+    <p class="quiet">We read every review before it goes up${row ? '' : ', and we will pick this one up shortly'}.</p></div>`;
+  GA.event('review_submitted', { item_id: id });
+}
+
 /* ===== SHARE ============================================== */
 async function share(id) {
   const p = S.byId(id);
@@ -827,6 +851,30 @@ async function boot() {
   const onScroll = () => bar.classList.toggle('stuck', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
   addEventListener('hashchange', render);
+
+  /* reviews and sale counts land a moment after the catalogue: put them
+     in place without redrawing the page under the customer's finger */
+  document.addEventListener('joyshine:social', () => {
+    $$('[data-social]').forEach(el => {
+      const p = S.byId(el.dataset.social); if (!p) return;
+      el.outerHTML = V.socialLine(p);
+    });
+    const revs = $('#revs');
+    if (revs && pdp) revs.innerHTML = V.reviewBlock(pdp.p);
+    const home = $('#homeRevs');
+    if (home) home.innerHTML = V.pinnedReviews();
+    $$('.card[data-id]').forEach(c => {
+      const p = S.byId(c.dataset.id); if (!p) return;
+      const line = c.querySelector('.card__social');
+      const n = V.soldCount(p.id), rv = V.reviewsFor(p.id);
+      if (!n && !rv.length) { line?.remove(); return; }
+      const avg = rv.length ? (rv.reduce((t, r) => t + (+r.rating || 0), 0) / rv.length).toFixed(1) : '';
+      const html = `${rv.length ? `${V.stars(Math.round(+avg))} <b>${avg}</b>` : ''}${
+        rv.length && n ? '<span class="social__dot">·</span>' : ''}${n ? `${n} sold` : ''}`;
+      if (line) line.innerHTML = html;
+      else c.querySelector('.card__blurb')?.insertAdjacentHTML('afterend', `<p class="card__social">${html}</p>`);
+    });
+  });
 
   /* ---- clicks ---- */
   document.addEventListener('click', e => {
@@ -901,6 +949,7 @@ async function boot() {
       $$('.path[data-path]').forEach(b => b.classList.toggle('on', b === path));
       paintPathFields(); return; }
     if (t.closest('#cSend')) return sendCustom();
+    const rv = t.closest('[data-rev]'); if (rv) return sendReview(rv.dataset.rev);
 
     /* cart lines */
     const qb = t.closest('[data-q][data-i]');

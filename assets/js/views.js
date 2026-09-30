@@ -86,6 +86,12 @@ function card(p, i = 0) {
       <span class="card__cat">${esc(S.catName(p.cat))}</span>
       <h3><a class="card__link" href="#/p/${p.id}">${esc(p.name)}</a></h3>
       <p class="card__blurb">${esc(p.blurb)}</p>
+      ${(() => { const n = soldCount(p.id); const rv = reviewsFor(p.id);
+        if (!n && !rv.length) return '';
+        const avg = rv.length ? (rv.reduce((t, r) => t + (+r.rating || 0), 0) / rv.length).toFixed(1) : '';
+        return `<p class="card__social">${rv.length ? `${stars(Math.round(+avg))} <b>${avg}</b>` : ''}${
+          rv.length && n ? '<span class="social__dot">·</span>' : ''}${n ? `${n} sold` : ''}</p>`;
+      })()}
       ${swatches(p)}
       <div class="card__foot">
         ${priceBlock(p)}
@@ -187,6 +193,8 @@ function home() {
   </section>
 
   ${occasionBanner()}
+
+  <div id="homeRevs">${pinnedReviews()}</div>
 
   ${CFG.rails.map(r => {
     const list = S.rail(r);
@@ -354,6 +362,7 @@ function product(id, sel) {
     <div class="pdp__info">
       <span class="card__cat">${esc(S.catName(p.cat))}</span>
       <h1>${esc(p.name)}</h1>
+      ${socialLine(p)}
       <p class="lede">${esc(p.blurb)}</p>
       ${p.story ? `<p class="story">${esc(p.story)}</p>` : ''}
 
@@ -433,17 +442,104 @@ function product(id, sel) {
         <span class="quiet">${esc(CFG.brand.origin)}</span>
       </div>
 
-      <div class="revs">
-        <h3>Reviews</h3>
-        ${(p.reviews || []).length
-          ? (p.reviews.map(r => `<blockquote class="rev"><div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div><p>${esc(r.text)}</p><cite>${esc(r.name)}</cite></blockquote>`).join(''))
-          : `<p class="quiet">No reviews on this one yet. If you have bought it, tell us on WhatsApp and we will put your words here.</p>`}
-      </div>
+      <div class="revs" id="revs">${reviewBlock(p)}</div>
     </div>
   </section>
 
   ${railBlock('More from ' + S.catName(p.cat), '', related, `#/c/${p.cat}`)}
   ${railBlock('You may also like', '', alsoLike, '#/shop')}`;
+}
+
+/* ---------- reviews --------------------------------------
+   Whatever came back from the database, plus anything written
+   into the product itself, plus the form to add one.          */
+function reviewsFor(id) {
+  const fromDb = (window.REVIEWS || []).filter(r => r.product_id === id)
+    .map(r => ({ name: r.name, rating: r.rating, text: r.body, title: r.title,
+                 verified: r.verified, when: r.created_at }));
+  const p = S.byId(id);
+  const inline = (p && p.reviews || []).map(r => ({ name: r.name, rating: r.rating, text: r.text }));
+  return fromDb.concat(inline);
+}
+
+const stars = n => `<span class="stars" aria-label="${n} out of 5">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</span>`;
+
+/* Only ever the real count, straight from the orders table. No
+   number at all until somebody has actually bought one. */
+function soldCount(id) {
+  const s = (window.SALES || {})[id];
+  return s && s.sold > 0 ? s.sold : 0;
+}
+
+function socialLine(p) {
+  const n = soldCount(p.id);
+  const revs = reviewsFor(p.id);
+  const avg = revs.length ? revs.reduce((t, r) => t + (+r.rating || 0), 0) / revs.length : 0;
+  const bits = [];
+  if (revs.length) bits.push(`<a href="#revs" class="social__rev">${stars(Math.round(avg))}
+    <b>${avg.toFixed(1)}</b> <i>(${revs.length})</i></a>`);
+  if (n) bits.push(`<span class="social__sold">${n} ${n === 1 ? 'person has' : 'people have'} bought this</span>`);
+  return bits.length ? `<p class="social" data-social="${esc(p.id)}">${bits.join('<span class="social__dot">·</span>')}</p>` : '<p class="social" data-social="' + esc(p.id) + '" hidden></p>';
+}
+
+function reviewOne(r) {
+  return `<blockquote class="rev">
+    <div class="rev__top">${stars(r.rating)}${r.verified ? '<span class="rev__ok">verified buyer</span>' : ''}</div>
+    ${r.title ? `<b>${esc(r.title)}</b>` : ''}
+    <p>${esc(r.text)}</p>
+    <cite>${esc(r.name)}${r.when ? ` · ${new Date(r.when).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : ''}</cite>
+  </blockquote>`;
+}
+
+/* the ones the owner pinned in the panel, on the homepage */
+function pinnedReviews() {
+  const list = (window.REVIEWS || []).filter(r => r.pinned).slice(0, 6);
+  if (!list.length) return '';
+  return `<section class="band band--tight wrap">
+    <div class="headrow"><div><p class="eyebrow r">In their words</p>
+      <h2 class="r" style="--d:60ms">What came back to us.</h2></div></div>
+    <div class="revwall">
+      ${list.map((r, i) => `<figure class="rev rev--card r" style="--d:${i * 60}ms">
+        <div class="rev__top">${stars(r.rating)}${r.verified ? '<span class="rev__ok">verified buyer</span>' : ''}</div>
+        ${r.title ? `<b>${esc(r.title)}</b>` : ''}
+        <p>${esc(r.body)}</p>
+        <figcaption>${esc(r.name)}${r.product_id && S.byId(r.product_id)
+          ? ` · <a href="#/p/${esc(r.product_id)}">${esc(S.byId(r.product_id).name)}</a>` : ''}</figcaption>
+      </figure>`).join('')}
+    </div>
+  </section>`;
+}
+
+function reviewBlock(p) {
+  const list = reviewsFor(p.id);
+  const avg = list.length ? (list.reduce((n, r) => n + (+r.rating || 0), 0) / list.length) : 0;
+  return `
+    <div class="revs__head">
+      <h3>Reviews</h3>
+      ${list.length ? `<span class="revs__avg">${stars(Math.round(avg))} <b>${avg.toFixed(1)}</b>
+        <i>from ${list.length} ${list.length === 1 ? 'review' : 'reviews'}</i></span>` : ''}
+    </div>
+    ${list.length ? list.map(reviewOne).join('')
+      : '<p class="quiet">Nobody has written about this one yet. If you have it, you could be the first.</p>'}
+
+    <details class="revform" id="revForm">
+      <summary><span class="btn btn--ghost btn--sm">Write a review</span></summary>
+      <div class="revform__in">
+        <div class="row2">
+          <label class="field"><span>Your name <i>*</i></span><input id="rv_name" type="text" placeholder="Aarohi M."><u></u></label>
+          <label class="field"><span>Rating <i>*</i></span>
+            <select id="rv_rating">
+              <option value="5">5 — loved it</option><option value="4">4 — very good</option>
+              <option value="3">3 — fine</option><option value="2">2 — not great</option>
+              <option value="1">1 — no</option>
+            </select></label>
+        </div>
+        <label class="field"><span>Headline</span><input id="rv_title" type="text" placeholder="Sturdier than it looks"><u></u></label>
+        <label class="field"><span>Your review <i>*</i></span><textarea id="rv_body" placeholder="What you got, how it printed, how it has held up."></textarea><u></u></label>
+        <button class="btn btn--pay btn--block" id="rv_send" type="button" data-rev="${esc(p.id)}">Send it in</button>
+        <p class="quiet" style="font-size:.78rem;margin-top:.6rem">We read every one before it goes up, and we do not edit them.</p>
+      </div>
+    </details>`;
 }
 
 /* ---------- CUSTOM PRINT --------------------------------- */
@@ -680,6 +776,7 @@ function notFound() {
 }
 
 return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow, booting,
+         reviewBlock, reviewsFor, reviewOne, stars, socialLine, soldCount, pinnedReviews,
          home, shop, product, custom, wishlist, faq, about, engineering,
          searchPage, noResults, notFound };
 })();

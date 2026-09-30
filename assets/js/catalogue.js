@@ -45,6 +45,18 @@ async function load() {
     window.CATEGORIES = cats.map(c => ({ id: c.id, name: c.name, note: c.note || '' }));
   }
 
+  /* reviews and sale counts are nice to have: never let them
+     hold up the catalogue, and never let a failure show. */
+  Promise.all([
+    get('reviews?select=id,product_id,name,rating,title,body,verified,pinned,created_at&published=eq.true&order=created_at.desc&limit=400', 6000),
+    get('product_sales?select=product_id,sold,orders', 6000),
+  ]).then(([revs, sales]) => {
+    window.REVIEWS = Array.isArray(revs) ? revs : [];
+    window.SALES = {};
+    if (Array.isArray(sales)) for (const s of sales) window.SALES[s.product_id] = s;
+    document.dispatchEvent(new CustomEvent('joyshine:social'));
+  }).catch(() => {});
+
   if (Array.isArray(prods) && prods.length) {
     window.PRODUCTS = prods
       .filter(r => !r.hidden)
@@ -128,8 +140,12 @@ async function post(table, row) {
   } catch { return null; }
 }
 
+/* a customer's review arrives unpublished — the database itself
+   refuses anything else — and waits for the owner in the panel */
+const logReview = r => post('reviews', { ...r, published: false, verified: false });
+
 const logOrder = o => post('orders', { ref: ref('JS'), ...o });
 const logRequest = q => post('requests', { ref: ref('CP'), ...q });
 
-return { load, arrange, uploadFile, logOrder, logRequest, get source() { return from; } };
+return { load, arrange, uploadFile, logOrder, logRequest, logReview, get source() { return from; } };
 })();
