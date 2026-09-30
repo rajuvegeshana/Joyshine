@@ -183,6 +183,11 @@
   visibility: hidden;
 }
 .panel.on { transform: none; visibility: visible; }
+/* A closed panel is parked off to the right, and on a tablet that
+   parked copy was widening the page by its own width. `clip` trims it
+   without making the body a scroll container, so the sticky header and
+   the sticky category bar carry on working. */
+html, body { overflow-x: clip; }
 @media (max-width: 560px) {
   .panel { top: auto; height: min(92vh, 100%); width: 100%; border-left: 0;
            border-top: var(--border-w) solid var(--line-strong);
