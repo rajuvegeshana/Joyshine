@@ -132,6 +132,7 @@ function render() {
   view.innerHTML = html;
   document.title = title;
   window.KIT?.apply(document.documentElement.dataset.theme);
+  window.SKIN?.apply(view);
   fillBrand(view);
   reveals(view); sparkles();
   const track = $('#stripTrack'); if (track) track.innerHTML += track.innerHTML;
@@ -829,6 +830,7 @@ async function boot() {
   window.OCC_NOW = window.SETTINGS.current();
   window.CATALOGUE.arrange(window.OCC_NOW);
   applyTheme(null);
+  window.SKIN?.fonts();
   applySeo();
   showLegalLinks();
   fillBrand();

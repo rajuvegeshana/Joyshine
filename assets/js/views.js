@@ -77,7 +77,7 @@ function card(p, i = 0) {
   return `<article class="card r" style="--d:${(i % 6) * 55}ms" data-id="${p.id}">
     ${b ? `<span class="card__tag">${esc(b)}</span>` : ''}
     <div class="card__acts">
-      <button class="heart" data-share="${p.id}" aria-label="Share ${esc(p.name)}">${I.share}</button>
+      <button class="heart" data-share="${p.id}" aria-label="Share ${esc(p.name)}">${ico('share')}</button>
       <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}"
         aria-label="${S.inWish(p.id) ? 'Remove from' : 'Save to'} wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
     </div>
@@ -98,9 +98,9 @@ function card(p, i = 0) {
         ${p.personalise ? `<span class="hint">${I.spark}${esc(p.personalise.label)}</span>` : ''}
         <div class="card__buys">
           ${p.quote
-            ? `<button class="btn btn--wa btn--sm card__add" data-quote="${p.id}">${I.wa}Get a quote</button>`
-            : `<button class="btn btn--pay btn--sm" data-buy="${p.id}">${I.bolt}Buy now</button>
-               <button class="btn btn--wa btn--sm" data-wa="${p.id}">${I.wa}WhatsApp</button>
+            ? `<button class="btn btn--wa btn--sm card__add" data-quote="${p.id}">${ico('wa')}Get a quote</button>`
+            : `<button class="btn btn--pay btn--sm" data-buy="${p.id}">${ico('bolt')}Buy now</button>
+               <button class="btn btn--wa btn--sm" data-wa="${p.id}">${ico('wa')}WhatsApp</button>
                <button class="btn btn--ghost btn--sm card__add" data-add="${p.id}">Add to cart</button>`}
         </div>
       </div>
@@ -132,6 +132,10 @@ const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="#/
     <span class="catcard__t"><b>${esc(c.name)}</b><span>${esc(c.note)}</span></span>
   </a>`;
 
+/* every icon the panel is allowed to replace is wrapped, so a new
+   one can be dropped in without touching any of this */
+const ico = name => `<span data-ico="${name}">${I[name] || ''}</span>`;
+
 const W = (k, fallback) => (window.KIT ? window.KIT.word(k, fallback) : fallback);
 
 const empty = (title, line, cta) => `<div class="empty"><span data-spark>${I.horn}</span>
@@ -153,7 +157,7 @@ function home() {
         <h1 class="r" style="--d:70ms">Creative things<br>for a brighter<em>everyday.</em></h1>
         <p class="lede r" style="--d:140ms">${esc(CFG.brand.blurb)}</p>
         <div class="hero__cta r" style="--d:210ms">
-          <a class="btn btn--pay" href="#/shop">${I.bolt}Shop products</a>
+          <a class="btn btn--pay" href="#/shop">${ico('bolt')}Shop products</a>
           <a class="btn btn--ghost" href="#/custom"><span data-spark>${I.spark}</span>Create something custom</a>
         </div>
         <dl class="hero__facts r" style="--d:280ms">
@@ -364,7 +368,7 @@ function product(id, sel) {
       <div class="pdp__stage" id="pdpStage">${art(p, hex, 'pdp__art')}
         ${badgeOf(p) ? `<span class="card__tag">${esc(badgeOf(p))}</span>` : ''}
         <div class="pdp__acts">
-          <button class="heart" data-share="${p.id}" aria-label="Share this">${I.share}</button>
+          <button class="heart" data-share="${p.id}" aria-label="Share this">${ico('share')}</button>
           <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}" aria-label="Save to wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
         </div>
       </div>
@@ -430,9 +434,9 @@ function product(id, sel) {
 
       <div class="pdp__buys">
         ${p.quote
-          ? `<a class="btn btn--wa btn--block" href="#/custom?p=${p.id}">${I.wa}Send your file for a quote</a>`
-          : `<button class="btn btn--pay" id="pdpBuy">${I.bolt}Buy now</button>
-             <button class="btn btn--wa" id="pdpWa">${I.wa}Order on WhatsApp</button>
+          ? `<a class="btn btn--wa btn--block" href="#/custom?p=${p.id}">${ico('wa')}Send your file for a quote</a>`
+          : `<button class="btn btn--pay" id="pdpBuy">${ico('bolt')}Buy now</button>
+             <button class="btn btn--wa" id="pdpWa">${ico('wa')}Order on WhatsApp</button>
              <button class="btn btn--ghost btn--block" id="pdpAdd">Add to cart</button>`}
       </div>
 
@@ -440,7 +444,7 @@ function product(id, sel) {
         <summary><b>Need ${CFG.bulk.askAbove}+ pieces?</b></summary>
         <table><tbody>${CFG.bulk.tiers.map(t => `<tr><td>${t.min}${t.max ? `–${t.max}` : '+'}</td>
           <td class="num">${t.off ? `${t.off}% off` : 'list price'}</td></tr>`).join('')}</tbody></table>
-        <button class="btn btn--wa btn--block" id="pdpBulk2">${I.wa}Request quote</button>
+        <button class="btn btn--wa btn--block" id="pdpBulk2">${ico('wa')}Request quote</button>
       </details>` : ''}
 
       <div class="acc">
@@ -612,7 +616,7 @@ function custom(q) {
 
       <div class="field"><span>Message preview</span><div class="preview" id="cPreview" aria-live="polite"></div></div>
 
-      <button class="btn btn--wa btn--block" id="cSend" type="button">${I.wa}Send on WhatsApp</button>
+      <button class="btn btn--wa btn--block" id="cSend" type="button">${ico('wa')}Send on WhatsApp</button>
       <p class="quiet" style="font-size:.78rem;text-align:center">We reply with a price and a print slot. ${esc(c.turnaround)}.</p>
     </form>
   </section>`;
@@ -662,7 +666,7 @@ function faq() {
     ${FAQ.map(([sec, qs]) => `<div class="faqsec r"><h3>${esc(sec)}</h3><div class="acc">
       ${qs.map(([q, a]) => `<details><summary>${esc(q)}</summary><div>${esc(a)}</div></details>`).join('')}
     </div></div>`).join('')}
-    <div class="note r" style="margin-top:2rem">${I.wa}<span>Still stuck? Message us on WhatsApp — <b id="waNumber"></b> — and a human replies.</span></div>
+    <div class="note r" style="margin-top:2rem">${ico('wa')}<span>Still stuck? Message us on WhatsApp — <b id="waNumber"></b> — and a human replies.</span></div>
   </section>`;
 }
 
@@ -694,8 +698,8 @@ function engineering() {
     <h1 class="r" style="--d:60ms">${esc(E.name)}</h1>
     <p class="lede r" style="--d:120ms">${esc(E.blurb)}</p>
     <div class="hero__cta r" style="--d:180ms">
-      <button class="btn btn--pay" id="engQuote">${I.bolt}Get a part quoted</button>
-      <a class="btn btn--ghost" href="#/custom?path=stl">${I.up}Send an STL</a>
+      <button class="btn btn--pay" id="engQuote">${ico('bolt')}Get a part quoted</button>
+      <a class="btn btn--ghost" href="#/custom?path=stl">${ico('up')}Send an STL</a>
     </div>
     <dl class="hero__facts r" style="--d:240ms">
       <div class="fact"><b class="num">24h</b><span>to quote</span></div>
@@ -757,7 +761,7 @@ function engineering() {
         <h2>Send us the part.</h2>
         <p class="lede">A quote costs nothing and takes a day. Bring a file, a sample or a sketch.</p>
         <div class="hero__cta" style="margin-top:1.2rem">
-          <button class="btn btn--wa" id="engQuote2">${I.wa}Quote on WhatsApp</button>
+          <button class="btn btn--wa" id="engQuote2">${ico('wa')}Quote on WhatsApp</button>
           <a class="btn btn--ghost" href="#/">Back to the shop</a>
         </div>
       </div>
@@ -783,10 +787,10 @@ function noResults(q) {
       <p>Nothing on the shelf matches "${esc(q)}" — but that does not mean we can't make it.</p>
     </div>
     <div class="paths">
-      <a class="path" href="#/custom?path=image&q=${encodeURIComponent(q)}"><span class="path__i">${I.file}</span><b>Upload your design</b><span class="path__d">A photo or sketch is enough to start.</span></a>
-      <a class="path" href="#/custom?path=stl&q=${encodeURIComponent(q)}"><span class="path__i">${I.up}</span><b>Upload an STL</b><span class="path__d">STL, 3MF or OBJ. We check it and quote.</span></a>
-      <a class="path" href="#/custom?path=link&q=${encodeURIComponent(q)}"><span class="path__i">${I.link}</span><b>Share a MakerWorld link</b><span class="path__d">We print it in your colours and size.</span></a>
-      <a class="path" href="#/custom?path=idea&q=${encodeURIComponent(q)}"><span class="path__i">${I.chat}</span><b>Ask Joyshine</b><span class="path__d">Describe it. We will tell you if we can.</span></a>
+      <a class="path" href="#/custom?path=image&q=${encodeURIComponent(q)}"><span class="path__i">${ico('file')}</span><b>Upload your design</b><span class="path__d">A photo or sketch is enough to start.</span></a>
+      <a class="path" href="#/custom?path=stl&q=${encodeURIComponent(q)}"><span class="path__i">${ico('up')}</span><b>Upload an STL</b><span class="path__d">STL, 3MF or OBJ. We check it and quote.</span></a>
+      <a class="path" href="#/custom?path=link&q=${encodeURIComponent(q)}"><span class="path__i">${ico('link')}</span><b>Share a MakerWorld link</b><span class="path__d">We print it in your colours and size.</span></a>
+      <a class="path" href="#/custom?path=idea&q=${encodeURIComponent(q)}"><span class="path__i">${ico('chat')}</span><b>Ask Joyshine</b><span class="path__d">Describe it. We will tell you if we can.</span></a>
     </div>
     <div class="dead__alt"><span class="quiet">Or try</span>
       ${S.POPULAR.slice(0, 5).map(t => `<button class="chip" data-q="${esc(t)}">${esc(t)}</button>`).join('')}</div>
@@ -808,9 +812,9 @@ function errorPage(kind = 'notFound', extra = '') {
     <p class="lede r" style="--d:60ms">${esc(e.body || '')}</p>
     ${extra}
     <div class="hero__cta r" style="--d:120ms">
-      <a class="btn btn--pay" href="#/">${I.bolt}Back to the shop</a>
+      <a class="btn btn--pay" href="#/">${ico('bolt')}Back to the shop</a>
       <a class="btn btn--ghost" href="#/custom"><span data-spark>${I.spark}</span>Ask for a custom print</a>
-      <a class="btn btn--ghost" href="#/faq">${I.chat}Help &amp; FAQ</a>
+      <a class="btn btn--ghost" href="#/faq">${ico('chat')}Help &amp; FAQ</a>
     </div>
     ${cats.length ? `<div class="oops__links">
       <span class="quiet">Or go straight to</span>

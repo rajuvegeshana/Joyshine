@@ -519,6 +519,7 @@ document.addEventListener('click', e => {
   /* the catalogue, orders, requests, reviews and offers panes handle
      their own buttons; if one of them took the click we are done */
   if (window.ADMINX?.wire(e.target)) return;
+  if (window.ADMINC?.wire(e.target)) return;
 
   const tab = e.target.closest('.ad-tab');
   if (tab) {
@@ -527,7 +528,7 @@ document.addEventListener('click', e => {
        the name rather than the element and both stay in step */
     $$('.ad-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === want));
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
-    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', products: 'Products',
+    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', content: 'Content & art', products: 'Products',
                      orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
                      marketing: 'Marketing', legal: 'Policies',
                      shop: 'Shop & contact', publish: 'Publish' };
@@ -535,6 +536,7 @@ document.addEventListener('click', e => {
     scrollTo({ top: 0, behavior: 'instant' });
     paintAll();
     window.ADMINX?.paint(want);
+    if (want === 'content') window.ADMINC?.paint();
     return;
   }
   const more = e.target.closest('[data-more]');
@@ -709,6 +711,8 @@ document.addEventListener('change', e => {
     return;
   }
 
+  if (window.ADMINC?.wireChange(t)) return;
+
   const mm = (window.__MARKETING_MAP || []).find(([id]) => id === t.id);
   if (mm) {
     setS(mm[1], mm[2] ? t.checked : (t.type === 'number' ? +t.value : t.value));
@@ -806,6 +810,7 @@ window.ADMIN = {
 };
 
 window.ADMINX?.setToast(toast);
+window.ADMINC?.setToast(toast);
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
 if (cloudOn() && window.CLOUD.signedIn()) window.CLOUD.refresh().then(() => { paintCloud(); pullCloud(); });

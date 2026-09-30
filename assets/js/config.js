@@ -79,6 +79,22 @@ window.JOYSHINE = {
     forceOccasion: null,   // an id from occasions.js, or null
   },
 
+  /* ---- the hero -----------------------------------------------
+     animation: print | float | turntable | assemble
+     art: leave empty for the drawn unicorn, or an uploaded SVG / PNG */
+  hero: { animation: 'print', art: '' },
+
+  /* ---- the icon library ---------------------------------------
+     Any of the shop's icons can be replaced from the panel. The key
+     is the icon's name; the value is SVG markup or an image URL.
+     Anything uploaded is stripped of scripts before it is used.     */
+  icons: {},
+
+  /* ---- type, per theme ----------------------------------------
+     fonts.<theme> = { display, body, url }
+     url is an optional @font-face source for a font you uploaded.   */
+  fonts: {},
+
   /* ---- when something is missing ------------------------------
      Every one of these is editable in the panel under Content.     */
   errors: {
