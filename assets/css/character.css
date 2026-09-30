@@ -38,9 +38,12 @@
   .motif i { opacity: 0; }
 }
 
-/* the page itself sits above the motif */
-.wrap, .topbar, .tabbar, .panel, .toasts, .rig-bed, .band-scale,
-.strip, .foot, footer, .ribbon, .rig-feed { position: relative; z-index: 1; }
+/* The page sits above the motif. Only elements that are in normal flow
+   are listed: everything else — the header, the tab bar, the panels, the
+   toasts, the printer rig — is already fixed or sticky with a z-index of
+   its own, and naming it here would overwrite that positioning and drop
+   it into the flow. */
+main, .strip, .foot, footer { position: relative; z-index: 1; }
 
 /* ===========================================================
    PER THEME: the motif's own motion
