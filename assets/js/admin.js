@@ -465,6 +465,41 @@ document.addEventListener('click', e => {
     return;
   }
 
+  if (e.target.closest('#btnSql')) {
+    const box = $('#sqlOut');
+    box.innerHTML = '<p class="ad-p">Looking…</p>';
+    const base = (CFG.supabase.url || '').replace(/\/+$/, '');
+    const key = CFG.supabase.anonKey;
+    const probe = async (label, path, hint) => {
+      try {
+        const r = await fetch(`${base}/rest/v1/${path}`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+        /* 200 and 401 both mean the thing exists; 404 means it does not */
+        return { label, ok: r.status !== 404, hint };
+      } catch { return { label, ok: false, hint }; }
+    };
+    Promise.all([
+      probe('settings', 'settings?select=id&limit=1', 'schema.sql'),
+      probe('products', 'products?select=id&limit=1', 'schema-2-catalogue.sql'),
+      probe('offers', 'offers?select=code&limit=1', 'schema-3-media-reviews.sql'),
+      probe('product_sales', 'product_sales?select=product_id&limit=1', 'schema-5-reviews-sales.sql'),
+      probe('reviews.pinned', 'reviews?select=pinned&limit=1', 'schema-5-reviews-sales.sql'),
+    ]).then(async rows => {
+      /* storage buckets answer on a different path */
+      let up = false;
+      try {
+        const r = await fetch(`${base}/storage/v1/object/list/customer-uploads`, {
+          method: 'POST', headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+          body: '{"limit":1}',
+        });
+        up = r.status !== 404 && r.status !== 400;
+      } catch {}
+      rows.push({ label: 'customer-uploads bucket', ok: up, hint: 'schema-4-uploads.sql' });
+      box.innerHTML = rows.map(r => `<div class="ad-chk${r.ok ? '' : ' danger'}">
+        <b>${r.ok ? '✓' : '—'}</b><span>${esc(r.label)}</span>
+        <i>${r.ok ? 'in place' : 'run ' + esc(r.hint)}</i></div>`).join('');
+    });
+    return;
+  }
   if (e.target.closest('#btnCheck')) {
     const box = $('#checkOut');
     box.innerHTML = '<p class="ad-p">Checking…</p>';

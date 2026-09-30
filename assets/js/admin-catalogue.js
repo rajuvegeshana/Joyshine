@@ -575,16 +575,36 @@ async function paintReviews() {
       <button class="ad-btn ad-btn--primary" data-x="addreview">Add review</button>
     </div>
 
-    ${!list.length ? '' : `<div class="ad-occ">${list.map(v => `
-      <div class="ad-o${v.published ? ' on' : ''}" data-rid="${v.id}">
-        <div class="ad-o__bar">
-          <span class="ad-o__name">${'★'.repeat(v.rating)} ${esc(v.name)}</span>
-          <span class="ad-o__when">${esc(v.body).slice(0, 80)}</span>
-          <span class="ad-pill ${v.published ? 'ad-pill--live' : 'ad-pill--need'}">${v.published ? 'live' : 'hidden'}</span>
-          <button class="ad-o__more" data-x="rtoggle">${v.published ? 'Unpublish' : 'Publish'}</button>
-          <button class="ad-o__more" data-x="rdelete">Delete</button>
-        </div>
-      </div>`).join('')}</div>`}`;
+    ${(() => {
+      const waiting = list.filter(v => !v.published);
+      const live = list.filter(v => v.published);
+      const pname = id => (PRODUCTS.find(r => r.id === id) || { data: {} }).data.name
+        || (window.PRODUCTS.find(p => p.id === id) || {}).name || id || '—';
+      const row = v => `
+        <div class="ad-o${v.published ? ' on' : ''}" data-rid="${v.id}">
+          <div class="ad-o__bar">
+            <span class="ad-o__name">${'★'.repeat(v.rating)} ${esc(v.name)}</span>
+            <span class="ad-o__when">${esc(pname(v.product_id))} · ${esc(v.body).slice(0, 70)}</span>
+            ${v.pinned ? '<span class="ad-pill ad-pill--clay">on the homepage</span>' : ''}
+            <span class="ad-pill ${v.published ? 'ad-pill--live' : 'ad-pill--need'}">${v.published ? 'live' : 'waiting'}</span>
+            ${v.published ? `<button class="ad-o__more" data-x="rpin">${v.pinned ? 'Unpin' : 'Pin to homepage'}</button>` : ''}
+            <button class="ad-o__more" data-x="rtoggle">${v.published ? 'Unpublish' : 'Publish'}</button>
+            <button class="ad-o__more ad-o__more--warn" data-x="rdelete">Delete</button>
+          </div>
+        </div>`;
+      return `
+        ${waiting.length ? `<div class="ad-card">
+          <h3>Waiting for you <span class="ad-pill ad-pill--need">${waiting.length}</span></h3>
+          <p class="ad-p">Written by customers on the shop. Nothing here is visible to anyone else until you publish it.</p>
+          <div class="ad-occ">${waiting.map(row).join('')}</div>
+        </div>` : ''}
+        ${live.length ? `<div class="ad-card">
+          <h3>Live on the shop</h3>
+          <p class="ad-p">Pinned ones also appear together on the homepage.</p>
+          <div class="ad-occ">${live.map(row).join('')}</div>
+        </div>` : ''}
+        ${list.length ? '' : '<div class="ad-card"><p class="ad-empty">No reviews yet.</p></div>'}`;
+    })()}`;
 }
 
 /* ---------- spreadsheet in and out ------------------------
@@ -933,6 +953,14 @@ function wire(t) {
     if (!name || !body) { toast('Name and words, please'); return true; }
     CLOUD.upsert('reviews', { product_id: $('#r_pid').value, name, rating: +$('#r_rating').value, body, published: true })
       .then(() => { toast('Review added and published'); paintReviews(); });
+    return true;
+  }
+  if (act === 'rpin') {
+    const id = t.closest('[data-rid]').dataset.rid;
+    const on = t.textContent.trim() !== 'Unpin';
+    CLOUD.update('reviews', 'id=eq.' + id, { pinned: on })
+      .then(() => { toast(on ? 'Pinned to the homepage' : 'Unpinned'); paintReviews(); })
+      .catch(e => toast(e.message));
     return true;
   }
   if (act === 'rtoggle') {

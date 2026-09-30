@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/admin.css?v=202609301900">
+<link rel="stylesheet" href="assets/css/admin.css?v=202609301901">
 </head>
 <body>
 
@@ -416,11 +416,19 @@
         </div>
 
         <div class="ad-card">
-          <h3>What this panel does not cover</h3>
-          <p class="ad-p" style="margin:0">Adding or editing products, and anything that needs a customer account —
-            orders, stock, reviews. Products live in <code>assets/js/products.js</code>. See
-            section 10 of the README for the free tools that give you a proper form-based editor
-            for those, without leaving GitHub Pages.</p>
+          <h3>Database setup</h3>
+          <p class="ad-p">Each file in <code>supabase/</code> is run once, in order, in the Supabase SQL
+            editor. Everything already ticked below is working; anything missing simply stays quiet on
+            the shop rather than breaking it.</p>
+          <ul class="ad-list" id="sqlList">
+            <li><code>schema.sql</code> — settings, so Publish reaches the live shop</li>
+            <li><code>schema-2-catalogue.sql</code> — products, orders, requests, reviews, posts</li>
+            <li><code>schema-3-media-reviews.sql</code> — product photographs, offers, visit counts</li>
+            <li><code>schema-4-uploads.sql</code> — customers can attach a file to a custom print enquiry</li>
+            <li><code>schema-5-reviews-sales.sql</code> — pinned reviews, and the real "how many sold"</li>
+          </ul>
+          <button class="ad-btn ad-btn--ghost" id="btnSql">Check which are in place</button>
+          <div id="sqlOut" class="ad-check"></div>
         </div>
 
         <div class="ad-card">
@@ -464,14 +472,14 @@
 
 <div class="ad-toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609301900"></script>
-<script src="assets/js/occasions.js?v=202609301900"></script>
-<script src="assets/js/legal.js?v=202609301900"></script>
-<script src="assets/js/customise.js?v=202609301900"></script>
-<script src="assets/js/cloud.js?v=202609301900"></script>
-<script src="assets/js/products.js?v=202609301900"></script>
+<script src="assets/js/config.js?v=202609301901"></script>
+<script src="assets/js/occasions.js?v=202609301901"></script>
+<script src="assets/js/legal.js?v=202609301901"></script>
+<script src="assets/js/customise.js?v=202609301901"></script>
+<script src="assets/js/cloud.js?v=202609301901"></script>
+<script src="assets/js/products.js?v=202609301901"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/admin-catalogue.js?v=202609301900"></script>
-<script src="assets/js/admin.js?v=202609301900"></script>
+<script src="assets/js/admin-catalogue.js?v=202609301901"></script>
+<script src="assets/js/admin.js?v=202609301901"></script>
 </body>
 </html>
