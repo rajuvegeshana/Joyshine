@@ -114,9 +114,20 @@ function lineTotal(it) {
 function totals(items) {
   let sub = 0, saved = 0;
   items.forEach(it => { const l = lineTotal(it); sub += l.net; saved += l.gross - l.net; });
-  const free = sub >= CFG.shipping.freeAbove || sub === 0;
+
+  /* a discount code comes off before shipping is worked out */
+  const d = window.PROMO ? window.PROMO.discount(sub) : { off: 0, why: '' };
+  const off = Math.min(d.off, sub);
+  const afterCode = sub - off;
+
+  const free = afterCode >= CFG.shipping.freeAbove || afterCode === 0;
   const ship = free ? 0 : CFG.shipping.flat;
-  return { sub, saved, ship, free, grand: sub + ship, count: items.reduce((n, i) => n + i.qty, 0) };
+  return {
+    sub, saved, off, offerWhy: d.why,
+    code: off ? window.PROMO?.applied?.code : '',
+    ship, free, grand: afterCode + ship,
+    count: items.reduce((n, i) => n + i.qty, 0),
+  };
 }
 
 /* ---- queries --------------------------------------------- */

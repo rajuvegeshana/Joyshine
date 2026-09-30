@@ -211,6 +211,27 @@ function paintSettings() {
     merged().map(o => `<option value="${o.id}">${o.name}</option>`).join('');
   $('#forceOccasion').value = getS('occasions.forceOccasion', '') || '';
 
+  const M = [['rbOn','marketing.ribbon.on',1],['rbText','marketing.ribbon.text'],
+             ['rbCta','marketing.ribbon.cta'],['rbHref','marketing.ribbon.href'],
+             ['rbX','marketing.ribbon.dismissible',1],
+             ['wcOn','marketing.welcome.on',1],['wcEyebrow','marketing.welcome.eyebrow'],
+             ['wcDelay','marketing.welcome.delay'],['wcArt','marketing.welcome.art'],
+             ['wcTitle','marketing.welcome.title'],['wcBody','marketing.welcome.body'],
+             ['wcCode','marketing.welcome.code'],['wcCta','marketing.welcome.cta'],
+             ['wcHref','marketing.welcome.href'],['wcSmall','marketing.welcome.small'],
+             ['seoTitle','seo.title'],['seoDesc','seo.description'],
+             ['seoKeys','seo.keywords'],['seoOg','seo.ogImage']];
+  const art = $('#wcArt');
+  if (art && !art.options.length) {
+    art.innerHTML = Object.keys(window.ART || {}).map(k => `<option>${k}</option>`).join('');
+  }
+  M.forEach(([id, path, bool]) => {
+    const el = $('#' + id); if (!el) return;
+    const v = getS(path, bool ? false : '');
+    if (bool) el.checked = !!v; else el.value = v ?? '';
+  });
+  window.__MARKETING_MAP = M;
+
   const tiers = getS('bulk.tiers', CFG.bulk.tiers);
   $('#tiers').innerHTML = tiers.map((t, i) => `<div class="ad-tier">
       <label><span>From</span><input type="number" min="1" data-t="${i}" data-k="min" value="${t.min}"></label>
@@ -304,7 +325,7 @@ document.addEventListener('click', e => {
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
     const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', products: 'Products',
                      orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
-                     shop: 'Shop & contact', publish: 'Publish' };
+                     marketing: 'Marketing', shop: 'Shop & contact', publish: 'Publish' };
     $('#paneTitle').textContent = titles[want] || 'Control panel';
     scrollTo({ top: 0, behavior: 'instant' });
     paintAll();
@@ -434,6 +455,9 @@ document.addEventListener('change', e => {
     setS('bulk.tiers', tiers);
     return;
   }
+
+  const mm = (window.__MARKETING_MAP || []).find(([id]) => id === t.id);
+  if (mm) { setS(mm[1], mm[2] ? t.checked : (t.type === 'number' ? +t.value : t.value)); return; }
 
   const map = {
     occAuto:      () => setS('occasions.auto', t.checked),

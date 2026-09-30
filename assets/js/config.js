@@ -128,6 +128,25 @@ window.JOYSHINE = {
     row: 'site',
   },
 
+  /* ---- Marketing: ribbon, welcome offer -----------------------
+     All of it is editable in the control panel.                  */
+  marketing: {
+    ribbon: { on: false, text: '', cta: '', href: '#/shop', dismissible: true },
+    welcome: {
+      on: false, delay: 6, art: 'giftbox',
+      eyebrow: 'Welcome', title: '', body: '',
+      code: '', cta: 'Start shopping', href: '#/shop', small: '',
+    },
+  },
+
+  /* ---- SEO ---------------------------------------------------- */
+  seo: {
+    title: 'Joyshine \u2014 Creative things for a brighter everyday',
+    description: 'Joyshine makes 3D-printed and handcrafted things for everyday life \u2014 puja accessories, lamps, desk pieces, kids toys, keychains and custom prints.',
+    keywords: '3d printing india, kumkum barni, unicorn lamp, custom 3d print, return gifts',
+    ogImage: '',
+  },
+
   /* ---- Which look loads first: retro | future | clay -------- */
   defaultTheme: 'clay',
 

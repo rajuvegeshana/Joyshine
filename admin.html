@@ -57,6 +57,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7h18l-1.5 12.5a2 2 0 0 1-2 1.5h-11a2 2 0 0 1-2-1.5z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
         Shop &amp; contact
       </button>
+      <button class="nav-link ad-tab" data-tab="marketing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
+        Marketing
+      </button>
       <button class="nav-link ad-tab" data-tab="publish">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M12 5l-6 6M12 5l6 6"/></svg>
         Publish
@@ -232,6 +236,54 @@
         </div>
       </section>
 
+      <!-- ============ MARKETING ============ -->
+      <section class="ad-pane" data-pane="marketing">
+        <div class="ad-card">
+          <h3>Ribbon across the top</h3>
+          <label class="ad-row--switch"><input type="checkbox" id="rbOn">
+            <span><b>Show the ribbon</b><i>A single line above the header. Good for a sale or a dispatch cut-off.</i></span></label>
+          <label class="ad-field"><span>Text</span><input id="rbText" placeholder="Free shipping on everything this week"></label>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>Link text</span><input id="rbCta" placeholder="Shop now"></label>
+            <label class="ad-field"><span>Link goes to</span><input id="rbHref" placeholder="#/shop"></label>
+            <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="rbX"><span><b>Can be dismissed</b></span></label>
+          </div>
+        </div>
+
+        <div class="ad-card">
+          <h3>Welcome offer popup</h3>
+          <p class="ad-p">Shown once per visitor, then never again on that browser.</p>
+          <label class="ad-row--switch"><input type="checkbox" id="wcOn"><span><b>Show it to new visitors</b></span></label>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>Eyebrow</span><input id="wcEyebrow" placeholder="Welcome"></label>
+            <label class="ad-field"><span>Delay (seconds)</span><input id="wcDelay" type="number" min="0" max="60"></label>
+            <label class="ad-field"><span>Picture</span><select id="wcArt"></select></label>
+          </div>
+          <label class="ad-field"><span>Headline</span><input id="wcTitle" placeholder="10% off your first order"></label>
+          <label class="ad-field"><span>Body</span><textarea id="wcBody" rows="2"></textarea></label>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>Code to show</span><input id="wcCode" placeholder="HELLO10"></label>
+            <label class="ad-field"><span>Button text</span><input id="wcCta" placeholder="Start shopping"></label>
+            <label class="ad-field"><span>Button goes to</span><input id="wcHref" placeholder="#/shop"></label>
+          </div>
+          <label class="ad-field" style="margin-bottom:0"><span>Small print</span><input id="wcSmall" placeholder="One use per customer. Ends 30 Nov."></label>
+        </div>
+
+        <div class="ad-card" id="offersCard"></div>
+
+        <div class="ad-card">
+          <h3>Search engines</h3>
+          <label class="ad-field"><span>Page title</span><input id="seoTitle"></label>
+          <label class="ad-field"><span>Description</span><textarea id="seoDesc" rows="2"></textarea>
+            <i class="ad-hint">Around 150 characters. This is what shows under the title in Google.</i></label>
+          <label class="ad-field"><span>Keywords</span><input id="seoKeys"></label>
+          <label class="ad-field" style="margin-bottom:0"><span>Share image URL</span><input id="seoOg" placeholder="https://joyshine.in/assets/img/share.jpg">
+            <i class="ad-hint">Shown when the link is shared on WhatsApp. 1200x630 works best.</i></label>
+        </div>
+
+        <div class="ad-card" id="visitsCard"></div>
+      </section>
+
       <!-- ============ PUBLISH ============ -->
       <section class="ad-pane" data-pane="publish">
         <div class="ad-card">
@@ -271,6 +323,19 @@
         </div>
 
         <div class="ad-card">
+          <h3>Your catalogue as a spreadsheet</h3>
+          <p class="ad-p">Download every product as an Excel file, edit it in Excel or Google Sheets, then
+            upload it back. Keep the <code>id</code> column as it is and rows update; blank it and you get
+            a new product.</p>
+          <div class="ad-btns" style="margin:0">
+            <button class="ad-btn ad-btn--ghost" data-x="xlsxout">Download products.xlsx</button>
+            <button class="ad-btn ad-btn--ghost" data-x="xlsxin">Upload a spreadsheet</button>
+            <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" hidden>
+          </div>
+          <div id="xlsxOut"></div>
+        </div>
+
+        <div class="ad-card">
           <h3>site.json preview</h3>
           <pre class="ad-json" id="jsonOut"></pre>
         </div>
@@ -302,6 +367,7 @@
 <script src="assets/js/occasions.js"></script>
 <script src="assets/js/cloud.js"></script>
 <script src="assets/js/products.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="assets/js/admin-catalogue.js"></script>
 <script src="assets/js/admin.js"></script>
 </body>

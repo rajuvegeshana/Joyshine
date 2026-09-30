@@ -363,11 +363,223 @@ async function paintReviews() {
       </div>`).join('')}</div>`}`;
 }
 
+/* ---------- spreadsheet in and out ------------------------
+   One row per product, with the nested bits flattened into
+   plain columns so Excel and Google Sheets can both handle it. */
+const COLS = ['id','name','category','price','was','tags','blurb','story','photo','picture',
+  'spec_material','spec_layer','spec_print','spec_size',
+  'has_sizes','has_materials','has_colours',
+  'personalise_label','personalise_max','personalise_example',
+  'bulk','quote','hidden','sort',
+  'details_materials','details_dimensions','details_care','details_production','details_shipping'];
+
+function toRow(r) {
+  const p = r.data || {}, d = p.details || {}, sp = p.specs || {}, v = p.variants || {};
+  return {
+    id: r.id, name: p.name || '', category: p.cat || '',
+    price: p.price ?? 0, was: p.was ?? '',
+    tags: (p.tags || []).join(', '), blurb: p.blurb || '', story: p.story || '',
+    photo: p.photo || '', picture: p.artKey || '',
+    spec_material: sp.Material || '', spec_layer: sp.Layer || '',
+    spec_print: sp.Print || '', spec_size: sp.Size || '',
+    has_sizes: v.size ? 'yes' : '', has_materials: v.material ? 'yes' : '', has_colours: v.colour ? 'yes' : '',
+    personalise_label: p.personalise?.label || '', personalise_max: p.personalise?.max || '',
+    personalise_example: p.personalise?.placeholder || '',
+    bulk: p.bulk ? 'yes' : '', quote: p.quote ? 'yes' : '', hidden: r.hidden ? 'yes' : '',
+    sort: r.sort ?? 0,
+    details_materials: d.materials || '', details_dimensions: d.dimensions || '',
+    details_care: d.care || '', details_production: d.production || '', details_shipping: d.shipping || '',
+  };
+}
+
+function fromRow(row) {
+  const yes = v => /^(yes|y|true|1)$/i.test(String(v || '').trim());
+  const V = window.VARIANT_OPTIONS || {};
+  const name = String(row.name || '').trim();
+  if (!name) return null;
+
+  const data = {
+    name, cat: String(row.category || '').trim(),
+    price: Number(row.price) || 0,
+    blurb: String(row.blurb || '').trim(),
+    artKey: String(row.picture || '').trim(),
+    tags: String(row.tags || '').split(/[,;]/).map(t => t.trim()).filter(Boolean),
+    specs: { Material: row.spec_material || '', Layer: row.spec_layer || '',
+             Print: row.spec_print || '', Size: row.spec_size || '' },
+    details: { materials: row.details_materials || '', dimensions: row.details_dimensions || '',
+               care: row.details_care || '', production: row.details_production || '',
+               shipping: row.details_shipping || '' },
+    bulk: yes(row.bulk), reviews: [],
+  };
+  if (Number(row.was)) data.was = Number(row.was);
+  if (row.story) data.story = String(row.story);
+  if (row.photo) data.photo = String(row.photo);
+  if (yes(row.quote)) { data.quote = true; data.price = 0; }
+
+  const variants = {};
+  if (yes(row.has_sizes) && V.SIZES) variants.size = V.SIZES;
+  if (yes(row.has_materials) && V.MATERIALS) variants.material = V.MATERIALS;
+  if (yes(row.has_colours) && V.COLOURS) variants.colour = V.COLOURS;
+  if (Object.keys(variants).length) data.variants = variants;
+
+  if (row.personalise_label) {
+    data.personalise = { label: String(row.personalise_label),
+                         max: Number(row.personalise_max) || 20,
+                         placeholder: String(row.personalise_example || '') };
+  }
+  return { id: String(row.id || '').trim() || slug(name), data,
+           sort: Number(row.sort) || 0, hidden: yes(row.hidden) };
+}
+
+function exportSheet() {
+  if (typeof XLSX === 'undefined') { toast('The spreadsheet library did not load'); return; }
+  const src = PRODUCTS.length ? PRODUCTS
+    : window.PRODUCTS.map((p, i) => ({ id: p.id, data: p, sort: i, hidden: false }));
+  const rows = src.map(toRow);
+  const ws = XLSX.utils.json_to_sheet(rows, { header: COLS });
+  ws['!cols'] = COLS.map(c => ({ wch: Math.max(10, Math.min(40, c.length + 6)) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Products');
+  XLSX.writeFile(wb, `joyshine-products-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast(`${rows.length} products downloaded`);
+}
+
+async function importSheet(file) {
+  const out = $('#xlsxOut');
+  out.innerHTML = '<p class="ad-p">Reading…</p>';
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+    const rows = raw.map(fromRow).filter(Boolean);
+    if (!rows.length) { out.innerHTML = '<p class="ad-err">No usable rows. Every product needs a name.</p>'; return; }
+
+    const known = new Set(PRODUCTS.map(r => r.id));
+    const added = rows.filter(r => !known.has(r.id)).length;
+    out.innerHTML = `<div class="ad-list" style="margin-top:.9rem">
+      <div><b>Rows read</b><span>${raw.length}</span></div>
+      <div><b>Usable</b><span>${rows.length}</span></div>
+      <div><b>New products</b><span>${added}</span></div>
+      <div><b>Updated</b><span>${rows.length - added}</span></div></div>
+      <div class="ad-btns"><button class="ad-btn ad-btn--primary" data-x="xlsxgo">Apply these ${rows.length} rows</button>
+      <button class="ad-btn ad-btn--ghost" data-x="xlsxcancel">Cancel</button></div>`;
+    pending = rows;
+  } catch (e) {
+    out.innerHTML = `<p class="ad-err">Could not read that file: ${esc(e.message)}</p>`;
+  }
+}
+let pending = null;
+
+async function applySheet() {
+  if (!pending) return;
+  await CLOUD.upsert('products', pending);
+  toast(`${pending.length} products saved`);
+  pending = null;
+  $('#xlsxOut').innerHTML = '';
+  await pull(); paintProducts();
+}
+
+/* ---------- offers --------------------------------------- */
+async function paintOffers() {
+  const box = $('#offersCard');
+  if (!box) return;
+  if (!inn()) { box.innerHTML = '<h3>Discount codes</h3><p class="ad-empty">Sign in to manage codes.</p>'; return; }
+  const list = await CLOUD.rows('offers?select=*&order=created_at.desc') || [];
+  box.innerHTML = `
+    <h3>Discount codes</h3>
+    <p class="ad-p">The shop checks expiry and usage limits against the database before applying a code.
+      Worth knowing: the discount itself is worked out in the browser, so treat codes as a marketing tool
+      rather than something airtight until checkout runs on a server.</p>
+    <div class="ad-grid3">
+      <label class="ad-field"><span>Code</span><input id="ofCode" placeholder="HELLO10" style="text-transform:uppercase"></label>
+      <label class="ad-field"><span>Type</span><select id="ofKind">
+        <option value="percent">% off</option><option value="amount">₹ off</option></select></label>
+      <label class="ad-field"><span>Value</span><input id="ofValue" type="number" min="0" value="10"></label>
+    </div>
+    <div class="ad-grid3">
+      <label class="ad-field"><span>Minimum spend (₹)</span><input id="ofMin" type="number" min="0" value="0"></label>
+      <label class="ad-field"><span>Max uses (blank = unlimited)</span><input id="ofMax" type="number" min="1"></label>
+      <label class="ad-field"><span>Expires</span><input id="ofEnds" type="date"></label>
+    </div>
+    <button class="ad-btn ad-btn--primary" data-x="offeradd">Create code</button>
+    ${!list.length ? '' : `<div class="ad-occ" style="margin-top:1rem">${list.map(o => `
+      <div class="ad-o${o.active ? ' on' : ''}" data-ofc="${esc(o.code)}">
+        <div class="ad-o__bar">
+          <span class="ad-o__name"><code>${esc(o.code)}</code></span>
+          <span class="ad-pill ad-pill--clay">${o.kind === 'amount' ? money(o.value) : o.value + '%'} off</span>
+          ${o.min_spend > 0 ? `<span class="ad-o__when">over ${money(o.min_spend)}</span>` : ''}
+          <span class="ad-o__when">${o.uses}${o.max_uses ? ' / ' + o.max_uses : ''} used</span>
+          ${o.ends_at ? `<span class="ad-o__when">until ${new Date(o.ends_at).toLocaleDateString('en-IN')}</span>` : ''}
+          <button class="ad-o__more" data-x="offertoggle">${o.active ? 'Pause' : 'Resume'}</button>
+          <button class="ad-o__more" data-x="offerdel">Delete</button>
+        </div>
+      </div>`).join('')}</div>`}`;
+}
+
+/* ---------- visits --------------------------------------- */
+async function paintVisits() {
+  const box = $('#visitsCard');
+  if (!box) return;
+  if (!inn()) { box.innerHTML = '<h3>Visitors</h3><p class="ad-empty">Sign in to see visitor numbers.</p>'; return; }
+  const since = new Date(Date.now() - 29 * 864e5).toISOString().slice(0, 10);
+  const rows = await CLOUD.rows(`visits?select=day&day=gte.${since}`) || [];
+  const byDay = {};
+  rows.forEach(r => { byDay[r.day] = (byDay[r.day] || 0) + 1; });
+  const days = Object.keys(byDay).sort();
+  const top = Math.max(1, ...Object.values(byDay));
+  const today = new Date().toISOString().slice(0, 10);
+  const week = days.filter(d => d > new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10))
+                   .reduce((n, d) => n + byDay[d], 0);
+
+  box.innerHTML = `
+    <h3>Visitors</h3>
+    <p class="ad-p">Counted once per browser per day. No cookies, no names, nothing personal —
+      just enough to see whether the shop is getting busier.</p>
+    <div class="ad-list">
+      <div><b>Today</b><span>${byDay[today] || 0}</span></div>
+      <div><b>Last 7 days</b><span>${week}</span></div>
+      <div><b>Last 30 days</b><span>${rows.length}</span></div>
+    </div>
+    ${days.length ? `<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-top:1rem">
+      ${days.map(d => `<div title="${d}: ${byDay[d]}" style="flex:1;min-width:3px;border-radius:3px 3px 0 0;
+        background:var(--c-primary);opacity:.75;height:${Math.round(byDay[d] / top * 100)}%"></div>`).join('')}
+    </div>` : '<p class="ad-empty" style="margin-top:.8rem">Nothing recorded yet.</p>'}`;
+}
+
 /* ---------- events --------------------------------------- */
 function wire(t) {
   const act = t.closest('[data-x]')?.dataset.x;
 
   if (act === 'seed') return seed();
+  if (act === 'xlsxout') return exportSheet();
+  if (act === 'xlsxin') { $('#xlsxFile').click(); return true; }
+  if (act === 'xlsxgo') return applySheet();
+  if (act === 'xlsxcancel') { pending = null; $('#xlsxOut').innerHTML = ''; return true; }
+
+  if (act === 'offeradd') {
+    const code = $('#ofCode').value.trim().toUpperCase();
+    if (!code) { toast('Give the code a name'); return true; }
+    const ends = $('#ofEnds').value;
+    CLOUD.upsert('offers', {
+      code, kind: $('#ofKind').value, value: +$('#ofValue').value || 0,
+      min_spend: +$('#ofMin').value || 0,
+      max_uses: $('#ofMax').value ? +$('#ofMax').value : null,
+      ends_at: ends ? new Date(ends + 'T23:59:59').toISOString() : null,
+      active: true,
+    }).then(() => { toast(code + ' created'); paintOffers(); })
+      .catch(e => toast(e.message));
+    return true;
+  }
+  if (act === 'offertoggle') {
+    const code = t.closest('[data-ofc]').dataset.ofc;
+    const pause = t.textContent.trim() === 'Pause';
+    CLOUD.update('offers', 'code=eq.' + encodeURIComponent(code), { active: !pause }).then(paintOffers);
+    return true;
+  }
+  if (act === 'offerdel') {
+    const code = t.closest('[data-ofc]').dataset.ofc;
+    if (confirm('Delete the code ' + code + '?')) CLOUD.remove('offers', 'code=eq.' + encodeURIComponent(code)).then(paintOffers);
+    return true;
+  }
   if (act === 'new') { editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length }; paintProducts(); return true; }
   if (act === 'edit') {
     const id = t.closest('[data-pid]').dataset.pid;
@@ -407,7 +619,17 @@ function wireChange(t) {
   return false;
 }
 
+function wireFile() {
+  const f = $('#xlsxFile');
+  if (f && !f.dataset.wired) {
+    f.dataset.wired = '1';
+    f.addEventListener('change', e => { if (e.target.files[0]) importSheet(e.target.files[0]); e.target.value = ''; });
+  }
+}
+
 async function paint(tab) {
+  wireFile();
+  if (tab === 'marketing') { paintOffers(); paintVisits(); }
   if (tab === 'products') { if (inn() && !PRODUCTS.length) await pull(); paintProducts($('#prodFilter')?.value || ''); }
   if (tab === 'orders') paintOrders();
   if (tab === 'requests') paintRequests();

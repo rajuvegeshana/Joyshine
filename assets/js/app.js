@@ -87,7 +87,8 @@ let pdp = null;   // product page state
 function render() {
   const { seg, q } = parse();
   const view = $('#view');
-  let html, title = CFG.brand.name;
+  /* the homepage wears the SEO title; inner pages prefix their own */
+  let html, title = CFG.seo?.title || CFG.brand.name;
   pdp = null;
 
   /* the engineering line wears its own look, whatever else is on */
@@ -122,6 +123,25 @@ function render() {
   if (pdp) syncPdp();
   markNav();
   scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function applySeo() {
+  const s = CFG.seo || {};
+  if (s.title) document.title = s.title;
+  const set = (sel, attr, val) => { if (!val) return; const el = $(sel); if (el) el.setAttribute(attr, val); };
+  set('meta[name="description"]', 'content', s.description);
+  set('meta[property="og:title"]', 'content', s.title);
+  set('meta[property="og:description"]', 'content', s.description);
+  if (s.keywords) {
+    let m = $('meta[name="keywords"]');
+    if (!m) { m = document.createElement('meta'); m.name = 'keywords'; document.head.appendChild(m); }
+    m.content = s.keywords;
+  }
+  if (s.ogImage) {
+    let m = $('meta[property="og:image"]');
+    if (!m) { m = document.createElement('meta'); m.setAttribute('property', 'og:image'); document.head.appendChild(m); }
+    m.content = s.ogImage;
+  }
 }
 
 function fillBrand(root = document) {
@@ -234,9 +254,19 @@ function paintCart(pop = true) {
         <span class="mini__t">${esc(p.name)}<b class="num">${money(p.price)}</b></span></a>`).join('')}</div>` : '');
 
   const t = S.totals(S.cart);
+  const oc = window.PROMO.applied;
   foot.hidden = false;
-  foot.innerHTML = `<div class="totals">
+  foot.innerHTML = `
+    ${oc ? `<div class="codeon">Code <b>${esc(oc.code)}</b> applied
+        ${t.off ? '' : `<span>\u2014 ${esc(t.offerWhy)}</span>`}
+        <button id="dropCode">Remove</button></div>`
+      : `<form class="codebox" id="codeForm">
+           <input id="codeIn" placeholder="Discount code" autocomplete="off">
+           <button class="btn btn--ghost btn--sm" type="submit">Apply</button>
+         </form>`}
+    <div class="totals">
       <div><span>Subtotal</span><span class="num">${money(t.sub)}</span></div>
+      ${t.off ? `<div class="free"><span>Code ${esc(t.code)}</span><span class="num">&minus;${money(t.off)}</span></div>` : ''}
       ${t.saved ? `<div class="free"><span>Bulk savings</span><span class="num">&minus;${money(t.saved)}</span></div>` : ''}
       <div><span>Shipping</span><span class="num ${t.free ? 'free' : ''}">${t.free ? 'Free' : money(t.ship)}</span></div>
       ${!t.free ? `<div><span class="quiet">Free above ${money(CFG.shipping.freeAbove)}</span><span class="quiet num">${money(CFG.shipping.freeAbove - t.sub)} to go</span></div>` : ''}
@@ -384,6 +414,7 @@ function sendOrder() {
   if (!validateOrder(true)) { $('[aria-invalid="true"]')?.focus(); toast('A few fields still need you', I.info); return; }
   S.write(S.K.buyer, F());
   recordOrder('whatsapp', waItems, S.totals(waItems), null, F());
+  window.PROMO.claim();
   openWhatsApp(orderMessage());
   closePanels(); confetti();
   toast('WhatsApp is open — press send there to confirm', I.wa, 6000);
@@ -584,10 +615,13 @@ async function boot() {
   await window.CATALOGUE.load();       /* database first, files as the net */
   window.OCC_NOW = window.SETTINGS.current();
   applyTheme(null);
+  applySeo();
   fillBrand();
   prefillBuyer();
   paintCart(); badge();
   render();
+
+  window.PROMO.start();
 
   const bar = $('#topbar');
   const measure = () => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px');
@@ -677,6 +711,7 @@ async function boot() {
     if (t.closest('#payCart')) return pay(S.cart, $('#payCart'));
     if (t.closest('#waCart')) { closePanels(); return setTimeout(() => openWA(S.cart), 250); }
     if (t.closest('#waSend')) return sendOrder();
+    if (t.closest('#dropCode')) { window.PROMO.clear(); paintCart(); toast('Code removed'); return; }
 
     if (t.closest('#engQuote') || t.closest('#engQuote2')) {
       return openWhatsApp(`*${CFG.engineering.whatsappGreeting}*\n\n` +
