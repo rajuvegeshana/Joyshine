@@ -74,7 +74,23 @@ L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
 
 ### Content & art
 
-A tab of its own. Four ways for the hero unicorn to behave — printing,
+A tab of its own, in folding sections.
+
+**Typography.** Two faces run the whole site: one for headings, one for
+everything else. Set them once for every look, or give a single look its own
+pair. Eight weights are separate from the faces and apply everywhere — page
+heading, section heading, card heading, small heading, opening line, body,
+small print and buttons. Leave any empty and it follows the one above it. A
+live preview sits underneath.
+
+**Logo, tab icon and share picture.** Upload the mark that sits beside the
+word joyshine, the little picture in the browser tab, and the 1200×630 card
+WhatsApp shows when somebody sends your link.
+
+**The mouse pointer.** The ordinary arrow, the hand, a crosshair, an open hand,
+or your own small picture — for every look or for one.
+
+Four ways for the hero unicorn to behave — printing,
 floating, turning on a stand, assembling itself — or replace it altogether
 with your own SVG or PNG. Twelve icons can be swapped one at a time. Each look
 can have its own headings and body face, including a font file you upload
@@ -85,6 +101,20 @@ Anything you upload that is markup has its scripts and event handlers stripped
 before it is saved, and again before the shop draws it. That is not optional:
 an icon that could run code would be running it on the page where customers
 type their address.
+
+### The three buttons
+
+**Cancel changes** shows you exactly what it is about to throw away, then puts
+the panel back to what the live shop is wearing. The live shop is never touched.
+
+**Save and preview** puts your changes aside and opens the shop in a new tab
+wearing them. Walk the whole site.
+
+**Publish** stays closed until you have done that. It lists every change, then
+works through five steps on screen: still signed in, sent to the database, read
+back, the shop agrees, preview cleared. If one fails it says which and why, and
+offers the same settings as a file plus a link straight to the GitHub page that
+puts them live the other way — the database is left exactly as it was.
 
 ### Undo, redo, cancel
 
