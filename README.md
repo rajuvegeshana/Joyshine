@@ -51,8 +51,27 @@ Two details that matter:
   would 404 on refresh. Hash URLs work anywhere, including from a `file://`
   double-click.
 
-Custom domain later: add a `CNAME` file containing your domain, and point the
-DNS at GitHub. Nothing in the code needs to change.
+### The custom domain
+
+`CNAME` in this folder holds `joyshine.in`. **Do not delete it, and make sure it
+is part of every upload.** If you re-upload the site through GitHub's web
+interface and leave `CNAME` out, the custom domain switches itself off and the
+shop drops back to the github.io address without warning.
+
+DNS at the registrar, for the apex:
+
+    A     @    185.199.108.153
+    A     @    185.199.109.153
+    A     @    185.199.110.153
+    A     @    185.199.111.153
+    AAAA  @    2606:50c0:8000::153
+    AAAA  @    2606:50c0:8001::153
+    AAAA  @    2606:50c0:8002::153
+    AAAA  @    2606:50c0:8003::153
+    CNAME www  <username>.github.io
+
+Delete any parking-page A or ALIAS record on `@` first. Tick **Enforce HTTPS**
+in Settings → Pages once GitHub has issued the certificate, not before.
 
 ---
 
