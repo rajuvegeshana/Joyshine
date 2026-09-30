@@ -1,5 +1,13 @@
 # Joyshine storefront
 
+> **New here?** Start with the right file:
+> - **[MANUAL.md](MANUAL.md)** — running the shop day to day. No code.
+> - **[CHEATSHEET.md](CHEATSHEET.md)** — where everything lives, what it costs, what to avoid.
+> - **[HANDOFF.md](HANDOFF.md)** — for a developer or an AI assistant taking this over.
+> - **[BRIEF.md](BRIEF.md)** — the original product brief.
+> - This file — how each part works, in detail.
+
+
 Static site. Plain HTML, CSS and vanilla JavaScript — no build step, no npm,
 no server. Open `index.html` and it runs. Drop the folder on GitHub Pages and
 it is live.
@@ -22,7 +30,15 @@ joyshine/
   assets/js/occasions.js     the Indian festival calendar
   assets/js/settings.js      merges Supabase / site.json over the defaults
   assets/js/cloud.js         Supabase REST client (optional)
-  supabase/schema.sql        run this once in the Supabase SQL editor
+  supabase/schema.sql        settings table (migration 1)
+  supabase/schema-2-catalogue.sql   products, orders, requests, reviews, posts
+  supabase/schema-3-media-reviews.sql  image bucket, customer reviews, offers, visits
+  assets/js/catalogue.js     loads the catalogue from Supabase, files as fallback
+  assets/js/promo.js         ribbon, welcome popup, discount codes, visits
+  assets/js/admin-catalogue.js  products, orders, requests, reviews, offers, xlsx
+  MANUAL.md                  the owner's guide
+  CHEATSHEET.md              one page: where, how much, what to avoid
+  HANDOFF.md                 brief for whoever works on this next
   assets/js/products.js      the catalogue, variants and drawn product art
   assets/js/store.js         cart, wishlist, recently viewed, money, search
   assets/js/views.js         every screen, rendered as HTML
