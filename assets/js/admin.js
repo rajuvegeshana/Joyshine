@@ -48,11 +48,23 @@ function pushHistory() {
   paintHistory();
 }
 
+/* "Saved" means: this browser has put the changes aside and shown them
+   to you on the site. Publish only opens once that has happened. */
+let saved = false;
+
 function paintHistory() {
   const u = $('#btnUndo'), r = $('#btnRedo'), d = $('#btnDiscard');
   if (u) u.disabled = at <= 0;
   if (r) r.disabled = at >= past.length - 1;
   if (d) d.hidden = !dirty;
+  const pub = $('#btnSave');
+  if (pub) {
+    pub.disabled = !(saved && dirty);
+    pub.title = !dirty ? 'Nothing has changed since the last publish'
+      : !saved ? 'Press Save and preview first' : 'Publish to the live shop';
+  }
+  const sp = $('#btnSavePrev');
+  if (sp) sp.disabled = !dirty;
 }
 
 function step(dir) {
@@ -70,7 +82,11 @@ function step(dir) {
   toast(dir < 0 ? 'Undone' : 'Redone');
 }
 
-const mark = () => { dirty = true; $('#unsaved').hidden = false; save(); paintJson(); pushHistory(); paintHistory(); };
+const mark = () => {
+  dirty = true; saved = false;
+  $('#unsaved').hidden = false;
+  save(); paintJson(); pushHistory(); paintHistory();
+};
 const save = () => { try { localStorage.setItem(DRAFT, JSON.stringify(patch)); } catch {} };
 
 function toast(msg) {
@@ -424,19 +440,42 @@ const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>'
    browser's own storage, and does the writing itself. */
 const REVIEW = 'joyshine.review';
 
-/* Throw away everything since the last publish. The live shop is not
-   touched: this only clears what this browser is holding. */
+/* ---- 1. Cancel: show what would be lost, then lose it ------ */
 function discardAll() {
-  if (!dirty && at === 0) { toast('Nothing to cancel'); return; }
-  if (!confirm('Cancel every change you have made since the last publish?\n\nThe live shop is not touched. This cannot be undone.')) return;
-  patch = live ? JSON.parse(JSON.stringify({ settings: live.settings || {}, occasions: live.occasions || [] }))
-               : { settings: {}, occasions: [] };
-  past.length = 0; past.push(JSON.stringify(patch)); at = 0;
-  dirty = false;
-  try { localStorage.setItem(DRAFT, JSON.stringify(patch)); localStorage.removeItem(PREVIEW); localStorage.removeItem(REVIEW); } catch {}
-  $('#unsaved').hidden = true;
-  paintAll(); paintHistory();
-  toast(live ? 'Back to what is on the live shop' : 'Back to the built-in defaults');
+  const changes = changeList();
+  if (!changes.length && at === 0) { toast('Nothing to cancel'); return; }
+  modal({
+    title: 'Cancel these changes?',
+    lead: 'Everything below goes back to what the live shop is wearing. The live shop itself is not touched, and this cannot be undone.',
+    changes,
+    go: 'Cancel these changes',
+    warn: true,
+    onGo: box => {
+      box.remove();
+      patch = live ? JSON.parse(JSON.stringify({ settings: live.settings || {}, occasions: live.occasions || [] }))
+                   : { settings: {}, occasions: [] };
+      past.length = 0; past.push(JSON.stringify(patch)); at = 0;
+      dirty = false; saved = false;
+      try { localStorage.setItem(DRAFT, JSON.stringify(patch)); localStorage.removeItem(PREVIEW); localStorage.removeItem(REVIEW); } catch {}
+      $('#unsaved').hidden = true;
+      paintAll(); paintHistory();
+      toast(live ? 'Back to what is on the live shop' : 'Back to the built-in defaults');
+    },
+  });
+}
+
+/* ---- 2. Save and preview ---------------------------------- */
+function saveAndPreview() {
+  if (!dirty) { toast('Nothing has changed yet'); return; }
+  save();
+  try { localStorage.setItem(PREVIEW, JSON.stringify(build())); } catch {
+    toast('This browser will not let the panel store a preview'); return;
+  }
+  saved = true;
+  paintHistory();
+  const w = window.open('index.html?preview=1', '_blank', 'noopener');
+  toast(w ? 'Saved. The shop is open in a new tab wearing your changes.'
+          : 'Saved. Allow pop-ups to see the preview — Publish is open either way.');
 }
 
 function reviewFirst() {
@@ -450,6 +489,162 @@ function reviewFirst() {
   if (!w) { confirmHere(changes); return; }
   toast('Opened the shop with your changes — confirm there');
   paintCloud();
+}
+
+/* ---- a dialog, used by cancel and by publish --------------- */
+function modal({ title, lead, changes = [], go, warn, onGo, wide }) {
+  const rows = changes.map(c => c.occasion
+    ? `<li><b>${esc(c.label)}</b><span>${esc(c.to)}</span></li>`
+    : `<li><b>${esc(c.label)}</b><span><i>${esc(c.from)}</i> → <em>${esc(c.to)}</em></span></li>`).join('');
+  const box = document.createElement('div');
+  box.className = 'ad-modal';
+  box.innerHTML = `
+    <div class="ad-modal__card${wide ? ' ad-modal__card--wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+      <h3>${esc(title)}</h3>
+      <p class="ad-p">${esc(lead)}</p>
+      ${rows ? `<ul class="ad-modal__list">${rows}</ul>` : ''}
+      <div class="ad-modal__body"></div>
+      <div class="ad-btns" style="justify-content:flex-end;margin:0">
+        <button class="ad-btn ad-btn--ghost" data-m="close">Not yet</button>
+        <button class="ad-btn ${warn ? 'ad-btn--warn' : 'ad-btn--primary'}" data-m="go">${esc(go)}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(box);
+  box.addEventListener('click', e => {
+    if (e.target === box || e.target.closest('[data-m="close"]')) return box.remove();
+    if (e.target.closest('[data-m="go"]')) onGo(box);
+  });
+  return box;
+}
+
+/* ---- 3. Publish, one step at a time ------------------------
+   Every step says what it is doing and what happened. If one
+   fails, the reason is on screen and the way out — commit the
+   same settings through GitHub — is one click away.            */
+const STEPS = [
+  ['sign',   'Checking you are still signed in'],
+  ['send',   'Sending the settings to the database'],
+  ['read',   'Reading them back to be sure'],
+  ['match',  'Checking the live shop agrees'],
+  ['done',   'Clearing the preview'],
+];
+
+function publishFlow() {
+  const changes = changeList();
+  if (!changes.length) { toast('Nothing has changed since the last publish'); return; }
+  modal({
+    title: 'Publish these changes?',
+    lead: 'Everything below goes to the live shop at once. Nothing else is touched.',
+    changes, go: 'Publish to the live shop', wide: true,
+    onGo: box => runPublish(box),
+  });
+}
+
+async function runPublish(box) {
+  const body = box.querySelector('.ad-modal__body');
+  const acts = box.querySelector('.ad-btns');
+  acts.hidden = true;
+  body.innerHTML = `<ol class="ad-steps">${STEPS.map(([k, t]) =>
+    `<li data-s="${k}"><span class="ad-steps__dot"></span><b>${esc(t)}</b><i></i></li>`).join('')}</ol>`;
+
+  const step = (k, state, note) => {
+    const li = body.querySelector(`[data-s="${k}"]`);
+    if (!li) return;
+    li.dataset.state = state;
+    if (note !== undefined) li.querySelector('i').textContent = note;
+  };
+  const fail = (k, msg, detail) => {
+    step(k, 'bad', msg);
+    body.insertAdjacentHTML('beforeend', `
+      <div class="ad-fail">
+        <b>That did not go through.</b>
+        <p>${esc(detail || msg)}</p>
+        <div class="ad-btns" style="margin:0">
+          <button class="ad-btn ad-btn--primary" data-f="retry">Try again</button>
+          <button class="ad-btn ad-btn--ghost" data-f="file">Download site.json</button>
+          <a class="ad-btn ad-btn--ghost" href="https://github.com/rajuvegeshana/Joyshine/upload/main/assets/data"
+             target="_blank" rel="noopener">Put it live through GitHub</a>
+          <button class="ad-btn ad-btn--ghost" data-f="close">Close</button>
+        </div>
+        <p class="ad-hint">Through GitHub: download the file, drop it into
+          <code>assets/data/</code> on that page, and press Commit changes. The shop reads it within
+          about ten minutes, and the database stays as it was.</p>
+      </div>`);
+    body.addEventListener('click', e => {
+      const f = e.target.closest('[data-f]')?.dataset.f;
+      if (f === 'retry') { box.remove(); publishFlow(); }
+      if (f === 'file') download();
+      if (f === 'close') box.remove();
+    }, { once: true });
+  };
+
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const data = build();
+
+  /* 1. still signed in? */
+  step('sign', 'busy');
+  try {
+    if (!window.CLOUD.signedIn()) {
+      const ok = await window.CLOUD.refresh();
+      if (!ok) throw new Error('Your sign-in has expired. Sign in again on the Publish tab and try once more.');
+    }
+    step('sign', 'ok', window.CLOUD.user()?.email || '');
+  } catch (e) { return fail('sign', 'Not signed in', e.message); }
+  await wait(120);
+
+  /* 2. write */
+  step('send', 'busy');
+  try {
+    await window.CLOUD.write(data);
+    const n = changeList().length;
+    step('send', 'ok', n + (n === 1 ? ' change sent' : ' changes sent'));
+  } catch (e) {
+    return fail('send', 'The database refused it', e.message +
+      ' — this is usually the sign-in having expired, or the settings table not being set up yet.');
+  }
+  await wait(120);
+
+  /* 3. read it back */
+  step('read', 'busy');
+  let back = null;
+  try {
+    back = await window.CLOUD.read();
+    if (!back || !back.data) throw new Error('The database accepted it but gave nothing back.');
+    step('read', 'ok', 'saved ' + new Date(back.updated_at || Date.now()).toLocaleTimeString());
+  } catch (e) { return fail('read', 'Could not confirm it saved', e.message); }
+  await wait(120);
+
+  /* 4. is it the same thing? */
+  step('match', 'busy');
+  try {
+    const mine = JSON.stringify(data.settings || {});
+    const theirs = JSON.stringify(back.data.settings || {});
+    if (mine !== theirs) throw new Error('What came back does not match what was sent. Try publishing again.');
+    step('match', 'ok', 'every change is live');
+  } catch (e) { return fail('match', 'The shop does not agree yet', e.message); }
+  await wait(120);
+
+  /* 5. tidy up */
+  step('done', 'busy');
+  live = data;
+  dirty = false; saved = false;
+  $('#unsaved').hidden = true;
+  try { localStorage.removeItem(PREVIEW); localStorage.removeItem(REVIEW); } catch {}
+  past.length = 0; past.push(JSON.stringify(patch)); at = 0;
+  paintHistory(); paintCloud();
+  step('done', 'ok', 'preview cleared');
+
+  body.insertAdjacentHTML('beforeend', `
+    <div class="ad-win">
+      <b>Live on joyshine.in.</b>
+      <p class="ad-hint">Anyone who had the shop open already will see it next time they load the page.</p>
+      <div class="ad-btns" style="margin:0">
+        <a class="ad-btn ad-btn--primary" href="index.html" target="_blank" rel="noopener">Open the shop</a>
+        <button class="ad-btn ad-btn--ghost" data-f="close">Close</button>
+      </div>
+    </div>`);
+  body.addEventListener('click', e => { if (e.target.closest('[data-f="close"]')) box.remove(); });
+  toast('Published — the live shop is updated');
 }
 
 /* The same confirmation, inside the panel, for when the browser
@@ -635,8 +830,9 @@ document.addEventListener('click', e => {
     return;
   }
   if (e.target.closest('#btnPublish')) return reviewFirst();
+  if (e.target.closest('#btnSavePrev')) return saveAndPreview();
   if (e.target.closest('#btnSave')) {
-    return (cloudOn() && window.CLOUD.signedIn()) ? reviewFirst() : download();
+    return (cloudOn() && window.CLOUD.signedIn()) ? publishFlow() : download();
   }
   if (e.target.closest('#btnUndo')) return step(-1);
   if (e.target.closest('#btnRedo')) return step(1);
