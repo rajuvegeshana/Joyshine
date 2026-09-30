@@ -99,8 +99,16 @@ gives the same "Invalid login credentials" as a wrong password. Then use
 *Forgot your password?*. If no email arrives, recreate the user in Supabase with
 **Auto Confirm User** ticked.
 
-**Changes don't appear.** Publish → **Run the check**. Red on "You can publish"
+**Changes don't appear.** Two different causes:
+
+*Settings or products* — Publish → **Run the check**. Red on "You can publish"
 means your session expired; sign in again.
+
+*Design or layout, on another computer* — that is browser caching. GitHub Pages
+tells browsers to hold each file for 10 minutes. Every asset URL now carries a
+version stamp so a new deploy is a new URL, but the page itself can still be up
+to 10 minutes stale. Wait, or hard refresh: **Cmd+Shift+R** on Mac,
+**Ctrl+F5** on Windows.
 
 **Shop shows old products.** The database is unreachable and the shop is using
 its built-in copy. Run the check.

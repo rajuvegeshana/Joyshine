@@ -45,6 +45,10 @@ These are not preferences. Breaking them breaks the product.
    tamper-proof. The README and the panel say this plainly. Do not quietly
    imply otherwise.
 7. **Preserve `CNAME`.** It holds `joyshine.in`. Losing it detaches the domain.
+8. **Run `./bump.sh` before committing any CSS or JS change.** GitHub Pages
+   serves `cache-control: max-age=600`, so without a version stamp on the asset
+   URLs a returning visitor runs yesterday's JavaScript against today's HTML.
+   The script rewrites `?v=` on local `src`/`href` only — never a CDN or font.
 
 ---
 
