@@ -763,10 +763,11 @@ function searchPage(q) {
 }
 
 function noResults(q) {
+  const e = (CFG.errors || {}).noResults || {};
   return `<div class="dead r">
-    <div class="dead__head">${I.horn}
-      <h3>We couldn't find that yet.</h3>
-      <p>Nothing on the shelf matches "${esc(q)}" — but that does not mean we can't make it.</p>
+    <div class="dead__head">${e.art ? `<img src="${esc(e.art)}" alt="" style="width:88px">` : I.horn}
+      <h3>${esc(e.title || 'We could not find that yet')}</h3>
+      <p>${esc(e.body || '')}${q ? ` <b>You searched for "${esc(q)}".</b>` : ''}</p>
     </div>
     <div class="paths">
       <a class="path" href="#/custom?path=image&q=${encodeURIComponent(q)}"><span class="path__i">${ico('file')}</span><b>Upload your design</b><span class="path__d">A photo or sketch is enough to start.</span></a>

@@ -126,6 +126,9 @@ function render() {
     case 'shipping': html = LEGAL.shipping(); title = 'Shipping · ' + CFG.brand.name; break;
     case 'contact':  html = LEGAL.contact();  title = 'Contact · ' + CFG.brand.name; break;
     case 'about':    html = V.about(); title = 'About · ' + title; break;
+    case 'gone':     html = V.errorPage('notFound', q.from
+                       ? `<p class="quiet oops__from">Nothing lives at <code>${esc(q.from)}</code>.</p>` : '');
+                     title = 'Not found · ' + title; break;
     default:         html = V.notFound();
   }
 

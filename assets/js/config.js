@@ -108,9 +108,14 @@ window.JOYSHINE = {
       body: 'It may have sold out, or been retired. Here is what is on the shelf instead.',
       art: '',
     },
+    noResults: {
+      title: 'We could not find that yet',
+      body: 'Nothing on the shelf matches it — which does not mean we cannot make it. Send us the idea and we will come back with a price.',
+      art: '',
+    },
     offline: {
       title: 'The shop cannot reach us',
-      body: 'Your connection dropped, or we are having a moment. The page will work again when it comes back — or message us and we will take it from there.',
+      body: 'Your connection dropped, or we are having a moment. Everything here still works; the newest prices and products may be a few minutes behind.',
       art: '',
     },
   },

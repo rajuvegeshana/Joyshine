@@ -36,6 +36,18 @@ const ICONS = [
   ['check',  'Done'],
 ];
 
+/* the four things that can actually go wrong on a site with no server */
+const ERRS = [
+  ['notFound', '404 — a page that does not exist',
+   'Someone follows an old link or mistypes the address. Used by joyshine.in/404.html and by the shop itself.', '#/gone'],
+  ['noProduct', 'A product that has gone',
+   'The link is fine but the product was retired or sold out. Four that are in stock are shown underneath.', '#/p/does-not-exist'],
+  ['noResults', 'A search that found nothing',
+   'Their words matched nothing on the shelf. The four ways to ask for a custom print are shown underneath.', '#/search?q=zzzzzz'],
+  ['offline', 'The database cannot be reached',
+   'Rare. The shop keeps working from the files it was built with; this only warns that prices and stock may be a few minutes behind.', ''],
+];
+
 const HERO = [
   ['print',     'Printing',   'It builds up off the bed, layer by layer. The original.'],
   ['float',     'Floating',   'It hangs in the air and breathes, shadow moving underneath.'],
@@ -149,21 +161,27 @@ function paint() {
       <input type="file" id="curFile" accept=".png,.svg,image/png,image/svg+xml" hidden>
     </details>
 
-    <div class="ad-card">
-      <h3>When something is missing</h3>
-      <p class="ad-p">What a visitor reads when a link is dead or a product has gone. Every one of these pages
-        also offers the shop, the custom-print form, the FAQ, each category and a WhatsApp message.</p>
-      ${[['notFound', 'A page that does not exist'], ['noProduct', 'A product that has gone'],
-         ['offline', 'The shop cannot reach the database']].map(([k, label]) => {
+    <details class="ad-card ad-fold" id="errCard">
+      <summary><h3>Error pages</h3><span class="ad-fold__n">404 and the others</span></summary>
+      <p class="ad-p">This shop is a set of files on a CDN — there is no server to fall over, so there is no
+        500, 502 or 503 to write. What can actually happen is a dead link, a product that has gone, a search
+        that finds nothing, and the database being briefly out of reach. Each of these pages also offers the
+        shop, the custom-print form, the FAQ, every category and a WhatsApp message already written.</p>
+      ${ERRS.map(([k, label, note, link]) => {
         const e = errs[k] || {};
         return `<div class="ad-err-edit">
-          <h4 class="ad-sub">${esc(label)}</h4>
+          <div class="ad-err-edit__top">
+            <h4 class="ad-sub" style="margin:0">${esc(label)}</h4>
+            ${link ? `<a class="ad-btn ad-btn--ghost ad-btn--sm" href="index.html${esc(link)}" target="_blank" rel="noopener">See it</a>` : ''}
+          </div>
+          <p class="ad-p">${esc(note)}</p>
           <label class="ad-field"><span>Headline</span><input data-cf="errors.${k}.title" value="${esc(e.title || '')}"></label>
           <label class="ad-field"><span>Wording</span><textarea data-cf="errors.${k}.body" rows="2">${esc(e.body || '')}</textarea></label>
-          <label class="ad-field"><span>Picture (optional)</span><input data-cf="errors.${k}.art" value="${esc(e.art || '')}" placeholder="empty = the drawn unicorn"></label>
+          <label class="ad-field"><span>Picture (optional)</span><input data-cf="errors.${k}.art" value="${esc(e.art || '')}" placeholder="empty = the drawn unicorn">
+            <i class="ad-hint">Paste a link, or upload one above and paste the link it gives you.</i></label>
         </div>`;
       }).join('')}
-    </div>`;
+    </details>`;
 
   paintFonts();
   paintCursor();

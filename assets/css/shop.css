@@ -480,3 +480,5 @@
 .oops__ask a, .oops .linky { color: var(--brand); }
 .oops__grid { display: grid; gap: 1rem; width: 100%; margin-top: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); text-align: left; }
+.oops__from { font-size: .82rem; }
+.oops__from code { background: var(--surface-2); padding: .1rem .4rem; border-radius: 4px; }
