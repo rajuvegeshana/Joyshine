@@ -439,3 +439,55 @@
 .upbar i { display: block; height: 100%; width: 0; background: var(--brand); transition: width .2s linear; }
 .upbar[data-state="done"] i { background: var(--wa); }
 .upbar[data-state="fail"] i { background: var(--hot); width: 100% !important; }
+
+/* ===========================================================
+   THE REVIEW BAR — only ever seen by the owner, in their own
+   browser, while they look over changes they have not
+   published yet.
+   =========================================================== */
+.revbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+  background: var(--ink-strong); color: var(--bg);
+  box-shadow: 0 -10px 30px rgba(0,0,0,.25);
+  padding: .6rem max(1rem, calc((100vw - 1220px) / 2));
+}
+.revbar__in { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; font-size: .88rem; }
+.revbar__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: none;
+  animation: revPulse 1.8s ease-in-out infinite; }
+@keyframes revPulse { 50% { transform: scale(1.5); opacity: .55; } }
+.revbar__n { opacity: .7; font-size: .8rem; }
+.revbar__acts { display: flex; gap: .45rem; margin-left: auto; flex-wrap: wrap; }
+.revbar__b {
+  border: 1px solid rgba(255,255,255,.35); background: transparent; color: inherit;
+  padding: .4rem .8rem; border-radius: 999px; font: inherit; font-size: .82rem; cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.revbar__b:hover { background: rgba(255,255,255,.14); transform: translateY(-1px); }
+.revbar__b--go { background: var(--brand); border-color: transparent; color: var(--brand-ink); font-weight: 600; }
+.revbar--done .revbar__dot { background: var(--wa); animation: none; }
+body.has-revbar { padding-bottom: calc(var(--rig-h) + 3.2rem); }
+@media (max-width: 720px) {
+  body.has-revbar { padding-bottom: calc(var(--tab-h) + var(--rig-h) + 4.4rem); }
+  .revbar { bottom: var(--tab-h, 0px); }
+  .revbar__acts { width: 100%; margin-left: 0; }
+}
+
+.revmodal {
+  position: fixed; inset: 0; z-index: 210; display: grid; place-items: center;
+  background: var(--scrim); padding: 1rem; overflow: auto;
+}
+.revmodal__card {
+  background: var(--surface); border: var(--card-border); border-radius: var(--r-xl);
+  box-shadow: var(--shadow-2); padding: clamp(1.1rem, .8rem + 1.5vw, 1.8rem);
+  width: min(560px, 100%); max-height: 86vh; overflow: auto;
+}
+.revmodal__list { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: .45rem; }
+.revmodal__list li {
+  display: flex; gap: .7rem; justify-content: space-between; align-items: baseline;
+  padding: .55rem .7rem; border-radius: var(--r-s); background: var(--surface-2);
+  font-size: .86rem; flex-wrap: wrap;
+}
+.revmodal__list i { font-style: normal; color: var(--ink-quiet); text-decoration: line-through; }
+.revmodal__list em { font-style: normal; color: var(--ink-strong); font-weight: 600; }
+.revmodal__acts { display: flex; gap: .6rem; justify-content: flex-end; flex-wrap: wrap; }
+.revmodal__err { color: var(--hot); font-size: .85rem; margin-top: .7rem; }

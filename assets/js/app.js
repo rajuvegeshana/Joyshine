@@ -836,6 +836,7 @@ async function boot() {
   paintCart(); badge();
   render();
 
+  window.REVIEWBAR?.start();
   window.PROMO.start();
   window.GA.start();
   window.CUSTOM.wire();

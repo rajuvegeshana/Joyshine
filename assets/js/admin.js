@@ -374,6 +374,86 @@ function paintCloud() {
 
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
+/* Publishing is a two-step now: look at the shop wearing the changes,
+   then confirm from there. The shop tab reads both of these out of this
+   browser's own storage, and does the writing itself. */
+const REVIEW = 'joyshine.review';
+
+function reviewFirst() {
+  const changes = changeList();
+  if (!changes.length) { toast('Nothing has changed yet'); return; }
+  try {
+    localStorage.setItem(PREVIEW, JSON.stringify(build()));
+    localStorage.setItem(REVIEW, JSON.stringify({ at: Date.now(), changes, data: build() }));
+  } catch { toast('This browser will not let the panel store the preview'); return; }
+  const w = window.open('index.html?review=1', '_blank', 'noopener');
+  if (!w) { toast('Allow pop-ups to review, or press Publish anyway below'); return; }
+  toast('Opened the shop with your changes — confirm there');
+  paintCloud();
+}
+
+/* Spell out what is waiting, in the owner's words rather than in
+   JSON, so the confirmation is something a person can actually read. */
+const LABELS = {
+  'defaultTheme': 'Default look',
+  'occasions.forceTheme': 'Pinned look',
+  'occasions.forceOccasion': 'Pinned occasion',
+  'occasions.auto': 'Let occasions change the look',
+  'engineering.active': 'Engineering page on',
+  'engineering.ownLook': 'Engineering keeps its own look',
+  'engineering.name': 'Engineering name',
+  'engineering.blurb': 'Engineering description',
+  'whatsapp.number': 'WhatsApp number',
+  'brand.email': 'Email address',
+  'brand.instagram': 'Instagram',
+  'brand.origin': 'Line under the logo',
+  'razorpay.keyId': 'Razorpay Key ID',
+  'shipping.flat': 'Shipping charge',
+  'shipping.freeAbove': 'Free shipping above',
+  'marketing.ribbon.on': 'Top ribbon',
+  'marketing.ribbon.text': 'Ribbon wording',
+  'marketing.welcome.on': 'Welcome popup',
+  'lineup.picks': 'Everyday product line-up',
+  'lineup.only': 'Show only the chosen products',
+};
+
+const pretty = v => v === true ? 'on' : v === false ? 'off'
+  : v === null || v === '' ? 'not set'
+  : Array.isArray(v) ? `${v.length} item${v.length === 1 ? '' : 's'}`
+  : String(v);
+
+function changeList() {
+  const out = [];
+  const walk = (node, path) => {
+    for (const k of Object.keys(node || {})) {
+      const p = path ? path + '.' + k : k;
+      const v = node[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) { walk(v, p); continue; }
+      let was = CFG;
+      for (const seg of p.split('.')) { if (was == null) break; was = was[seg]; }
+      const label = LABELS[p] || p;
+      out.push({ label, from: pretty(was), to: pretty(v), same: pretty(was) === pretty(v) });
+    }
+  };
+  walk(patch.settings, '');
+
+  for (const o of patch.occasions || []) {
+    if (Object.keys(o).length < 2) continue;
+    const occ = OCCS.find(x => x.id === o.id);
+    const bits = [];
+    if (o.on !== undefined) bits.push(o.on ? 'switched on' : 'switched off');
+    if (o.theme) bits.push('look: ' + (THEME_LIST.find(t => t[0] === o.theme) || [, o.theme])[1]);
+    if (o.picks) bits.push(`${o.picks.length} product${o.picks.length === 1 ? '' : 's'} in its line-up`);
+    if (o.picksOnly !== undefined) bits.push(o.picksOnly ? 'only those products' : 'those products first');
+    if (o.dates) bits.push('dates set for ' + Object.keys(o.dates).join(', '));
+    if (o.banner) bits.push('banner wording');
+    if (o.tag !== undefined) bits.push('featured tag');
+    if (o.lead !== undefined || o.trail !== undefined) bits.push('how long it runs');
+    out.push({ label: (occ ? occ.name : o.id), from: '', to: bits.join(', ') || 'edited', occasion: true });
+  }
+  return out.filter(c => !c.same);
+}
+
 async function publish() {
   try {
     await window.CLOUD.write(build());
@@ -428,7 +508,7 @@ document.addEventListener('click', e => {
     more.textContent = row.classList.contains('open') ? 'Done' : 'Edit';
     return;
   }
-  if (e.target.closest('#btnPublish')) return publish();
+  if (e.target.closest('#btnPublish')) return reviewFirst();
   if (e.target.closest('#btnSave')) {
     return (cloudOn() && window.CLOUD.signedIn()) ? publish() : download();
   }
