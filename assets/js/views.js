@@ -830,8 +830,13 @@ const lostUnicorn = () => `<svg viewBox="0 0 200 200" role="img" aria-label="A u
 function notFound() { return errorPage('notFound'); }
 
 function missingProduct() {
-  const picks = window.PRODUCTS.filter(p => !p.hidden).slice(0, 4);
-  return errorPage('noProduct', picks.length ? `<div class="oops__grid">${picks.map(card).join('')}</div>` : '');
+  const picks = window.PRODUCTS.filter(p => !p.hidden).slice(0, 5);
+  /* pictures only: a full card here competes with the message, and
+     nobody who landed on a dead link wants a price list. */
+  return errorPage('noProduct', picks.length ? `<div class="oops__picks">
+    ${picks.map(p => `<a class="oops__pick" href="#/p/${esc(p.id)}" title="${esc(p.name)}"
+        aria-label="${esc(p.name)}">${art(p)}</a>`).join('')}
+  </div>` : '');
 }
 
 return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow, booting,

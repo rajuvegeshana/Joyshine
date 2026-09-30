@@ -133,6 +133,9 @@ function render() {
   }
 
   view.innerHTML = html;
+  /* a dead end is not a place to browse a sitemap: the page offers its
+     own way out, and the footer only repeats it at twice the length */
+  document.body.classList.toggle('no-foot', !!view.querySelector('.oops'));
   document.title = title;
   window.KIT?.apply(document.documentElement.dataset.theme);
   window.SKIN?.apply(view);

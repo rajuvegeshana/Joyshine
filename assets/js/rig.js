@@ -13,6 +13,8 @@
 'use strict';
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* a mouse or a trackpad, not a finger */
+const hasPointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const $ = s => document.querySelector(s);
 const BUILD_X = 250;      // our bed is 250 mm across
 const LAYER_MM = 0.2;
@@ -44,8 +46,9 @@ topBand.className = 'band-scale rig-top';
 topBand.setAttribute('aria-hidden', 'true');
 topBand.innerHTML =
   '<div class="band-scale__strip" id="rigTopStrip"></div>' +
+  '<div class="rig-head" id="rigHead"></div>' +
   '<span class="rig-read rig-read--l"><i class="rig-dot"></i>Printing in <b id="rigMat">PLA</b> <span id="rigTemp">210' + DEG + 'C</span></span>' +
-  '<span class="rig-read rig-read--r">X <b id="rigX">0.0</b> / ' + BUILD_X + ' mm</span>';
+  '<span class="rig-read rig-read--r">X <b id="rigXm">0.0</b> / ' + BUILD_X + ' mm</span>';
 
 const bed = document.createElement('div');
 bed.className = 'band-scale rig-bed';
@@ -116,6 +119,37 @@ function readMaterial() {
 /* ---------- the scroll loop ------------------------------ */
 let last = scrollY, flow = 0, pending = false;
 
+/* The ruler answers the mouse as well as the scroll: a real gantry
+   is driven in X, so the head follows you across the page and the
+   ruler eases after it. Touch devices never send these events and
+   lose nothing — the scroll traverse is the same as it was. */
+let aimX = 0.5, haveX = 0.5, nudging = false;
+
+function onPointer(e) {
+  aimX = Math.min(1, Math.max(0, e.clientX / innerWidth));
+  if (nudging || still) return;
+  nudging = true;
+  requestAnimationFrame(ease);
+}
+
+function ease() {
+  /* a damped follow, so the ruler drifts rather than snaps */
+  haveX += (aimX - haveX) * 0.12;
+  paintX();
+  if (Math.abs(aimX - haveX) > 0.0008) requestAnimationFrame(ease);
+  else { haveX = aimX; paintX(); nudging = false; }
+}
+
+function paintX() {
+  const strip = $('#rigTopStrip'); if (!strip) return;
+  /* 34px of travel either side of where the scroll has put it */
+  strip.style.setProperty('--rig-aim', ((haveX - 0.5) * 68).toFixed(2) + 'px');
+  const head = $('#rigHead');
+  if (head) head.style.transform = 'translateX(' + (haveX * innerWidth).toFixed(1) + 'px)';
+  const read = $('#rigXm');
+  if (read) read.textContent = (haveX * BUILD_X).toFixed(1);
+}
+
 function frame() {
   pending = false;
   const doc = document.documentElement;
@@ -125,7 +159,7 @@ function frame() {
   const delta = y - last; last = y;
 
   /* the ruler traverses; a 100px period keeps the loop seamless */
-  if (!still) $('#rigTopStrip').style.transform = 'translateX(' + (-((y * 0.3) % 100)) + 'px)';
+  if (!still) $('#rigTopStrip').style.setProperty('--rig-run', (-((y * 0.3) % 100)) + 'px');
 
   /* the bed fills as the page is consumed */
   const w = p * innerWidth;
@@ -139,7 +173,8 @@ function frame() {
   $('#rigLayer').textContent = layer;
   $('#rigLayers').textContent = layers;
   $('#rigZ').textContent = (layer * LAYER_MM).toFixed(1);
-  $('#rigX').textContent = (p * BUILD_X).toFixed(1);
+  /* the readout follows the pointer when there is one, the scroll otherwise */
+  if (!hasPointer) { const r = $('#rigXm'); if (r) r.textContent = (p * BUILD_X).toFixed(1); }
 
   /* the filament moves by how far you scrolled, so it feeds as you read */
   if (!still) {
@@ -170,7 +205,11 @@ function start() {
   frame();
   dispatchEvent(new Event('resize'));   // the header just got 40px taller
   addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', () => { layTicks(); frame(); });
+  if (hasPointer) {
+    addEventListener('pointermove', onPointer, { passive: true });
+    addEventListener('pointerleave', () => { aimX = 0.5; if (!nudging && !still) { nudging = true; requestAnimationFrame(ease); } });
+  }
+  addEventListener('resize', () => { layTicks(); frame(); paintX(); });
   /* the view swaps without a scroll event, so catch route changes too */
   addEventListener('hashchange', () => setTimeout(() => { matKey = null; frame(); }, 60));
   document.addEventListener('visibilitychange', wake);

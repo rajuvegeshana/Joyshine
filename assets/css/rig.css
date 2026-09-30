@@ -23,6 +23,10 @@
 .band-scale__strip {
   display: flex; align-items: flex-start;
   width: max-content; flex: none;
+  /* --rig-run is the scroll traverse, --rig-aim the lean towards the
+     pointer. Two properties rather than one transform so neither
+     overwrites the other. */
+  transform: translateX(calc(var(--rig-run, 0px) + var(--rig-aim, 0px)));
   will-change: transform;
 }
 .band-scale__strip i {
@@ -160,3 +164,21 @@ body { padding-bottom: var(--rig-h); }
   .rig-feed__spool { transform: none !important; }
   .rig-feed__strand { opacity: .5; }
 }
+
+/* ---- the print head, following the pointer ---------------- */
+.rig-head {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  pointer-events: none;
+  transition: opacity .3s var(--ease);
+}
+.rig-head::before {
+  content: ''; position: absolute; left: -7px; top: 2px;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+  border-top: 9px solid var(--rig-ink-2);
+  opacity: .9;
+}
+.rig-head::after {
+  content: ''; position: absolute; left: -1px; top: 10px; bottom: 2px;
+  width: 2px; background: var(--rig-ink-2); opacity: .35;
+}
+@media (hover: none), (prefers-reduced-motion: reduce) { .rig-head { display: none; } }

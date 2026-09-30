@@ -483,3 +483,19 @@
   grid-template-columns: repeat(auto-fit, minmax(210px, 264px)); text-align: left; }
 .oops__from { font-size: .82rem; }
 .oops__from code { background: var(--surface-2); padding: .1rem .4rem; border-radius: 4px; }
+
+/* ---- what else is on the shelf, as pictures ---------------- */
+.oops__picks {
+  display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center;
+  margin-top: .4rem;
+}
+.oops__pick {
+  width: clamp(92px, 20vw, 132px); aspect-ratio: 1;
+  border-radius: var(--r-l); background: var(--stage);
+  border: var(--card-border); box-shadow: var(--shadow-1);
+  display: grid; place-items: center; overflow: hidden;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.oops__pick svg, .oops__pick img { width: 78%; height: 78%; object-fit: contain; }
+.oops__pick:hover { transform: translateY(-6px) rotate(-1.5deg); box-shadow: var(--shadow-2); }
+body.no-foot .foot { display: none; }
