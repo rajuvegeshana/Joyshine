@@ -915,14 +915,15 @@ document.addEventListener('click', e => {
       probe('product_sales', 'product_sales?select=product_id&limit=1', 'schema-5-reviews-sales.sql'),
       probe('reviews.pinned', 'reviews?select=pinned&limit=1', 'schema-5-reviews-sales.sql'),
     ]).then(async rows => {
-      /* storage buckets answer on a different path */
+      /* A bucket cannot be listed by a stranger, and should not be, so
+         asking for a file that does not exist is the honest test: a
+         missing bucket says so by name, a present one says the file is
+         missing instead. */
       let up = false;
       try {
-        const r = await fetch(`${base}/storage/v1/object/list/customer-uploads`, {
-          method: 'POST', headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-          body: '{"limit":1}',
-        });
-        up = r.status !== 404 && r.status !== 400;
+        const r = await fetch(`${base}/storage/v1/object/public/customer-uploads/__does-not-exist__`);
+        const t = await r.text();
+        up = !/NoSuchBucket|Bucket not found/i.test(t);
       } catch {}
       rows.push({ label: 'customer-uploads bucket', ok: up, hint: 'schema-4-uploads.sql' });
       box.innerHTML = rows.map(r => `<div class="ad-chk${r.ok ? '' : ' danger'}">
