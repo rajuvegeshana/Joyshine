@@ -89,7 +89,7 @@ function paint() {
         animation. The player for those is only fetched when something actually uses one.</p>
       <div class="ad-up" data-drop="hero">
         <input type="file" id="heroFile" accept=".svg,.png,.gif,.webp,.json,image/svg+xml,image/png,image/gif,image/webp,application/json" hidden>
-        <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="heropick">Upload SVG or PNG</button>
+        <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="heropick">Upload SVG, PNG, GIF or .json</button>
         <span class="ad-hint" id="heroMsg">or drop one here, or paste a link below</span>
       </div>
       <input class="ad-inline" id="heroArt" value="${esc(hero.art || '')}" placeholder="https://… (empty = the drawn unicorn)">
@@ -152,7 +152,7 @@ function paint() {
           return `<div class="ad-brandbit">
             <b>${label}</b>
             <div class="ad-brandbit__art">${v ? window.SKIN.pictureHtml(v, '') : '<span class="ad-empty">none yet</span>'}</div>
-            <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandpick" data-k="${k}" data-path="${path}">Upload</button>
+            <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandpick" data-k="${k}" data-path="${path}">Upload picture or animation</button>
             ${v ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandclear" data-path="${path}">Remove</button>` : ''}
             <input class="ad-inline" data-cf="${path}" value="${esc(v)}" placeholder="or paste a link">
             <i class="ad-hint">${note}</i>
