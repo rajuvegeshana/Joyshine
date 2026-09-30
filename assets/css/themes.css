@@ -357,9 +357,9 @@
   --card-border: 2px solid rgba(255,184,46,.22);
   --tag-shadow: 0 8px 22px -10px rgba(224,64,110,.9);
 
-  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Fraunces', Georgia, serif;
-  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --display-weight: 700; --display-tracking: -.022em; --display-case: none;
   --body-weight: 400; --btn-case: uppercase; --btn-tracking: .08em;
 
   --header-bg: rgba(18,12,44,.84); --header-blur: blur(14px);
@@ -589,9 +589,9 @@
   --card-border: 2px solid #2c1208;
   --tag-shadow: 3px 3px 0 #2c1208;
 
-  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
   --font-body: 'Fraunces', Georgia, serif;
-  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --display-weight: 800; --display-tracking: -.018em; --display-case: none;
   --body-weight: 400; --btn-case: uppercase; --btn-tracking: .07em;
 
   --header-bg: rgba(255,246,230,.9); --header-blur: blur(10px);

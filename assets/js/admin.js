@@ -219,6 +219,7 @@ function paintSettings() {
   $('#forceTheme').value      = getS('occasions.forceTheme', '') || '';
   paintPin();
   $('#engActive').checked     = getS('engineering.active', true);
+  $('#engOwnLook').checked    = getS('engineering.ownLook', false);
   $('#engName').value         = getS('engineering.name', '');
   $('#engBlurb').value        = getS('engineering.blurb', '');
   $('#waNumber').value        = getS('whatsapp.number', '');
@@ -567,6 +568,7 @@ document.addEventListener('change', e => {
     forceTheme:   () => { setS('occasions.forceTheme', t.value || null); paintPin(); },
     forceOccasion:() => setS('occasions.forceOccasion', t.value || null),
     engActive:    () => setS('engineering.active', t.checked),
+    engOwnLook:   () => setS('engineering.ownLook', t.checked),
     engName:      () => setS('engineering.name', t.value),
     engBlurb:     () => setS('engineering.blurb', t.value),
     waNumber:     () => setS('whatsapp.number', t.value.replace(/\D/g, '')),

@@ -87,6 +87,9 @@ window.JOYSHINE = {
     tagline: 'Prototypes, jigs and short runs.',
     blurb: 'Functional parts in engineering plastics, printed and measured in our studio. Send a STEP or STL, get a quote and a lead time.',
     theme: 'future',
+    /* false: the service page wears whatever the shop is wearing.
+       true: it keeps the futuristic look whatever the shop does. */
+    ownLook: false,
     whatsappGreeting: 'Hi Joyshine Engineering! I have a part to quote.',
     services: [
       ['Rapid prototyping', 'Form and fit parts in 24-72 hours so you can hold the thing before you commit to tooling.'],

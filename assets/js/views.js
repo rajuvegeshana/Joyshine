@@ -123,7 +123,7 @@ const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="#/
     <span class="catcard__t"><b>${esc(c.name)}</b><span>${esc(c.note)}</span></span>
   </a>`;
 
-const empty = (title, line, cta) => `<div class="empty">${I.horn}
+const empty = (title, line, cta) => `<div class="empty"><span data-spark>${I.horn}</span>
   <h4>${esc(title)}</h4><p>${esc(line)}</p>${cta || ''}</div>`;
 
 /* ---------- HOME ----------------------------------------- */
@@ -132,12 +132,12 @@ function home() {
   <section class="hero wrap">
     <div class="hero__grid">
       <div class="hero__copy">
-        <p class="eyebrow r" data-origin>${esc(CFG.brand.origin)}</p>
+        <p class="eyebrow r" data-origin>${esc(CFG.brand.origin)}<span class="chip chip--theme" data-themenote></span></p>
         <h1 class="r" style="--d:70ms">Creative things<br>for a brighter<em>everyday.</em></h1>
         <p class="lede r" style="--d:140ms">${esc(CFG.brand.blurb)}</p>
         <div class="hero__cta r" style="--d:210ms">
           <a class="btn btn--pay" href="#/shop">${I.bolt}Shop products</a>
-          <a class="btn btn--ghost" href="#/custom">${I.spark}Create something custom</a>
+          <a class="btn btn--ghost" href="#/custom"><span data-spark>${I.spark}</span>Create something custom</a>
         </div>
         <dl class="hero__facts r" style="--d:280ms">
           <div class="fact"><b class="num">${window.PRODUCTS.length}</b><span>things to print</span></div>
@@ -165,7 +165,7 @@ function home() {
           <rect x="60" y="150" width="80" height="26" rx="8" fill="url(#layerlines)" opacity=".4"/>
         </g></svg></div>
         <div class="printer__nozzle"></div>
-        <div class="printer__hud"><span>Now printing · <b>Nova bust</b></span><span>Bed <b>60°C</b></span></div>
+        <div class="printer__hud"><span>Now printing · <b data-hud>Nova bust</b></span><span>Bed <b>60°C</b></span></div>
       </div>
     </div>
   </section>

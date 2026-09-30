@@ -30,6 +30,7 @@ function setTheme(name, say) {
 
 function paintTheme(name) {
   document.documentElement.dataset.theme = name;
+  window.KIT?.apply(name);
   $$('.themer button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === name)));
 }
 
@@ -99,7 +100,8 @@ function render() {
   pdp = null;
 
   /* the engineering line wears its own look, whatever else is on */
-  applyTheme(seg[0] === 'engineering' && CFG.engineering.active ? CFG.engineering.theme : null);
+  applyTheme(seg[0] === 'engineering' && CFG.engineering.active && CFG.engineering.ownLook
+    ? CFG.engineering.theme : null);
 
   switch (seg[0]) {
     case undefined:  html = V.home(); break;
@@ -129,6 +131,7 @@ function render() {
 
   view.innerHTML = html;
   document.title = title;
+  window.KIT?.apply(document.documentElement.dataset.theme);
   fillBrand(view);
   reveals(view); sparkles();
   const track = $('#stripTrack'); if (track) track.innerHTML += track.innerHTML;

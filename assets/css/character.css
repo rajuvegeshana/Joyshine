@@ -1,0 +1,262 @@
+/* ===========================================================
+   CHARACTER — the part of a theme that is not colour.
+
+   The drifting motif layer, the unicorn's accessory, and the
+   motion each look moves with. Everything here is decoration:
+   it sits behind the page, ignores the pointer, and holds
+   still for anyone who asks for less motion.
+   =========================================================== */
+
+/* ---- the motif layer ------------------------------------- */
+.motif {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  overflow: hidden;
+  contain: strict;
+}
+.motif i {
+  position: absolute;
+  width: calc(38px * var(--s, 1));
+  height: calc(38px * var(--s, 1));
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: motifDrift 18s var(--d, 0s) infinite linear;
+}
+.motif i svg { width: 100%; height: 100%; display: block; }
+
+/* the default drift: a slow rise, in and out */
+@keyframes motifDrift {
+  0%   { transform: translate3d(0, 18px, 0) scale(.9); opacity: 0; }
+  12%  { opacity: .5; }
+  88%  { opacity: .5; }
+  100% { transform: translate3d(14px, -60px, 0) scale(1.05); opacity: 0; }
+}
+
+/* phones get half of them — the point is atmosphere, not weight */
+@media (max-width: 720px) {
+  .motif i:nth-child(even) { display: none; }
+  .motif i { opacity: 0; }
+}
+
+/* the page itself sits above the motif */
+.wrap, .topbar, .tabbar, .panel, .toasts, .rig-bed, .band-scale,
+.strip, .foot, footer, .ribbon, .rig-feed { position: relative; z-index: 1; }
+
+/* ===========================================================
+   PER THEME: the motif's own motion
+   =========================================================== */
+
+/* CLAY — pressed shapes, bobbing softly */
+:root[data-theme="clay"] .motif i { animation-duration: 22s; animation-timing-function: cubic-bezier(.4,0,.5,1); }
+:root[data-theme="clay"] .printer__art { animation: bob 6s var(--ease) infinite; }
+@keyframes bob { 50% { transform: translateY(-10px) rotate(-1deg); } }
+
+/* RETRO — stars turning slowly, like a sign */
+:root[data-theme="retro"] .motif i { animation: motifSpin 16s var(--d,0s) infinite linear; }
+@keyframes motifSpin {
+  0%   { transform: translate3d(0,20px,0) rotate(0) scale(.85); opacity: 0; }
+  15%  { opacity: .55; }
+  85%  { opacity: .5; }
+  100% { transform: translate3d(-18px,-70px,0) rotate(220deg) scale(1); opacity: 0; }
+}
+:root[data-theme="retro"] .printer__art { animation: tilt 7s var(--ease) infinite; }
+@keyframes tilt { 33% { transform: rotate(1.6deg); } 66% { transform: rotate(-1.6deg); } }
+
+/* FUTURE — a scan passing over a grid of cells */
+:root[data-theme="future"] .motif i { animation: motifScan 9s var(--d,0s) infinite linear; }
+@keyframes motifScan {
+  0%   { transform: translate3d(0,0,0); opacity: 0; }
+  10%  { opacity: .75; }
+  48%  { opacity: .2; }
+  52%  { opacity: .8; }
+  90%  { opacity: .15; }
+  100% { transform: translate3d(0,-26px,0); opacity: 0; }
+}
+:root[data-theme="future"] .motif::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 30vh;
+  background: linear-gradient(180deg, transparent, rgba(124,248,255,.055) 55%, transparent);
+  animation: scanSweep 7s linear infinite;
+}
+@keyframes scanSweep { from { top: -30vh; } to { top: 100vh; } }
+
+/* HALLOWEEN — bats crossing the window */
+:root[data-theme="halloween"] .motif i { animation: motifSwoop 14s var(--d,0s) infinite ease-in-out; }
+@keyframes motifSwoop {
+  0%   { transform: translate3d(-12vw,0,0) rotate(-8deg); opacity: 0; }
+  12%  { opacity: .6; }
+  50%  { transform: translate3d(40vw,-40px,0) rotate(6deg); }
+  88%  { opacity: .45; }
+  100% { transform: translate3d(90vw,10px,0) rotate(-6deg); opacity: 0; }
+}
+:root[data-theme="halloween"] .printer__art { animation: hover 5s ease-in-out infinite; }
+@keyframes hover { 50% { transform: translateY(-14px); } }
+
+/* DIWALI — flames lifting and flickering */
+:root[data-theme="diwali"] .motif i { animation: motifRise 13s var(--d,0s) infinite ease-out; }
+@keyframes motifRise {
+  0%   { transform: translate3d(0,30px,0) scale(.7); opacity: 0; }
+  18%  { opacity: .85; }
+  60%  { opacity: .6; }
+  100% { transform: translate3d(8px,-40vh,0) scale(.35); opacity: 0; }
+}
+:root[data-theme="diwali"] .printer__glow { animation: flicker 3.4s ease-in-out infinite; }
+@keyframes flicker { 25% { opacity: .85; } 40% { opacity: 1; } 70% { opacity: .78; } }
+
+/* HOLI — powder popping and falling away */
+:root[data-theme="holi"] .motif i { animation: motifPop 11s var(--d,0s) infinite cubic-bezier(.2,.8,.3,1); }
+@keyframes motifPop {
+  0%   { transform: translate3d(0,0,0) scale(.2); opacity: 0; }
+  14%  { transform: translate3d(0,-10px,0) scale(1.12); opacity: .8; }
+  100% { transform: translate3d(24px,50px,0) scale(.85); opacity: 0; }
+}
+:root[data-theme="holi"] .printer__art { animation: shimmy 4.5s var(--ease) infinite; }
+@keyframes shimmy { 25% { transform: translateX(-6px) rotate(-1.5deg); } 75% { transform: translateX(6px) rotate(1.5deg); } }
+
+/* CHRISTMAS — snow, straight down and slow */
+:root[data-theme="christmas"] .motif i { animation: motifFall 16s var(--d,0s) infinite linear; }
+@keyframes motifFall {
+  0%   { transform: translate3d(0,-12vh,0) rotate(0); opacity: 0; }
+  10%  { opacity: .7; }
+  90%  { opacity: .55; }
+  100% { transform: translate3d(30px,105vh,0) rotate(160deg); opacity: 0; }
+}
+
+/* NAVRATRI — sticks swinging in time */
+:root[data-theme="navratri"] .motif i { animation: motifSway 8s var(--d,0s) infinite ease-in-out; }
+@keyframes motifSway {
+  0%   { transform: translate3d(0,14px,0) rotate(-22deg); opacity: 0; }
+  20%  { opacity: .6; }
+  50%  { transform: translate3d(0,-10px,0) rotate(22deg); }
+  80%  { opacity: .5; }
+  100% { transform: translate3d(0,-34px,0) rotate(-18deg); opacity: 0; }
+}
+:root[data-theme="navratri"] .printer__art { animation: twirl 6s var(--ease) infinite; }
+@keyframes twirl { 30% { transform: rotate(3deg) translateX(6px); } 70% { transform: rotate(-3deg) translateX(-6px); } }
+
+/* GANESH — offerings rising gently */
+:root[data-theme="ganesh"] .motif i { animation-duration: 20s; }
+:root[data-theme="ganesh"] .printer__art { animation: bob 7s var(--ease) infinite; }
+
+/* KRISHNA — feathers turning as they fall */
+:root[data-theme="krishna"] .motif i { animation: motifFeather 17s var(--d,0s) infinite ease-in-out; }
+@keyframes motifFeather {
+  0%   { transform: translate3d(0,-8vh,0) rotate(-16deg); opacity: 0; }
+  14%  { opacity: .6; }
+  50%  { transform: translate3d(34px,40vh,0) rotate(18deg); }
+  86%  { opacity: .45; }
+  100% { transform: translate3d(-10px,100vh,0) rotate(-14deg); opacity: 0; }
+}
+
+/* TIRANGA — ribbons crossing on the breeze */
+:root[data-theme="tiranga"] .motif i { animation: motifRibbon 15s var(--d,0s) infinite ease-in-out; }
+@keyframes motifRibbon {
+  0%   { transform: translate3d(-10vw,0,0) skewY(0); opacity: 0; }
+  15%  { opacity: .5; }
+  50%  { transform: translate3d(40vw,-22px,0) skewY(-4deg); }
+  85%  { opacity: .4; }
+  100% { transform: translate3d(95vw,12px,0) skewY(3deg); opacity: 0; }
+}
+
+/* ===========================================================
+   The accessory on the unicorn, and the atmosphere chip
+   =========================================================== */
+.printer__art .acc { transform-origin: 100px 100px; animation: accIn .6s var(--ease) both; }
+@keyframes accIn { from { opacity: 0; transform: translateY(8px) scale(.94); } }
+
+.chip--theme {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .2rem .62rem; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-soft);
+  border: var(--border-w) solid var(--line);
+  font-size: .72rem; letter-spacing: .04em; text-transform: uppercase;
+  margin-left: .5rem; vertical-align: middle;
+}
+.chip--theme::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand); flex: none;
+  animation: chipPulse 2.6s ease-in-out infinite;
+}
+@keyframes chipPulse { 50% { transform: scale(1.5); opacity: .6; } }
+
+/* the accent icon inherits whatever the button is doing */
+[data-spark] { display: inline-flex; }
+[data-spark] svg { width: 1.05em; height: 1.05em; }
+.empty [data-spark] { display: block; color: var(--brand); margin-bottom: .6rem; }
+.empty [data-spark] svg { width: 3.2rem; height: 3.2rem; margin: 0 auto; }
+
+/* ---- nobody has to watch any of this --------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .motif i, .motif::after, .printer__art, .printer__glow,
+  .printer__art .acc, .chip--theme::before {
+    animation: none !important;
+  }
+  .motif i { opacity: .4; }
+}
+
+/* ===========================================================
+   The stage each product stands on, per theme. One cheap
+   gradient each — no images, nothing to download.
+   =========================================================== */
+.card__art, .pdp__stage { position: relative; }
+.card__art svg, .card__art img, .pdp__art, .pdp__stage svg { position: relative; z-index: 1; }
+.card__art::after, .pdp__stage::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--stage-pattern, none);
+  background-size: var(--stage-pattern-size, auto);
+  opacity: var(--stage-pattern-a, 0);
+  mix-blend-mode: var(--stage-pattern-blend, normal);
+}
+
+:root[data-theme="clay"] {
+  --stage-pattern: radial-gradient(circle at 30% 24%, var(--sheen), transparent 42%);
+  --stage-pattern-a: .5;
+}
+:root[data-theme="diwali"] {
+  --stage-pattern:
+    radial-gradient(circle at 1.5px 1.5px, rgba(255,196,84,.55) 1.4px, transparent 0),
+    conic-gradient(from 210deg at 50% 118%, rgba(255,196,84,.14), transparent 28%);
+  --stage-pattern-size: 16px 16px, auto;
+  --stage-pattern-a: .55;
+}
+:root[data-theme="holi"] {
+  --stage-pattern:
+    radial-gradient(circle at 18% 26%, rgba(255,90,150,.4) 8%, transparent 9%),
+    radial-gradient(circle at 76% 18%, rgba(88,190,255,.38) 6%, transparent 7%),
+    radial-gradient(circle at 62% 74%, rgba(255,214,64,.4) 9%, transparent 10%),
+    radial-gradient(circle at 30% 82%, rgba(120,225,160,.34) 5%, transparent 6%);
+  --stage-pattern-a: .75;
+}
+:root[data-theme="christmas"] {
+  --stage-pattern: radial-gradient(circle at 2px 2px, rgba(255,255,255,.7) 1.6px, transparent 0);
+  --stage-pattern-size: 22px 22px;
+  --stage-pattern-a: .5;
+}
+:root[data-theme="navratri"] {
+  --stage-pattern: repeating-linear-gradient(135deg,
+    rgba(255,255,255,.14) 0 10px, transparent 10px 22px);
+  --stage-pattern-a: .65;
+}
+:root[data-theme="ganesh"] {
+  --stage-pattern: repeating-radial-gradient(circle at 50% 112%,
+    rgba(255,140,40,.16) 0 12px, transparent 12px 26px);
+  --stage-pattern-a: .7;
+}
+:root[data-theme="krishna"] {
+  --stage-pattern: repeating-linear-gradient(105deg,
+    rgba(255,214,110,.14) 0 6px, transparent 6px 18px);
+  --stage-pattern-a: .7;
+}
+:root[data-theme="tiranga"] {
+  --stage-pattern: linear-gradient(180deg,
+    rgba(255,153,51,.22) 0 22%, transparent 22% 78%, rgba(19,136,8,.2) 78%);
+  --stage-pattern-a: .8;
+}
+
+/* ---- how each look moves when things arrive -------------- */
+:root[data-theme="retro"]    { --ease: cubic-bezier(.2,1.25,.4,1); }
+:root[data-theme="future"]   { --ease: cubic-bezier(.16,.9,.2,1); }
+:root[data-theme="clay"]     { --ease: cubic-bezier(.32,.94,.3,1); }
+:root[data-theme="holi"]     { --ease: cubic-bezier(.24,1.3,.4,1); }
+:root[data-theme="navratri"] { --ease: cubic-bezier(.3,1.2,.4,1); }
+:root[data-theme="christmas"]{ --ease: cubic-bezier(.3,.85,.3,1); }
+:root[data-theme="diwali"]   { --ease: cubic-bezier(.24,.92,.28,1); }
