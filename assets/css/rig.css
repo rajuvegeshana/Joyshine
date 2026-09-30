@@ -1,0 +1,162 @@
+/* ===========================================================
+   THE RIG — the printer chrome that frames the page.
+
+   Top band    the X axis ruler + the material being printed
+   Side rail   filament feeding down, reacting to your scroll
+   Bottom band the print bed, filling in as you scroll
+
+   All of it is decoration: aria-hidden, pointer-events none,
+   and completely still under prefers-reduced-motion.
+   =========================================================== */
+
+:root { --rig-h: 40px; --rig-tick: 50px; --tab-h: 0px; }
+
+/* ---- the band (the shape from the reference) ------------- */
+.band-scale {
+  position: relative;
+  width: 100%; height: var(--rig-h);
+  overflow: hidden;
+  display: flex; align-items: flex-start;
+  border-bottom: 1px solid var(--rig-line);
+  pointer-events: none;
+}
+.band-scale__strip {
+  display: flex; align-items: flex-start;
+  width: max-content; flex: none;
+  will-change: transform;
+}
+.band-scale__strip i {
+  display: block; width: 1px; height: 12px;
+  margin-right: calc(var(--rig-tick) - 1px);
+  background: var(--rig-ink);
+}
+.band-scale__strip i:nth-child(even) { height: 10px; }
+.band-scale__strip i:nth-child(10n + 1) { height: 18px; background: var(--rig-ink-2); }
+
+/* readouts sit inside the 40px band, below the ticks */
+.rig-read {
+  position: absolute; bottom: 4px;
+  display: flex; align-items: center; gap: .45rem;
+  font-family: var(--font-display);
+  font-size: .6rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-quiet); white-space: nowrap;
+  background: var(--bg); padding: 0 .55rem;
+}
+.rig-read--l { left: 0; padding-left: max(1rem, calc((100vw - 1220px) / 2)); }
+.rig-read--r { right: 0; padding-right: max(1rem, calc((100vw - 1220px) / 2)); }
+@media (min-width: 720px) {
+  .rig-read--l { padding-left: max(2.5rem, calc((100vw - 1220px) / 2)); }
+  .rig-read--r { padding-right: max(2.5rem, calc((100vw - 1220px) / 2)); }
+}
+.rig-read b { color: var(--ink-strong); font-weight: inherit; }
+.rig-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: var(--rig-mat, var(--brand));
+  box-shadow: 0 0 0 2px var(--bg), 0 0 8px 1px var(--rig-mat, var(--brand));
+  transition: background .5s var(--ease), box-shadow .5s var(--ease);
+}
+
+/* ---- top band lives inside the sticky header ------------- */
+.rig-top { border-top: 1px solid var(--line); background: var(--header-bg); }
+.topbar:has(.rig-top) { border-bottom: 0; }
+
+/* ---- bottom band: the print bed -------------------------- */
+.rig-bed {
+  position: fixed; left: 0; right: 0; bottom: var(--tab-h); z-index: 55;
+  height: var(--rig-h);
+  background: var(--header-bg); backdrop-filter: var(--header-blur);
+  border-top: 1px solid var(--rig-line); border-bottom: 0;
+  align-items: flex-end;
+}
+.rig-bed .band-scale__strip { align-items: flex-end; }
+.rig-bed .band-scale__strip i { height: 8px; opacity: .8; }
+.rig-bed .band-scale__strip i:nth-child(even) { height: 6px; }
+.rig-bed .band-scale__strip i:nth-child(10n + 1) { height: 13px; }
+
+/* the printed part of the bed */
+.rig-bed__fill {
+  position: absolute; left: 0; bottom: 0; height: 3px; width: 0;
+  background: linear-gradient(90deg, var(--rig-mat, var(--brand)), var(--accent));
+  box-shadow: 0 0 12px 1px var(--rig-mat, var(--brand));
+}
+/* the deposited layers: a trail that fades out behind the nozzle,
+   so it reads as freshly laid rather than a solid hatch */
+.rig-bed__laid {
+  position: absolute; left: 0; bottom: 3px; height: 6px; width: 0;
+  background-image: repeating-linear-gradient(90deg,
+    var(--rig-mat, var(--brand)) 0 2px, transparent 2px 7px);
+  opacity: .5;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 100%);
+}
+/* the nozzle */
+.rig-bed__nozzle {
+  position: absolute; bottom: 2px; left: 0; width: 14px; height: 18px;
+  margin-left: -7px; will-change: transform;
+}
+.rig-bed__nozzle::before {
+  content: ''; position: absolute; inset: 0 3px 6px;
+  background: var(--ink-strong); border-radius: 2px 2px 0 0;
+}
+.rig-bed__nozzle::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; translate: -50% 0;
+  width: 0; height: 0; border: 4px solid transparent;
+  border-top: 7px solid var(--ink-strong);
+}
+
+/* ---- side rail: filament feed ---------------------------- */
+.rig-feed {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 34px; z-index: 45;
+  pointer-events: none; display: none;
+}
+@media (min-width: 1180px) { .rig-feed { display: block; } }
+
+.rig-feed__tube {
+  position: absolute; left: 15px; top: 0; bottom: 0; width: 4px;
+  border-radius: 2px; background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.rig-feed__strand {
+  position: absolute; left: 0; right: 0; top: -200%; height: 400%;
+  background-image: repeating-linear-gradient(180deg,
+    var(--rig-mat, var(--brand)) 0 14px, transparent 14px 26px);
+  opacity: .6;
+  will-change: transform;
+}
+.rig-feed__spool {
+  position: absolute; left: 4px; top: 50%; translate: 0 -50%;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 3px solid var(--rig-mat, var(--brand));
+  background: var(--bg);
+  box-shadow: 0 0 0 3px var(--bg);
+  will-change: transform;
+  transition: border-color .5s var(--ease);
+}
+.rig-feed__spool::after {
+  content: ''; position: absolute; inset: 7px; border-radius: 50%;
+  border: 2px dashed var(--rig-mat, var(--brand)); opacity: .65;
+}
+.rig-feed__label {
+  position: absolute; left: 50%; bottom: 3.5rem;
+  translate: -50% 0; rotate: 180deg; writing-mode: vertical-rl;
+  font-family: var(--font-display); font-size: .58rem;
+  letter-spacing: .24em; text-transform: uppercase; color: var(--ink-quiet);
+  white-space: nowrap;
+}
+
+/* ---- spacing so nothing hides under the bed -------------- */
+body { padding-bottom: var(--rig-h); }
+@media (max-width: 899px) {
+  :root { --rig-h: 32px; --tab-h: 68px; }
+  body { padding-bottom: calc(var(--tab-h) + var(--rig-h)); }
+  .rig-read { font-size: .54rem; letter-spacing: .1em; }
+  .rig-read--r { display: none; }
+  .toasts { bottom: calc(var(--tab-h) + var(--rig-h) + .75rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-scale__strip, .rig-feed__strand, .rig-bed__nozzle,
+  .rig-feed__spool { transform: none !important; }
+  .rig-feed__strand { opacity: .5; }
+}

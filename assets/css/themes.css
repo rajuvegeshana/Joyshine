@@ -1,0 +1,255 @@
+/* ===========================================================
+   THREE LOOKS, ONE SITE.
+   Switch with the swatches in the header, or set
+   JOYSHINE.defaultTheme in assets/js/config.js.
+   Each theme changes colour, shape, shadow, type and texture,
+   so they read as three genuinely different studios.
+   =========================================================== */
+
+:root {
+  --ease: cubic-bezier(.22, .9, .25, 1);
+  --hero-stroke: 0;
+}
+
+/* ===========================================================
+   1. RETRO  —  1978 airbrushed van mural. Cream paper, sunset
+   inks, chunky type, hard ink-offset shadows.
+   =========================================================== */
+:root[data-theme="retro"] {
+  --bg: #fdf1dd;
+  --texture:
+    radial-gradient(circle at 1px 1px, rgba(90,45,92,.10) 1px, transparent 0),
+    linear-gradient(150deg, rgba(255,176,32,.10), transparent 42%),
+    linear-gradient(330deg, rgba(255,77,148,.10), transparent 46%);
+  background-size: 18px 18px, auto, auto;
+
+  --ink: #4a2b4d;
+  --ink-strong: #2c142f;
+  --ink-soft: #6b4568;
+  --ink-quiet: #9a7593;
+
+  --surface: #fffaf0;
+  --surface-2: #f8e8cf;
+  --line: rgba(74,43,77,.22);
+  --line-strong: #2c142f;
+  --border-w: 2px;
+
+  --brand: #ff3d8b;     --brand-ink: #fffaf0;  --brand-edge: #2c142f;
+  --accent: #ffb020;    --accent-ink: #2c142f;
+  --hot: #e0342c;
+  --wa: #8ee6a8;        --wa-edge: #2c142f;    --wa-ink: #1c7a45;
+
+  --stage: linear-gradient(170deg, #ffe2b8, #ffd0c4 55%, #f4c2e2);
+  --stage-border: 2px solid #2c142f;
+  --grid: rgba(44,20,47,.16);
+  --sheen: rgba(255,255,255,.6);
+  --scrim: rgba(44,20,47,.45);
+
+  --art-1: #ff8a3d;  --art-2: #ff3d8b;  --art-3: #ffc73d;  --art-4: #5a2d5c;
+  --art-glow: #ffd26a;
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 18px; --r-xl: 26px;
+
+  --shadow-1: 5px 5px 0 #2c142f;
+  --shadow-2: 9px 9px 0 #2c142f;
+  --shadow-3: -14px 0 40px rgba(44,20,47,.3);
+  --btn-border: 2px solid #2c142f;
+  --btn-shadow: 4px 4px 0 #2c142f;
+  --btn-shadow-hover: 7px 7px 0 #2c142f;
+  --btn-shadow-press: 1px 1px 0 #2c142f;
+  --card-border: 2px solid #2c142f;
+  --tag-shadow: 3px 3px 0 #2c142f;
+
+  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --display-weight: 400;
+  --display-tracking: -.005em;
+  --display-case: none;
+  --body-weight: 400;
+  --btn-case: uppercase;
+  --btn-tracking: .07em;
+
+  --header-bg: rgba(253,241,221,.9);
+  --header-blur: blur(10px);
+  --strip-bg: #2c142f; --strip-ink: #fdf1dd;
+  --save-bg: #ffe0ad; --save-ink: #8a4a00;
+  --code-bg: #2c142f; --code-ink: #ffd7a8;
+  --ring: rgba(255,61,139,.28);
+  --focus: #ff3d8b;
+  --layer-line: rgba(44,20,47,.2);
+  --search-bg: #f1e7d6;
+  --rig-line: rgba(44,20,47,.28);
+  --rig-ink: rgba(74,43,77,.42);
+  --rig-ink-2: #2c142f;
+}
+:root[data-theme="retro"] .card__art { background-image:
+  repeating-conic-gradient(from 0deg at 50% 118%, rgba(255,255,255,.34) 0 6deg, transparent 6deg 12deg),
+  var(--stage); }
+:root[data-theme="retro"] h1, :root[data-theme="retro"] h2 { text-shadow: 3px 3px 0 rgba(44,20,47,.14); }
+:root[data-theme="retro"] .btn--pay { color: #fffaf0; }
+
+/* ===========================================================
+   2. FUTURE  —  a calibration lab at 3am. Violet ink, hairline
+   engineering lines, iridescent foil, wide mechanical caps.
+   =========================================================== */
+:root[data-theme="future"] {
+  --bg: #0d0a17;
+  --texture:
+    linear-gradient(0deg, rgba(139,108,255,.07), transparent 60%),
+    radial-gradient(1000px 520px at 82% -8%, rgba(255,94,199,.16), transparent 70%),
+    radial-gradient(760px 460px at 4% 10%, rgba(124,248,255,.10), transparent 70%);
+
+  --ink: #cfc7e8;
+  --ink-strong: #f4f1ff;
+  --ink-soft: #a79ecb;
+  --ink-quiet: #746a97;
+
+  --surface: #16102a;
+  --surface-2: #1e1636;
+  --line: rgba(190,175,255,.16);
+  --line-strong: rgba(190,175,255,.32);
+  --border-w: 1px;
+
+  --brand: #8b6cff;     --brand-ink: #0b0714;  --brand-edge: #a68eff;
+  --accent: #ff5ec7;    --accent-ink: #1a0413;
+  --hot: #ff6b6b;
+  --wa: #3ddc97;        --wa-edge: #6ff0b8;    --wa-ink: #3ddc97;
+
+  --stage: radial-gradient(120% 90% at 50% 0%, #241a44 0%, #120d24 62%, #0d0a17 100%);
+  --stage-border: 1px solid rgba(190,175,255,.2);
+  --grid: rgba(124,248,255,.2);
+  --sheen: rgba(255,255,255,.14);
+  --scrim: rgba(6,4,14,.72);
+
+  --art-1: #9c83ff;  --art-2: #ff5ec7;  --art-3: #7cf8ff;  --art-4: #0d0a17;
+  --art-glow: rgba(139,108,255,.65);
+
+  --r-s: 5px; --r-btn: 6px; --r-l: 10px; --r-xl: 14px;
+
+  --shadow-1: 0 1px 0 rgba(255,255,255,.05) inset, 0 18px 40px -22px rgba(0,0,0,.9);
+  --shadow-2: 0 1px 0 rgba(255,255,255,.08) inset, 0 28px 70px -28px rgba(139,108,255,.55);
+  --shadow-3: -20px 0 70px rgba(0,0,0,.7);
+  --btn-border: 1px solid rgba(190,175,255,.3);
+  --btn-shadow: 0 0 0 0 rgba(139,108,255,0);
+  --btn-shadow-hover: 0 0 0 1px var(--brand), 0 14px 34px -14px rgba(139,108,255,.85);
+  --btn-shadow-press: 0 0 0 1px var(--brand);
+  --card-border: 1px solid rgba(190,175,255,.16);
+  --tag-shadow: 0 8px 22px -10px rgba(255,94,199,.9);
+
+  --font-display: 'Michroma', 'Space Grotesk', sans-serif;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: .01em;
+  --display-case: uppercase;
+  --body-weight: 350;
+  --btn-case: uppercase;
+  --btn-tracking: .14em;
+
+  --header-bg: rgba(13,10,23,.72);
+  --header-blur: blur(16px) saturate(140%);
+  --strip-bg: #16102a; --strip-ink: #cfc7e8;
+  --save-bg: rgba(255,94,199,.16); --save-ink: #ff9edd;
+  --code-bg: #0a0714; --code-ink: #9ff4ff;
+  --ring: rgba(139,108,255,.3);
+  --focus: #7cf8ff;
+  --layer-line: rgba(255,255,255,.22);
+  --search-bg: #100c1e;
+  --rig-line: rgba(190,175,255,.2);
+  --rig-ink: rgba(190,175,255,.34);
+  --rig-ink-2: #7cf8ff;
+}
+/* wide caps need air */
+:root[data-theme="future"] h1 { font-size: clamp(2rem, 1rem + 4.6vw, 5rem); line-height: 1.04; }
+:root[data-theme="future"] h2 { font-size: clamp(1.4rem, 1.1rem + 1.9vw, 2.5rem); line-height: 1.12; }
+:root[data-theme="future"] .logo__word { font-size: 1.05rem; letter-spacing: .06em; }
+:root[data-theme="future"] .card__art::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(124,248,255,.11) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg, rgba(124,248,255,.11) 0 1px, transparent 1px 26px);
+  mask-image: radial-gradient(120% 80% at 50% 100%, #000, transparent 72%);
+}
+:root[data-theme="future"] .hero h1 em { color: transparent;
+  background: linear-gradient(96deg, #7cf8ff, #8b6cff 42%, #ff5ec7);
+  -webkit-background-clip: text; background-clip: text; }
+:root[data-theme="future"] .card:hover { border-color: rgba(190,175,255,.4); }
+/* Michroma is wide — card buttons need a smaller size to stay on one line */
+:root[data-theme="future"] .card__buys .btn { font-size: .66rem; letter-spacing: .02em; gap: .38rem; }
+:root[data-theme="future"] .card__body h3 { font-size: .95rem; }
+:root[data-theme="future"] .price b { font-size: 1.2rem; }
+
+/* ===========================================================
+   3. CLAY  —  extruded, squeezable, pastel. No hard edges
+   anywhere, soft double shadows, rounded friendly type.
+   =========================================================== */
+:root[data-theme="clay"] {
+  --bg: #f1ecf8;
+  --texture:
+    radial-gradient(700px 480px at 88% -6%, rgba(255,159,196,.28), transparent 68%),
+    radial-gradient(620px 460px at 2% 14%, rgba(169,139,255,.22), transparent 68%),
+    radial-gradient(520px 420px at 60% 102%, rgba(150,224,196,.26), transparent 70%);
+
+  --ink: #574a72;
+  --ink-strong: #372d52;
+  --ink-soft: #6d5f8c;
+  --ink-quiet: #9a8fb4;
+
+  --surface: #fbf8ff;
+  --surface-2: #f0eafa;
+  --line: rgba(87,74,114,.13);
+  --line-strong: rgba(87,74,114,.2);
+  --border-w: 1px;
+
+  --brand: #9b7bff;     --brand-ink: #fdfbff;  --brand-edge: transparent;
+  --accent: #ff9fc4;    --accent-ink: #5c2340;
+  --hot: #ef6b8a;
+  --wa: #8fe3bd;        --wa-edge: transparent; --wa-ink: #2b8f68;
+
+  --stage: linear-gradient(158deg, #efe6ff, #ffe6f0 52%, #e2f7ee);
+  --stage-border: 0;
+  --grid: rgba(87,74,114,.12);
+  --sheen: rgba(255,255,255,.78);
+  --scrim: rgba(55,45,82,.34);
+
+  --art-1: #b79bff;  --art-2: #ff9fc4;  --art-3: #ffd98e;  --art-4: #574a72;
+  --art-glow: #ffd0e4;
+
+  --r-s: 14px; --r-btn: 999px; --r-l: 30px; --r-xl: 38px;
+
+  --shadow-1: 0 10px 22px -12px rgba(87,74,114,.4), 0 2px 0 rgba(255,255,255,.9) inset;
+  --shadow-2: 0 26px 44px -20px rgba(87,74,114,.42), 0 3px 0 rgba(255,255,255,.95) inset;
+  --shadow-3: -22px 0 60px rgba(87,74,114,.3);
+  --btn-border: 0;
+  --btn-shadow: 0 8px 16px -8px rgba(87,74,114,.45), 0 -2px 0 rgba(0,0,0,.06) inset, 0 2px 0 rgba(255,255,255,.7) inset;
+  --btn-shadow-hover: 0 16px 26px -10px rgba(87,74,114,.45), 0 -2px 0 rgba(0,0,0,.06) inset, 0 2px 0 rgba(255,255,255,.8) inset;
+  --btn-shadow-press: 0 3px 8px -4px rgba(87,74,114,.5), 0 3px 6px rgba(0,0,0,.09) inset;
+  --card-border: 0;
+  --tag-shadow: 0 8px 14px -8px rgba(92,35,64,.6);
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 800;
+  --display-tracking: -.015em;
+  --display-case: none;
+  --body-weight: 450;
+  --btn-case: none;
+  --btn-tracking: .01em;
+
+  --header-bg: rgba(241,236,248,.82);
+  --header-blur: blur(14px);
+  --strip-bg: #fbf8ff; --strip-ink: #6d5f8c;
+  --save-bg: #ffe0ec; --save-ink: #b23a63;
+  --code-bg: #372d52; --code-ink: #e4d9ff;
+  --ring: rgba(155,123,255,.3);
+  --focus: #9b7bff;
+  --layer-line: rgba(255,255,255,.5);
+  --search-bg: #edeaf2;
+  --rig-line: rgba(87,74,114,.2);
+  --rig-ink: rgba(87,74,114,.3);
+  --rig-ink-2: #9b7bff;
+}
+:root[data-theme="clay"] .card { border: 0; }
+:root[data-theme="clay"] .card__art svg,
+:root[data-theme="clay"] .printer__art svg { filter: drop-shadow(0 14px 18px rgba(87,74,114,.28)); }
+:root[data-theme="clay"] .btn:active { transform: translateY(2px) scale(.985); }
+:root[data-theme="clay"] .strip { border-color: transparent; }
