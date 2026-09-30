@@ -86,18 +86,40 @@ before it is saved, and again before the shop draws it. That is not optional:
 an icon that could run code would be running it on the page where customers
 type their address.
 
+### Undo, redo, cancel
+
+The two arrows in the toolbar step back and forward through everything you have
+changed this sitting — Ctrl+Z and Ctrl+Shift+Z work too. **Cancel changes**
+throws the whole lot away and puts the panel back to exactly what the live shop
+is wearing. None of the three touches the live shop.
+
+### Traffic & SEO
+
+The words Google shows under your link, the picture WhatsApp shows when someone
+shares it, your Google Analytics switch and measurement ID, and the shop's own
+visitor count: today, yesterday, this week against last week, the last thirty
+days, where people landed and where they came from. The shop's count is its
+own — once per browser per day, no cookies, nothing personal. Google Analytics
+records rather more and lives at analytics.google.com.
+
 ### Publishing: look first, then confirm
 
-Press **Publish** and the shop opens in a new tab wearing your changes, with a
+Press **Publish** — either button, the one in the corner or the one in the
+Publish tab — and the shop opens in a new tab wearing your changes, with a
 bar along the bottom. Walk the whole site. When you are happy, **Confirm and
 publish** lists every change in plain words — what it was, what it becomes —
 and only then writes to the live shop. **Discard** throws the lot away and the
 live shop never knew.
 
+If your browser blocks the new tab, the same list and the same confirmation
+appear inside the panel instead — so allow pop-ups for joyshine.in if you want
+to see the shop itself before you commit.
+
 Two things to remember: publish from the browser you have been editing in (the
 panel keeps your work in that browser), and the list compares against what is
 live right now, so it only ever shows what has actually moved since your last
-publish.
+publish. **Publish without reviewing** is still there in the Publish tab for
+small corrections.
 
 ### Reviews
 
