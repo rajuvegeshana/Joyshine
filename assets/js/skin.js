@@ -233,7 +233,17 @@ function startFollower(spec) {
     curRun = true;
     addEventListener('pointermove', e => {
       curTo.x = e.clientX; curTo.y = e.clientY;
-      if (follower) follower.el.classList.add('on');
+      if (!follower) return;
+      follower.el.classList.add('on');
+      /* the first sighting snaps into place rather than flying in from
+         the corner, and this is also the position of record if the
+         browser is throttling frames — a background tab runs no
+         animation frames at all. */
+      if (curAt.x < -50) { curAt.x = curTo.x; curAt.y = curTo.y; }
+      if (document.visibilityState !== 'visible') {
+        curAt.x = curTo.x; curAt.y = curTo.y;
+        follower.el.style.transform = `translate3d(${curAt.x}px, ${curAt.y}px, 0)`;
+      }
     }, { passive: true });
     /* give the arrow back whenever the pointer is not ours to draw */
     addEventListener('pointerleave', () => follower?.el.classList.remove('on'));
