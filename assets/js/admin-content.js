@@ -85,7 +85,7 @@ function paint() {
       <div class="ad-icons">
         ${ICONS.map(([k, label]) => {
           const own = icons[k];
-          const shown = own ? (/^</.test(own) ? own : `<img src="${esc(own)}" alt="">`) : (window.V ? window.V.I[k] : '');
+          const shown = own ? (/^</.test(own) ? own : `<img src="${esc(own)}" alt="">`) : ((window.ICONS || {})[k] || '');
           return `<div class="ad-icon${own ? ' on' : ''}" data-ik="${k}">
             <span class="ad-icon__art">${shown || ''}</span>
             <b>${esc(label)}</b>
