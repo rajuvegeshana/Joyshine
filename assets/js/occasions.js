@@ -285,7 +285,11 @@ function windowIn(occ, year) {
   }
   const d = dateIn(occ, year);
   if (!d) return null;
-  return { from: new Date(+d - (occ.lead || 0) * DAY), to: new Date(+d + (occ.trail || 0) * DAY), on: d };
+  /* the window runs from the start of the first lead day to the END of
+     the last trail day, so a trail of 0 still covers the day itself —
+     otherwise a one-day occasion would close at midnight before it began. */
+  return { from: new Date(+d - (occ.lead || 0) * DAY),
+           to: new Date(+d + (occ.trail || 0) * DAY + DAY - 1), on: d };
 }
 
 /* does this occasion need a date before it can ever run? */
