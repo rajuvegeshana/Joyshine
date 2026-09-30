@@ -17,10 +17,30 @@
   <div class="ad-wrap ad-top__in">
     <span class="ad-logo">joyshine <b>control panel</b></span>
     <span class="ad-live" id="liveNow"></span>
+    <span class="ad-cloud" id="cloudBadge" hidden></span>
     <button class="ad-btn ad-btn--ghost" id="btnPreview">Preview on site</button>
     <button class="ad-btn" id="btnSave">Save changes</button>
   </div>
 </header>
+
+<!-- sign in, only when Supabase is configured -->
+<div class="ad-wrap" id="signinWrap" hidden>
+  <form class="ad-card ad-signin" id="signinForm">
+    <div>
+      <h3>Sign in to publish</h3>
+      <p class="ad-p">Your changes go straight to the live shop. Anyone can read the settings;
+        only you can change them.</p>
+    </div>
+    <div class="ad-signin__f">
+      <label class="ad-field" style="margin:0"><span>Email</span>
+        <input type="email" id="suEmail" autocomplete="username" required></label>
+      <label class="ad-field" style="margin:0"><span>Password</span>
+        <input type="password" id="suPass" autocomplete="current-password" required></label>
+      <button class="ad-btn" type="submit">Sign in</button>
+    </div>
+    <p class="ad-err" id="suErr" hidden></p>
+  </form>
+</div>
 
 <div class="ad-note ad-wrap" id="unsaved" hidden>
   You have unsaved changes. <b>Save changes</b> downloads <code>site.json</code> — put it in
@@ -143,12 +163,15 @@
             (Add file → Upload files → Commit). GitHub Pages redeploys in about a minute.</li>
       </ol>
       <div class="ad-btns">
-        <button class="ad-btn" id="btnSave2">Download site.json</button>
+        <button class="ad-btn" id="btnPublish" hidden>Publish to the live shop</button>
+        <button class="ad-btn ad-btn--ghost" id="btnSave2">Download site.json</button>
         <button class="ad-btn ad-btn--ghost" id="btnLoad">Load a site.json</button>
         <input type="file" id="fileIn" accept="application/json" hidden>
         <button class="ad-btn ad-btn--ghost" id="btnClearPreview">Clear preview</button>
         <button class="ad-btn ad-btn--warn" id="btnReset">Reset everything</button>
+        <button class="ad-btn ad-btn--ghost" id="btnSignout" hidden>Sign out</button>
       </div>
+      <p class="ad-p" id="cloudState" style="margin-top:.9rem"></p>
     </div>
     <div class="ad-card">
       <h3>What this panel does not cover</h3>
@@ -169,6 +192,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/occasions.js"></script>
+<script src="assets/js/cloud.js"></script>
 <script src="assets/js/admin.js"></script>
 </body>
 </html>

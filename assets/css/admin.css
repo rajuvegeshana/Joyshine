@@ -64,6 +64,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-btn--warn { background: transparent; color: var(--ad-bad); border-color: var(--ad-bad); }
 .ad-btn--sm { padding: .32rem .62rem; font-size: .78rem; }
 
+/* ---- cloud ---- */
+.ad-cloud {
+  font-size: .78rem; padding: .3rem .6rem; border-radius: 999px;
+  border: 1px solid var(--ad-line); color: var(--ad-ink-2); background: var(--ad-surface);
+}
+.ad-cloud b { color: var(--ad-good); }
+.ad-signin { margin-top: .9rem; display: grid; gap: .9rem; }
+.ad-signin__f { display: grid; gap: .6rem; grid-template-columns: 1fr 1fr auto; align-items: end; }
+@media (max-width: 640px) { .ad-signin__f { grid-template-columns: 1fr; } }
+.ad-err { color: var(--ad-bad); font-size: .85rem; }
+
 /* ---- unsaved strip ---- */
 .ad-note {
   margin-top: .9rem; padding: .7rem .9rem; border-radius: var(--ad-r);

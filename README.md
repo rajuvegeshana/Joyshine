@@ -20,7 +20,9 @@ joyshine/
   assets/js/admin.js         control panel logic
   assets/js/config.js        <- the defaults the panel edits
   assets/js/occasions.js     the Indian festival calendar
-  assets/js/settings.js      merges site.json over the defaults
+  assets/js/settings.js      merges Supabase / site.json over the defaults
+  assets/js/cloud.js         Supabase REST client (optional)
+  supabase/schema.sql        run this once in the Supabase SQL editor
   assets/js/products.js      the catalogue, variants and drawn product art
   assets/js/store.js         cart, wishlist, recently viewed, money, search
   assets/js/views.js         every screen, rendered as HTML
@@ -378,7 +380,57 @@ actually land.
 
 ---
 
-## 11. Engineering & prototyping
+## 11. Supabase — publishing without committing a file
+
+Optional. Without it the control panel downloads `site.json` and you commit it.
+With it, **Publish** writes straight to the live shop and the change is visible
+in seconds — from your phone, from anywhere.
+
+You do **not** connect Supabase to GitHub. GitHub keeps serving the code;
+Supabase holds the settings; the shop reads them at load. The commit step
+simply disappears.
+
+### Setting it up, once
+
+1. Make a free project at supabase.com. Pick the region closest to your
+   customers — Mumbai or Singapore.
+2. Open **SQL Editor**, paste everything in `supabase/schema.sql`, press **Run**.
+   That makes the table and, more importantly, the Row Level Security policies.
+3. Go to **Authentication → Providers → Email** and **turn off "Enable
+   signups"**. This matters: with signups on, anyone could create an account
+   and would then be allowed to change your shop.
+4. Go to **Authentication → Users → Add user**, enter your email and a
+   password, and tick *auto confirm*. That is your login.
+5. Go to **Project Settings → API** and copy the **Project URL** and the
+   **anon public** key into the `supabase` block in `config.js`.
+6. Commit `config.js` once. That is the last commit you need for settings.
+
+### The anon key is public, and that is fine
+
+It ships inside your JavaScript where anyone can read it. It is an identifier,
+not a password — it says *which project*, not *what you may do*. The lock is
+Row Level Security: the policies in `schema.sql` let anyone **read** settings
+(your shop needs that) and only signed-in users **write** them.
+
+**Never put the `service_role` key in `config.js`.** That one does bypass every
+policy. It belongs on a server, and this site does not have one.
+
+### What happens when Supabase is slow or down
+
+The shop waits three seconds, gives up, and falls back to
+`assets/data/site.json`, then to the defaults in `config.js`. Tested with a
+project that does not exist: the shop still rendered completely. Your customers
+never see a database problem.
+
+### Keep committing site.json anyway
+
+**Download site.json** is still there in the Publish tab. Committing it now and
+then gives you a version history of your settings in git, and a working fallback
+if you ever lose the Supabase project. Belt and braces, and it costs one click.
+
+---
+
+## 12. Engineering & prototyping
 
 A second service line at `#/engineering`, for functional parts rather than
 gifts: rapid prototypes, jigs and fixtures, short runs, replacement parts,
@@ -392,7 +444,7 @@ the control panel.
 
 ---
 
-## 12. Reviews
+## 13. Reviews
 
 The review UI is built, but **there are no fake reviews and no invented star
 ratings** — inventing social proof is both misleading and, for Indian
@@ -412,7 +464,7 @@ product has a review, and stays hidden until then.
 
 ---
 
-## 13. What a static site cannot do
+## 14. What a static site cannot do
 
 From the brief, these need a backend and are **not** in this build:
 
@@ -435,7 +487,7 @@ data, not rebuilding the shop.
 
 ---
 
-## 14. Accessibility and motion
+## 15. Accessibility and motion
 
 Labelled fields with inline errors, visible focus rings, `Esc` closes every
 panel, `/` opens search, `aria-live` on previews and toasts, a skip link, and a

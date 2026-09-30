@@ -238,7 +238,60 @@ function download() {
 }
 
 /* ---- wiring ------------------------------------------------ */
-function paintAll() { paintToday(); paintOccasions($('#occFilter').value); paintSettings(); paintJson(); }
+function paintAll() { paintToday(); paintOccasions($('#occFilter').value); paintSettings(); paintJson(); paintCloud(); }
+
+/* ---- Supabase ------------------------------------------- */
+const cloudOn = () => window.CLOUD && window.CLOUD.ready();
+
+function paintCloud() {
+  const badge = $('#cloudBadge'), wrap = $('#signinWrap'), state = $('#cloudState');
+  const pub = $('#btnPublish'), out = $('#btnSignout'), main = $('#btnSave');
+
+  if (!cloudOn()) {
+    badge.hidden = true; wrap.hidden = true; pub.hidden = true; out.hidden = true;
+    main.textContent = 'Save changes';
+    state.textContent = 'Supabase is not set up, so changes are published by downloading site.json and committing it. Fill in the supabase block in config.js to save straight to the live shop instead.';
+    return;
+  }
+
+  const inn = window.CLOUD.signedIn();
+  badge.hidden = false;
+  badge.innerHTML = inn ? `Signed in as <b>${esc(window.CLOUD.user()?.email || '')}</b>` : 'Not signed in';
+  wrap.hidden = inn;
+  pub.hidden = !inn;
+  out.hidden = !inn;
+  main.textContent = inn ? 'Publish' : 'Save changes';
+  state.textContent = inn
+    ? 'Connected. Publishing writes straight to the live shop — no file to commit.'
+    : 'Sign in above to publish. Until then you can still download site.json.';
+}
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+async function publish() {
+  try {
+    await window.CLOUD.write(build());
+    dirty = false; $('#unsaved').hidden = true;
+    toast('Published — the live shop is updated');
+    paintCloud();
+  } catch (e) {
+    toast(e.message || 'Could not publish');
+    paintCloud();
+  }
+}
+
+/* pull whatever is live so you are editing the real thing */
+async function pullCloud() {
+  if (!cloudOn()) return;
+  try {
+    const row = await window.CLOUD.read();
+    const hasLocal = Object.keys(patch.settings).length || patch.occasions.length;
+    if (row?.data && !hasLocal) {
+      patch = { settings: row.data.settings || {}, occasions: row.data.occasions || [] };
+      save(); paintAll();
+    }
+  } catch { /* offline is fine, the defaults still load */ }
+}
 
 document.addEventListener('click', e => {
   const tab = e.target.closest('.ad-tab');
@@ -255,7 +308,15 @@ document.addEventListener('click', e => {
     more.textContent = row.classList.contains('open') ? 'Done' : 'Edit';
     return;
   }
-  if (e.target.closest('#btnSave') || e.target.closest('#btnSave2')) return download();
+  if (e.target.closest('#btnPublish')) return publish();
+  if (e.target.closest('#btnSave')) {
+    return (cloudOn() && window.CLOUD.signedIn()) ? publish() : download();
+  }
+  if (e.target.closest('#btnSave2')) return download();
+  if (e.target.closest('#btnSignout')) {
+    window.CLOUD.signOut(); paintCloud(); toast('Signed out');
+    return;
+  }
   if (e.target.closest('#btnLoad')) return $('#fileIn').click();
 
   if (e.target.closest('#btnPreview')) {
@@ -339,6 +400,19 @@ document.addEventListener('change', e => {
 
 $('#occFilter').addEventListener('input', e => paintOccasions(e.target.value));
 
+$('#signinForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#suErr'); err.hidden = true;
+  try {
+    await window.CLOUD.signIn($('#suEmail').value.trim(), $('#suPass').value);
+    $('#suPass').value = '';
+    paintCloud(); await pullCloud(); paintAll();
+    toast('Signed in');
+  } catch (ex) {
+    err.textContent = ex.message; err.hidden = false;
+  }
+});
+
 $('#fileIn').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
@@ -353,4 +427,6 @@ addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.retur
 
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
+if (cloudOn() && window.CLOUD.signedIn()) window.CLOUD.refresh().then(() => { paintCloud(); pullCloud(); });
+else pullCloud();
 })();

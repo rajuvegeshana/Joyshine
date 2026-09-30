@@ -113,6 +113,21 @@ window.JOYSHINE = {
     ],
   },
 
+  /* ---- Supabase (optional) ------------------------------------
+     Fill these in and the control panel saves straight to the
+     cloud — no downloading and committing a file. Leave them
+     blank and everything falls back to assets/data/site.json.
+
+     The anon key is PUBLIC. It belongs in this file. What keeps
+     your shop safe is Row Level Security, set up by running
+     supabase/schema.sql. Never paste the service_role key here. */
+  supabase: {
+    url: '',        // https://xxxxxxxx.supabase.co
+    anonKey: '',    // Project Settings - API - anon public
+    table: 'settings',
+    row: 'site',
+  },
+
   /* ---- Which look loads first: retro | future | clay -------- */
   defaultTheme: 'clay',
 

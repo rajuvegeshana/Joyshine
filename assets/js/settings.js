@@ -46,11 +46,26 @@ function applyOccasions(patches) {
 
 async function load() {
   if (loaded) return loaded;
-  let data = null;
-  try {
-    const r = await fetch('assets/data/site.json', { cache: 'no-store' });
-    if (r.ok) data = await r.json();
-  } catch { /* file:// or not published yet — defaults are fine */ }
+  let data = null, from = 'defaults';
+
+  /* Supabase first when it is configured. If it is slow or down we
+     do not hang the shop — three seconds, then fall through. */
+  if (window.CLOUD?.ready()) {
+    try {
+      const row = await Promise.race([
+        window.CLOUD.read(),
+        new Promise(r => setTimeout(() => r(null), 3000)),
+      ]);
+      if (row?.data) { data = row.data; from = 'supabase'; }
+    } catch { /* fall through to the file */ }
+  }
+
+  if (!data) {
+    try {
+      const r = await fetch('assets/data/site.json', { cache: 'no-store' });
+      if (r.ok) { data = await r.json(); from = 'site.json'; }
+    } catch { /* file:// or not published yet — defaults are fine */ }
+  }
 
   if (data) {
     if (data.settings)  deepMerge(window.JOYSHINE, data.settings);
@@ -65,7 +80,7 @@ async function load() {
     if (preview.occasions) applyOccasions(preview.occasions);
   }
 
-  loaded = { data, preview };
+  loaded = { data, preview, from };
   return loaded;
 }
 
