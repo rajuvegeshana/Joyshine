@@ -134,6 +134,23 @@ function paintPin() {
        <button class="ad-btn ad-btn--ghost ad-btn--sm" id="btnPinDef">Pin ${name(def)} instead</button>`;
 }
 
+/* getS hands back whichever of the two it finds first, which is right
+   for a single value and wrong for a whole block: a draft that has
+   changed only hero.animation would hide hero.art. This merges them. */
+function getM(path, fallback) {
+  const dig = (root) => { let n = root; for (const p of path.split('.')) { if (n == null) return undefined; n = n[p]; } return n; };
+  const base = dig(CFG), mine = dig(patch.settings);
+  const merge = (a, b) => {
+    if (b === undefined) return a;
+    if (b === null || typeof b !== 'object' || Array.isArray(b)) return b;
+    const out = (a && typeof a === 'object' && !Array.isArray(a)) ? { ...a } : {};
+    for (const k of Object.keys(b)) out[k] = merge(out[k], b[k]);
+    return out;
+  };
+  const v = merge(base, mine);
+  return v === undefined || v === null ? fallback : v;
+}
+
 function occPatch(id) {
   let p = patch.occasions.find(o => o.id === id);
   if (!p) { p = { id }; patch.occasions.push(p); }
@@ -1125,7 +1142,7 @@ if (cloudOn()) {
 /* the catalogue tab edits the line-up, which lives in the settings
    patch rather than in the database. Hand it the keys, not the buffer. */
 window.ADMIN = {
-  getS, setS,
+  getS, setS, getM,
   occPatch, occView,
   mark: () => mark(),
   themeName: k => (THEME_LIST.find(t => t[0] === k) || [k, k])[1],

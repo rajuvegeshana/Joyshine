@@ -20,6 +20,11 @@ let toast = () => {};
 const A = () => window.ADMIN;
 const CFG = () => window.JOYSHINE;
 
+/* Everything on this tab has to read through the panel's own buffer,
+   not through the published settings: an edit that has not been
+   published yet must still show here, or the tab argues with itself. */
+const S = (path, fallback) => (A() ? A().getM(path, fallback) : fallback);
+
 /* the icons worth letting someone rebrand, and what they are for */
 const ICONS = [
   ['bolt',   'Buy now'],
@@ -58,10 +63,10 @@ const HERO = [
 function paint() {
   const box = $('#pane-content');
   if (!box) return;
-  const hero = CFG().hero || {};
-  const errs = CFG().errors || {};
-  const icons = CFG().icons || {};
-  const fonts = CFG().fonts || {};
+  const hero = S('hero', {}) || {};
+  const errs = S('errors', {}) || {};
+  const icons = S('icons', {}) || {};
+  const fonts = S('fonts', {}) || {};
   const themes = window.THEME_LIST || [];
 
   box.innerHTML = `
@@ -99,7 +104,7 @@ function paint() {
         saved. Every icon already answers a touch or a hover on its own; see below.</p>
 
       <label class="ad-row--switch" style="margin-bottom:var(--space-4)">
-        <input type="checkbox" id="icoMicro"${(CFG().icons || {}).micro !== false ? ' checked' : ''}>
+        <input type="checkbox" id="icoMicro"${S('icons.micro', true) !== false ? ' checked' : ''}>
         <span><b>Small movements on the icons</b><i>A cart that tips, a heart that beats, a share that
           lifts, a bolt that flickers — only on hover or a press, and never for anyone who has asked
           their device for less motion.</i></span>
@@ -143,7 +148,7 @@ function paint() {
            ['favicon', 'Tab icon', 'brand.favicon', 'The little picture in the browser tab. 32×32 or an SVG.'],
            ['ogImage', 'Share picture', 'seo.ogImage', 'What WhatsApp and Facebook show when the link is shared. 1200×630.']]
           .map(([k, label, path, note]) => {
-          const v = path.split('.').reduce((o, s2) => (o || {})[s2], CFG()) || '';
+          const v = S(path, '') || '';
           return `<div class="ad-brandbit">
             <b>${label}</b>
             <div class="ad-brandbit__art">${v ? window.SKIN.pictureHtml(v, '') : '<span class="ad-empty">none yet</span>'}</div>
@@ -202,7 +207,7 @@ function paint() {
 function paintFonts() {
   const box = $('#fontBox'); if (!box) return;
   const t = $('#fontTheme').value;
-  const all = CFG().fonts || {};
+  const all = S('fonts', {}) || {};
   const f = all[t] || {};
   const base = t === 'all' ? {} : (all.all || {});
   const w = f.weights || {};
@@ -259,7 +264,7 @@ function paintFonts() {
 function paintCursor() {
   const box = $('#curBox'); if (!box) return;
   const t = $('#curTheme').value;
-  const c = (CFG().cursors || {})[t] || {};
+  const c = S('cursors.' + t, {}) || {};
   const kinds = [
     ['default',   'The ordinary arrow',   'What every visitor expects. The safe answer.'],
     ['pointer',   'Always the hand',      'Playful, but people may think everything is clickable.'],
@@ -355,7 +360,7 @@ function wireFiles() {
     const t = $('#curTheme').value;
     A().setS('cursors.' + t + '.kind', 'image');
     A().setS('cursors.' + t + '.url', url);
-    if (!(CFG().cursors || {})[t]?.size) A().setS('cursors.' + t + '.size', /\.json($|\?)/i.test(url) ? 48 : 40);
+    if (!S('cursors.' + t + '.size', 0)) A().setS('cursors.' + t + '.size', /\.json($|\?)/i.test(url) ? 48 : 40);
     paint(); $('#curTheme').value = t; paintCursor(); window.SKIN.cursors();
     toast('Pointer set');
   });
