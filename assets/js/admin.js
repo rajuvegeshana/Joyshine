@@ -17,9 +17,9 @@ const THEME_LIST = [['clay','Clay'],['retro','Retro'],['future','Futuristic'],
   ['halloween','Halloween'],['diwali','Diwali'],['holi','Holi'],
   ['christmas','Christmas'],['navratri','Navratri'],
   ['ganesh','Ganesh'],['krishna','Krishna'],['tiranga','Tiranga'],
-  ['rose','Rose Day'],['propose','Propose Day'],['chocolate','Chocolate Day'],
-  ['teddy','Teddy Day'],['promise','Promise Day'],['hug','Hug Day'],
-  ['kiss','Kiss Day'],['valentine',"Valentine's"]];
+  ['rose','Rose'],['propose','Propose'],['chocolate','Chocolate'],
+  ['teddy','Teddy'],['promise','Promise'],['hug','Hug'],
+  ['kiss','Kiss'],['valentine',"Valentine's"]];
 const PREVIEW = 'joyshine.preview';
 const DRAFT = 'joyshine.admin.draft';
 
