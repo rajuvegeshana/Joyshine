@@ -110,6 +110,11 @@ function render() {
       html = V.engineering();
       title = CFG.engineering.name + ' · ' + CFG.brand.name; break;
     case 'faq':      html = V.faq(); title = 'FAQ · ' + title; break;
+    case 'privacy':  html = LEGAL.privacy();  title = 'Privacy · ' + CFG.brand.name; break;
+    case 'terms':    html = LEGAL.terms();    title = 'Terms · ' + CFG.brand.name; break;
+    case 'refunds':  html = LEGAL.refunds();  title = 'Refunds · ' + CFG.brand.name; break;
+    case 'shipping': html = LEGAL.shipping(); title = 'Shipping · ' + CFG.brand.name; break;
+    case 'contact':  html = LEGAL.contact();  title = 'Contact · ' + CFG.brand.name; break;
     case 'about':    html = V.about(); title = 'About · ' + title; break;
     default:         html = V.notFound();
   }
@@ -126,6 +131,13 @@ function render() {
   if (pdp) GA.event('view_item', { currency: CFG.currency, value: S.unitPrice(pdp.p, pdp.v),
                                    items: [GA.item(pdp.p, 1, S.variantText(pdp.p, pdp.v))] });
   scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/* the policy links only appear once the pages are actually complete */
+function showLegalLinks() {
+  const ok = CFG.legal?.published && window.LEGAL.ready();
+  const box = $('#legalLinks');
+  if (box) box.hidden = !ok;
 }
 
 function applySeo() {
@@ -625,6 +637,7 @@ async function boot() {
   window.OCC_NOW = window.SETTINGS.current();
   applyTheme(null);
   applySeo();
+  showLegalLinks();
   fillBrand();
   prefillBuyer();
   paintCart(); badge();

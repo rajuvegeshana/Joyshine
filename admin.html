@@ -61,6 +61,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
         Marketing
       </button>
+      <button class="nav-link ad-tab" data-tab="legal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+        Policies <span class="dot" id="dotLegal" hidden></span>
+      </button>
       <button class="nav-link ad-tab" data-tab="publish">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M12 5l-6 6M12 5l6 6"/></svg>
         Publish
@@ -295,6 +299,63 @@
         <div class="ad-card" id="visitsCard"></div>
       </section>
 
+      <!-- ============ POLICIES ============ -->
+      <section class="ad-pane" data-pane="legal">
+        <div class="ad-head"><div>
+          <h2>Policies</h2>
+          <p>Razorpay will not activate your account without these pages on the site, and an Indian
+             online shop needs them anyway. Fill in the blanks and switch them on — the links stay
+             hidden from customers until everything below is answered.</p>
+        </div></div>
+
+        <div class="ad-card ad-card--warn" id="legalMissing"></div>
+
+        <div class="ad-card">
+          <h3>Who you are</h3>
+          <label class="ad-field"><span>Name you trade and invoice under</span>
+            <input id="lgEntity" placeholder="Joyshine, or your registered company name"></label>
+          <label class="ad-field"><span>Business address</span>
+            <textarea id="lgAddress" rows="3" placeholder="Street, area, city, state, PIN"></textarea>
+            <i class="ad-hint">Shown on the Contact and Terms pages. Razorpay checks this matches your account.</i></label>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>GSTIN (blank if not registered)</span><input id="lgGst"></label>
+            <label class="ad-field"><span>Email</span><input id="lgEmail" type="email"></label>
+            <label class="ad-field"><span>Phone shown publicly</span><input id="lgPhone"></label>
+          </div>
+          <label class="ad-field" style="margin-bottom:0"><span>City for the jurisdiction clause</span>
+            <input id="lgJur" placeholder="Hyderabad">
+            <i class="ad-hint">Whose courts settle a dispute. Normally where you are based.</i></label>
+        </div>
+
+        <div class="ad-card">
+          <h3>Your actual promises</h3>
+          <p class="ad-p">These numbers appear word for word in the Shipping and Refund policies, and
+            on the shop. Put in what you can genuinely do, not what sounds good.</p>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>Dispatch in (working days)</span><input id="lgDispatch" placeholder="2-4"></label>
+            <label class="ad-field"><span>Delivery in (working days)</span><input id="lgDelivery" placeholder="2-6"></label>
+            <label class="ad-field"><span>Cancel window (hours)</span><input id="lgCancel" type="number" min="0"></label>
+          </div>
+          <div class="ad-grid3">
+            <label class="ad-field" style="margin-bottom:0"><span>Return window (days)</span><input id="lgReturn" type="number" min="0"></label>
+            <label class="ad-field" style="margin-bottom:0"><span>Refund within (working days)</span><input id="lgRefund" type="number" min="0"></label>
+          </div>
+        </div>
+
+        <div class="ad-card">
+          <h3>Publish them</h3>
+          <label class="ad-row--switch"><input type="checkbox" id="lgPublished">
+            <span><b>Show the policy links in the footer</b><i>Only takes effect once everything above is filled in.</i></span></label>
+          <div class="ad-btns" style="margin:0">
+            <a class="ad-btn ad-btn--ghost" href="index.html#/privacy" target="_blank" rel="noopener">Preview privacy</a>
+            <a class="ad-btn ad-btn--ghost" href="index.html#/terms" target="_blank" rel="noopener">Terms</a>
+            <a class="ad-btn ad-btn--ghost" href="index.html#/refunds" target="_blank" rel="noopener">Refunds</a>
+            <a class="ad-btn ad-btn--ghost" href="index.html#/shipping" target="_blank" rel="noopener">Shipping</a>
+            <a class="ad-btn ad-btn--ghost" href="index.html#/contact" target="_blank" rel="noopener">Contact</a>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ PUBLISH ============ -->
       <section class="ad-pane" data-pane="publish">
         <div class="ad-card">
@@ -376,6 +437,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/occasions.js"></script>
+<script src="assets/js/legal.js"></script>
 <script src="assets/js/cloud.js"></script>
 <script src="assets/js/products.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

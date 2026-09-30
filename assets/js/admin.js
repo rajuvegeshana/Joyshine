@@ -220,6 +220,11 @@ function paintSettings() {
              ['wcCode','marketing.welcome.code'],['wcCta','marketing.welcome.cta'],
              ['wcHref','marketing.welcome.href'],['wcSmall','marketing.welcome.small'],
              ['gaOn','analytics.on',1],['gaId','analytics.ga4'],
+             ['lgEntity','legal.entity'],['lgAddress','legal.address'],['lgGst','legal.gst'],
+             ['lgEmail','legal.email'],['lgPhone','legal.phone'],['lgJur','legal.jurisdiction'],
+             ['lgDispatch','legal.dispatchDays'],['lgDelivery','legal.deliveryDays'],
+             ['lgCancel','legal.cancelHours'],['lgReturn','legal.returnDays'],
+             ['lgRefund','legal.refundDays'],['lgPublished','legal.published',1],
              ['seoTitle','seo.title'],['seoDesc','seo.description'],
              ['seoKeys','seo.keywords'],['seoOg','seo.ogImage']];
   const art = $('#wcArt');
@@ -239,6 +244,21 @@ function paintSettings() {
       <label><span>To (blank = no limit)</span><input type="number" min="1" data-t="${i}" data-k="max" value="${t.max ?? ''}"></label>
       <label><span>% off</span><input type="number" min="0" max="90" data-t="${i}" data-k="off" value="${t.off}"></label>
     </div>`).join('');
+}
+
+function paintLegal() {
+  const box = $('#legalMissing'); if (!box) return;
+  /* LEGAL reads window.JOYSHINE, so mirror the unsaved edits into it first */
+  const l = window.JOYSHINE.legal || (window.JOYSHINE.legal = {});
+  ['entity','address','jurisdiction'].forEach(k => { l[k] = getS('legal.' + k, ''); });
+  const gaps = window.LEGAL.missing();
+  box.hidden = !gaps.length;
+  box.innerHTML = gaps.length
+    ? `<h3>${gaps.length} thing${gaps.length > 1 ? 's' : ''} still needed</h3>
+       <p class="ad-p">The policy pages exist but stay hidden from customers until you add
+       ${gaps.map(g => `<b>${g}</b>`).join(', ')}. Only you know these, so nothing has been
+       filled in on your behalf.</p>` : '';
+  const dot = $('#dotLegal'); if (dot) dot.hidden = !gaps.length;
 }
 
 function paintJson() { $('#jsonOut').textContent = JSON.stringify(build(), null, 2); }
@@ -261,7 +281,7 @@ function download() {
 }
 
 /* ---- wiring ------------------------------------------------ */
-function paintAll() { paintToday(); paintOccasions($('#occFilter').value); paintSettings(); paintJson(); paintCloud(); }
+function paintAll() { paintToday(); paintOccasions($('#occFilter').value); paintSettings(); paintLegal(); paintJson(); paintCloud(); }
 
 /* ---- Supabase ------------------------------------------- */
 const cloudOn = () => window.CLOUD && window.CLOUD.ready();
@@ -326,7 +346,8 @@ document.addEventListener('click', e => {
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
     const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', products: 'Products',
                      orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
-                     marketing: 'Marketing', shop: 'Shop & contact', publish: 'Publish' };
+                     marketing: 'Marketing', legal: 'Policies',
+                     shop: 'Shop & contact', publish: 'Publish' };
     $('#paneTitle').textContent = titles[want] || 'Control panel';
     scrollTo({ top: 0, behavior: 'instant' });
     paintAll();
@@ -458,7 +479,11 @@ document.addEventListener('change', e => {
   }
 
   const mm = (window.__MARKETING_MAP || []).find(([id]) => id === t.id);
-  if (mm) { setS(mm[1], mm[2] ? t.checked : (t.type === 'number' ? +t.value : t.value)); return; }
+  if (mm) {
+    setS(mm[1], mm[2] ? t.checked : (t.type === 'number' ? +t.value : t.value));
+    if (mm[1].startsWith('legal.')) paintLegal();   /* the gaps list has to keep up */
+    return;
+  }
 
   const map = {
     occAuto:      () => setS('occasions.auto', t.checked),

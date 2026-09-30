@@ -139,6 +139,29 @@ window.JOYSHINE = {
     },
   },
 
+  /* ---- Legal & policies ---------------------------------------
+     Razorpay will not activate an account without these pages on
+     the site. Fill in the blanks below in the control panel; the
+     footer links stay hidden until `published` is true, so the
+     shop never shows a half-written policy.
+
+     Everything left empty is something only you know. Nothing
+     here is guessed on your behalf.                               */
+  legal: {
+    published: false,
+    entity: '',            // the name you trade and invoice under
+    address: '',           // full address, as registered
+    gst: '',               // GSTIN, or leave blank if not registered
+    email: 'joyshine.3d@gmail.com',
+    phone: '+91 73377 73186',
+    returnDays: 7,         // days to raise a return on unused shelf items
+    refundDays: 7,         // working days to refund once approved
+    dispatchDays: '2-4',   // working days before it ships
+    deliveryDays: '2-6',   // working days in transit
+    cancelHours: 24,       // hours to cancel before printing starts
+    jurisdiction: '',      // the city whose courts govern disputes
+  },
+
   /* ---- Analytics ----------------------------------------------
      Google Analytics 4. Nothing loads until the visitor agrees,
      so declining means no Google cookies at all. The shop's own
