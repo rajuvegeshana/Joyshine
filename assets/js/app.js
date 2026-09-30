@@ -11,7 +11,11 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const money = n => S.money(n);
 
 /* ===== THEME ============================================== */
-const THEMES = { retro: 'Retro', future: 'Futuristic', clay: 'Clay' };
+const THEMES = {
+  clay: 'Clay', retro: 'Retro', future: 'Futuristic',
+  halloween: 'Halloween', diwali: 'Diwali', holi: 'Holi',
+  christmas: 'Christmas', navratri: 'Navratri',
+};
 
 /* a visitor picking a swatch: remembered, and tied to whichever
    occasion is running so the next festival can still re-skin them */
@@ -28,7 +32,9 @@ function paintTheme(name) {
   $$('.themer button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === name)));
 }
 
-/* route lock > visitor pick > admin override > today's occasion > default */
+/* route lock > admin override > today's occasion > default.
+   The shop has no theme picker any more: the look is the owner's
+   decision, set in the control panel. */
 function applyTheme(lock) {
   document.body.classList.toggle('theme-locked', !!lock);
   paintTheme(window.SETTINGS.theme(lock, window.OCC_NOW));

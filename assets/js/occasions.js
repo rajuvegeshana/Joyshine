@@ -17,7 +17,7 @@
 window.OCCASIONS = [
 
   /* ---- fixed dates: computed every year, nothing to maintain ---- */
-  { id: 'new-year', name: 'New Year', on: true, theme: 'retro',
+  { id: 'new-year', name: 'New Year', on: true, theme: 'christmas',
     when: { type: 'fixed', md: '01-01' }, lead: 10, trail: 3, tag: 'gift',
     banner: { eyebrow: 'New Year', title: 'Start it brighter.',
       note: 'Desk pieces, lamps and little gifts to begin the year with.' } },
@@ -57,7 +57,12 @@ window.OCCASIONS = [
     banner: { eyebrow: "Children's Day", title: 'Toys that came off a printer.',
       note: 'Rolling tractors, snap puzzles and a herd of unicorns.' } },
 
-  { id: 'christmas', name: 'Christmas', on: true, theme: 'retro',
+  { id: 'halloween', name: 'Halloween', on: false, theme: 'halloween',
+    when: { type: 'fixed', md: '10-31' }, lead: 14, trail: 1, tag: 'quirky',
+    banner: { eyebrow: 'Halloween', title: 'Printed, not carved.',
+      note: 'Pumpkins, little monsters and things that glow in the dark.' } },
+
+  { id: 'christmas', name: 'Christmas', on: true, theme: 'christmas',
     when: { type: 'fixed', md: '12-25' }, lead: 21, trail: 5, tag: 'gift',
     banner: { eyebrow: 'Christmas', title: 'Wrapped, named, ready.',
       note: 'Gift boxes and personalised pieces, dispatched in time.' } },
@@ -96,7 +101,7 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Maha Shivaratri', title: 'For the puja shelf.',
       note: 'Diya stands, barnis and agarbatti holders.' } },
 
-  { id: 'holi', name: 'Holi', on: true, theme: 'retro',
+  { id: 'holi', name: 'Holi', on: true, theme: 'holi',
     when: { type: 'set', dates: {} }, lead: 14, trail: 2, tag: 'quirky',
     banner: { eyebrow: 'Holi', title: 'Every colour we stock.',
       note: 'Pick your filament. We print it in that.' } },
@@ -146,7 +151,7 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Janmashtami', title: 'For the puja shelf.',
       note: 'Decor and puja pieces, printed here.' } },
 
-  { id: 'ganesh-chaturthi', name: 'Ganesh Chaturthi', on: true, theme: 'retro',
+  { id: 'ganesh-chaturthi', name: 'Ganesh Chaturthi', on: true, theme: 'navratri',
     when: { type: 'set', dates: {} }, lead: 14, trail: 3, tag: 'puja',
     banner: { eyebrow: 'Ganesh Chaturthi', title: 'Decor for the mandap.',
       note: 'Toran, diya stands and puja accessories.' } },
@@ -156,12 +161,12 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Onam', title: 'Flowers that do not wilt.',
       note: 'Printed toran and festival decor.' } },
 
-  { id: 'navratri', name: 'Navratri', on: true, theme: 'retro',
+  { id: 'navratri', name: 'Navratri', on: true, theme: 'navratri',
     when: { type: 'set', dates: {} }, lead: 10, trail: 9, tag: 'festival',
     banner: { eyebrow: 'Navratri', title: 'Nine nights of decor.',
       note: 'Toran, lamps and puja pieces in every colour.' } },
 
-  { id: 'dussehra', name: 'Dussehra', on: true, theme: 'retro',
+  { id: 'dussehra', name: 'Dussehra', on: true, theme: 'navratri',
     when: { type: 'set', dates: {} }, lead: 7, trail: 1, tag: 'festival',
     banner: { eyebrow: 'Dussehra', title: 'Festival decor, printed.',
       note: 'For the door, the shelf and the puja room.' } },
@@ -171,17 +176,17 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Karva Chauth', title: 'Something with their name on it.',
       note: 'Personalised keepsakes and puja pieces.' } },
 
-  { id: 'dhanteras', name: 'Dhanteras', on: true, theme: 'retro',
+  { id: 'dhanteras', name: 'Dhanteras', on: true, theme: 'diwali',
     when: { type: 'set', dates: {} }, lead: 10, trail: 1, tag: 'festival',
     banner: { eyebrow: 'Dhanteras', title: 'Antique gold, freshly printed.',
       note: 'Diya stands, barnis and decor in gold.' } },
 
-  { id: 'diwali', name: 'Diwali', on: true, theme: 'retro',
+  { id: 'diwali', name: 'Diwali', on: true, theme: 'diwali',
     when: { type: 'set', dates: {} }, lead: 28, trail: 3, tag: 'festival',
     banner: { eyebrow: 'Diwali', title: 'Diyas that do not drip.',
       note: 'Diya stands, toran, lamps and gift boxes, ready before the festival.' } },
 
-  { id: 'bhai-dooj', name: 'Bhai Dooj', on: false, theme: 'retro',
+  { id: 'bhai-dooj', name: 'Bhai Dooj', on: false, theme: 'diwali',
     when: { type: 'set', dates: {} }, lead: 7, trail: 1, tag: 'personalised',
     banner: { eyebrow: 'Bhai Dooj', title: 'Name on it, obviously.',
       note: 'Personalised keychains and plaques.' } },

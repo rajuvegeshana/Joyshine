@@ -90,12 +90,6 @@ async function load() {
 function theme(routeLock, occ) {
   if (routeLock) return routeLock;
   const cfg = window.JOYSHINE.occasions || {};
-  let pick = null, pickOcc = null;
-  try {
-    pick = JSON.parse(localStorage.getItem('joyshine.theme') || 'null');
-    pickOcc = localStorage.getItem('joyshine.themeOcc');
-  } catch {}
-  if (pick && pickOcc === (occ ? occ.id : '')) return pick;
   if (cfg.forceTheme) return cfg.forceTheme;
   if (cfg.auto !== false && occ && occ.theme) return occ.theme;
   return window.JOYSHINE.defaultTheme;

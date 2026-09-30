@@ -13,6 +13,9 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const CFG = window.JOYSHINE;
 const OCCS = window.OCCASIONS;
 const YEAR = new Date().getFullYear();
+const THEME_LIST = [['clay','Clay'],['retro','Retro'],['future','Futuristic'],
+  ['halloween','Halloween'],['diwali','Diwali'],['holi','Holi'],
+  ['christmas','Christmas'],['navratri','Navratri']];
 const PREVIEW = 'joyshine.preview';
 const DRAFT = 'joyshine.admin.draft';
 
@@ -84,6 +87,7 @@ function nextRun(o, now = new Date()) {
 }
 const stuck = o => o.when.type === 'set' && !nextRun(o);
 const themePill = t => `<span class="ad-pill ad-pill--${t}">${t === 'future' ? 'futuristic' : t}</span>`;
+window.THEME_LIST = THEME_LIST;
 
 function paintToday() {
   const list = merged();
@@ -167,9 +171,7 @@ function paintOccasions(filter = '') {
         <div class="ad-grid3">
           <label class="ad-field" style="margin:0"><span>Look</span>
             <select data-theme>
-              <option value="clay"${o.theme === 'clay' ? ' selected' : ''}>Clay</option>
-              <option value="retro"${o.theme === 'retro' ? ' selected' : ''}>Retro</option>
-              <option value="future"${o.theme === 'future' ? ' selected' : ''}>Futuristic</option>
+              ${THEME_LIST.map(([k, n]) => `<option value="${k}"${o.theme === k ? ' selected' : ''}>${n}</option>`).join('')}
             </select></label>
           <label class="ad-field" style="margin:0"><span>Opens days before</span>
             <input type="number" min="0" max="120" data-lead value="${o.lead ?? 0}"></label>

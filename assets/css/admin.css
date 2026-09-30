@@ -231,6 +231,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-pill--retro { background: var(--c-secondary-soft); color: color-mix(in oklab, var(--c-secondary) 85%, var(--c-text)); }
 .ad-pill--clay { background: var(--c-primary-soft); color: var(--c-primary-text); }
 .ad-pill--future { background: color-mix(in oklab, var(--c-text) 86%, var(--c-surface)); color: var(--c-bg); }
+.ad-pill--halloween { background: #2a1b38; color: #ff9a4d; }
+.ad-pill--diwali    { background: #2a1f52; color: #ffc85c; }
+.ad-pill--holi      { background: #ffe3f0; color: #c4006f; }
+.ad-pill--christmas { background: #e3efe6; color: #12563a; }
+.ad-pill--navratri  { background: #2a1856; color: #ff79b4; }
 
 /* ===== fields ============================================ */
 .ad-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }

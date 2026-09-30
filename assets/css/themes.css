@@ -253,3 +253,295 @@
 :root[data-theme="clay"] .printer__art svg { filter: drop-shadow(0 14px 18px rgba(87,74,114,.28)); }
 :root[data-theme="clay"] .btn:active { transform: translateY(2px) scale(.985); }
 :root[data-theme="clay"] .strip { border-color: transparent; }
+
+/* ===========================================================
+   4. HALLOWEEN — a lit pumpkin in a dark room. Aubergine night,
+   pumpkin orange, a sliver of toxic lime.
+   =========================================================== */
+:root[data-theme="halloween"] {
+  --bg: #16101d;
+  --texture:
+    radial-gradient(900px 520px at 80% -10%, rgba(255,122,24,.18), transparent 70%),
+    radial-gradient(700px 480px at 6% 12%, rgba(124,58,190,.22), transparent 70%),
+    radial-gradient(600px 400px at 50% 105%, rgba(154,230,88,.08), transparent 70%);
+
+  --ink: #e6dcf0; --ink-strong: #fdf8ff; --ink-soft: #bdb0cf; --ink-quiet: #8b7da0;
+  --surface: #1f1729; --surface-2: #281e35;
+  --line: rgba(230,220,240,.14); --line-strong: rgba(230,220,240,.28);
+  --border-w: 2px;
+
+  --brand: #ff7a18;   --brand-ink: #1a0f04; --brand-edge: #ffa45c;
+  --accent: #9ae658;  --accent-ink: #12200a;
+  --hot: #ff5c7a;
+  --wa: #4fd88a; --wa-edge: #7cf0ad; --wa-ink: #4fd88a;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #3a2350 0%, #241833 60%, #16101d 100%);
+  --stage-border: 2px solid rgba(255,122,24,.28);
+  --grid: rgba(255,122,24,.14);
+  --sheen: rgba(255,214,170,.16);
+  --scrim: rgba(10,6,16,.72);
+
+  --art-1: #ff8c3a; --art-2: #a855f7; --art-3: #9ae658; --art-4: #16101d;
+  --art-glow: rgba(255,140,58,.6);
+
+  --r-s: 6px; --r-btn: 999px; --r-l: 16px; --r-xl: 22px;
+
+  --shadow-1: 0 2px 0 rgba(255,122,24,.22), 0 18px 38px -22px rgba(0,0,0,.95);
+  --shadow-2: 0 2px 0 rgba(255,122,24,.3), 0 28px 60px -26px rgba(255,122,24,.4);
+  --shadow-3: -18px 0 60px rgba(0,0,0,.75);
+  --btn-border: 2px solid rgba(255,122,24,.4);
+  --btn-shadow: 0 3px 0 rgba(255,122,24,.28);
+  --btn-shadow-hover: 0 6px 0 rgba(255,122,24,.4), 0 14px 30px -14px rgba(255,122,24,.7);
+  --btn-shadow-press: 0 1px 0 rgba(255,122,24,.3);
+  --card-border: 2px solid rgba(230,220,240,.16);
+  --tag-shadow: 0 8px 20px -10px rgba(255,122,24,.9);
+
+  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --body-weight: 400; --btn-case: uppercase; --btn-tracking: .08em;
+
+  --header-bg: rgba(22,16,29,.82); --header-blur: blur(14px);
+  --strip-bg: #ff7a18; --strip-ink: #1a0f04;
+  --save-bg: rgba(154,230,88,.16); --save-ink: #b6f27e;
+  --code-bg: #0e0913; --code-ink: #ffc38a;
+  --ring: rgba(255,122,24,.32); --focus: #9ae658;
+  --layer-line: rgba(255,214,170,.2);
+  --search-bg: #1a1322;
+  --rig-line: rgba(255,122,24,.26); --rig-ink: rgba(230,220,240,.3); --rig-ink-2: #ff7a18;
+}
+:root[data-theme="halloween"] .card__art::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,122,24,.06) 22px 24px);
+}
+
+/* ===========================================================
+   5. DIWALI — an indigo night full of lamps. Deep blue, marigold,
+   antique gold, and warm light coming from inside things.
+   =========================================================== */
+:root[data-theme="diwali"] {
+  --bg: #120c2c;
+  --texture:
+    radial-gradient(800px 520px at 82% -8%, rgba(255,184,46,.22), transparent 68%),
+    radial-gradient(700px 480px at 4% 14%, rgba(224,64,110,.18), transparent 70%),
+    radial-gradient(900px 500px at 50% 108%, rgba(255,140,32,.14), transparent 70%);
+
+  --ink: #efe6d4; --ink-strong: #fff8e8; --ink-soft: #cdbfa8; --ink-quiet: #9a8d7c;
+  --surface: #1c1440; --surface-2: #251a51;
+  --line: rgba(239,230,212,.16); --line-strong: rgba(255,184,46,.34);
+  --border-w: 2px;
+
+  --brand: #ffb82e;  --brand-ink: #241704; --brand-edge: #ffd27a;
+  --accent: #e0406e; --accent-ink: #fff4f7;
+  --hot: #ff6b6b;
+  --wa: #49d8a0; --wa-edge: #7cf0c4; --wa-ink: #49d8a0;
+
+  --stage: radial-gradient(120% 100% at 50% 0%, #3b2570 0%, #221750 58%, #120c2c 100%);
+  --stage-border: 2px solid rgba(255,184,46,.35);
+  --grid: rgba(255,184,46,.16);
+  --sheen: rgba(255,226,160,.22);
+  --scrim: rgba(8,5,20,.74);
+
+  --art-1: #ffb82e; --art-2: #e0406e; --art-3: #ffe9a8; --art-4: #120c2c;
+  --art-glow: rgba(255,184,46,.65);
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 20px; --r-xl: 28px;
+
+  --shadow-1: 0 1px 0 rgba(255,226,160,.14) inset, 0 18px 40px -22px rgba(0,0,0,.9);
+  --shadow-2: 0 1px 0 rgba(255,226,160,.2) inset, 0 30px 66px -28px rgba(255,184,46,.5);
+  --shadow-3: -20px 0 64px rgba(0,0,0,.72);
+  --btn-border: 2px solid rgba(255,184,46,.45);
+  --btn-shadow: 0 0 0 0 rgba(255,184,46,0);
+  --btn-shadow-hover: 0 0 0 1px var(--brand), 0 16px 34px -14px rgba(255,184,46,.8);
+  --btn-shadow-press: 0 0 0 1px var(--brand);
+  --card-border: 2px solid rgba(255,184,46,.22);
+  --tag-shadow: 0 8px 22px -10px rgba(224,64,110,.9);
+
+  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --body-weight: 400; --btn-case: uppercase; --btn-tracking: .08em;
+
+  --header-bg: rgba(18,12,44,.84); --header-blur: blur(14px);
+  --strip-bg: #ffb82e; --strip-ink: #241704;
+  --save-bg: rgba(224,64,110,.18); --save-ink: #ff9ebb;
+  --code-bg: #0c0820; --code-ink: #ffdc9a;
+  --ring: rgba(255,184,46,.34); --focus: #ffb82e;
+  --layer-line: rgba(255,226,160,.22);
+  --search-bg: #150e33;
+  --rig-line: rgba(255,184,46,.3); --rig-ink: rgba(239,230,212,.3); --rig-ink-2: #ffb82e;
+}
+:root[data-theme="diwali"] .printer__glow,
+:root[data-theme="diwali"] .card__art { filter: saturate(1.08); }
+
+/* ===========================================================
+   6. HOLI — powder on white. Bright, flat, unapologetic colour
+   on a bleached ground.
+   =========================================================== */
+:root[data-theme="holi"] {
+  --bg: #fffdf8;
+  --texture:
+    radial-gradient(520px 380px at 88% 2%, rgba(255,62,146,.20), transparent 66%),
+    radial-gradient(480px 360px at 4% 16%, rgba(0,191,214,.18), transparent 66%),
+    radial-gradient(560px 400px at 60% 102%, rgba(255,199,0,.22), transparent 68%),
+    radial-gradient(420px 320px at 28% 58%, rgba(86,196,88,.14), transparent 68%);
+
+  --ink: #2a2440; --ink-strong: #17122b; --ink-soft: #554c72; --ink-quiet: #8c84a3;
+  --surface: #ffffff; --surface-2: #fdf6ff;
+  --line: rgba(42,36,64,.14); --line-strong: rgba(42,36,64,.26);
+  --border-w: 2px;
+
+  --brand: #ff3e92;  --brand-ink: #fff; --brand-edge: #17122b;
+  --accent: #00bfd6; --accent-ink: #04262a;
+  --hot: #ff2d55;
+  --wa: #56c458; --wa-edge: #17122b; --wa-ink: #2b8f43;
+
+  --stage: linear-gradient(150deg, #fff0f7 0%, #eafaff 45%, #fffbe6 100%);
+  --stage-border: 2px solid #17122b;
+  --grid: rgba(42,36,64,.12);
+  --sheen: rgba(255,255,255,.75);
+  --scrim: rgba(23,18,43,.44);
+
+  --art-1: #ff3e92; --art-2: #00bfd6; --art-3: #ffc700; --art-4: #17122b;
+  --art-glow: #ffd9ec;
+
+  --r-s: 10px; --r-btn: 999px; --r-l: 22px; --r-xl: 30px;
+
+  --shadow-1: 4px 4px 0 #17122b;
+  --shadow-2: 8px 8px 0 #17122b;
+  --shadow-3: -14px 0 42px rgba(23,18,43,.28);
+  --btn-border: 2px solid #17122b;
+  --btn-shadow: 3px 3px 0 #17122b;
+  --btn-shadow-hover: 6px 6px 0 #17122b;
+  --btn-shadow-press: 1px 1px 0 #17122b;
+  --card-border: 2px solid #17122b;
+  --tag-shadow: 3px 3px 0 #17122b;
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 800; --display-tracking: -.02em; --display-case: none;
+  --body-weight: 500; --btn-case: uppercase; --btn-tracking: .06em;
+
+  --header-bg: rgba(255,253,248,.9); --header-blur: blur(10px);
+  --strip-bg: #17122b; --strip-ink: #fffdf8;
+  --save-bg: #ffe3f0; --save-ink: #b5006a;
+  --code-bg: #17122b; --code-ink: #ffd9ec;
+  --ring: rgba(255,62,146,.3); --focus: #ff3e92;
+  --layer-line: rgba(23,18,43,.18);
+  --search-bg: #fdf4ef;
+  --rig-line: rgba(23,18,43,.26); --rig-ink: rgba(42,36,64,.4); --rig-ink-2: #ff3e92;
+}
+
+/* ===========================================================
+   7. CHRISTMAS — a quiet, warm one. Forest green, cranberry,
+   candlelight on cream. Not a novelty jumper.
+   =========================================================== */
+:root[data-theme="christmas"] {
+  --bg: #f7f3ea;
+  --texture:
+    radial-gradient(640px 440px at 86% -4%, rgba(176,32,54,.12), transparent 66%),
+    radial-gradient(600px 420px at 2% 12%, rgba(22,86,60,.12), transparent 66%),
+    radial-gradient(500px 360px at 55% 104%, rgba(198,160,74,.16), transparent 70%);
+
+  --ink: #2d3a33; --ink-strong: #14231c; --ink-soft: #55665d; --ink-quiet: #8b9992;
+  --surface: #fffdf8; --surface-2: #f2ede1;
+  --line: rgba(20,35,28,.14); --line-strong: rgba(20,35,28,.26);
+  --border-w: 1px;
+
+  --brand: #16563c;  --brand-ink: #fffdf8; --brand-edge: #0d3f2b;
+  --accent: #b02036; --accent-ink: #fffdf8;
+  --hot: #b02036;
+  --wa: #4aa96c; --wa-edge: transparent; --wa-ink: #2b7a49;
+
+  --stage: linear-gradient(158deg, #eef4ee 0%, #fbf1e6 52%, #f6e9ea 100%);
+  --stage-border: 1px solid rgba(20,35,28,.16);
+  --grid: rgba(20,35,28,.1);
+  --sheen: rgba(255,255,255,.7);
+  --scrim: rgba(20,35,28,.4);
+
+  --art-1: #16563c; --art-2: #b02036; --art-3: #c6a04a; --art-4: #14231c;
+  --art-glow: #f7e2b8;
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 18px; --r-xl: 26px;
+
+  --shadow-1: 0 10px 24px -14px rgba(20,35,28,.45), 0 1px 0 rgba(255,255,255,.8) inset;
+  --shadow-2: 0 24px 48px -22px rgba(20,35,28,.45), 0 1px 0 rgba(255,255,255,.9) inset;
+  --shadow-3: -18px 0 52px rgba(20,35,28,.3);
+  --btn-border: 1px solid rgba(20,35,28,.2);
+  --btn-shadow: 0 8px 18px -10px rgba(20,35,28,.5);
+  --btn-shadow-hover: 0 16px 28px -12px rgba(20,35,28,.5);
+  --btn-shadow-press: 0 3px 8px -4px rgba(20,35,28,.55);
+  --card-border: 1px solid rgba(20,35,28,.14);
+  --tag-shadow: 0 8px 16px -9px rgba(176,32,54,.7);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 700; --display-tracking: -.02em; --display-case: none;
+  --body-weight: 450; --btn-case: none; --btn-tracking: .01em;
+
+  --header-bg: rgba(247,243,234,.88); --header-blur: blur(12px);
+  --strip-bg: #16563c; --strip-ink: #f7f3ea;
+  --save-bg: #f6e0e3; --save-ink: #8d1a2c;
+  --code-bg: #14231c; --code-ink: #e6d6a8;
+  --ring: rgba(22,86,60,.28); --focus: #16563c;
+  --layer-line: rgba(20,35,28,.16);
+  --search-bg: #f1ece2;
+  --rig-line: rgba(20,35,28,.2); --rig-ink: rgba(45,58,51,.32); --rig-ink-2: #16563c;
+}
+
+/* ===========================================================
+   8. NAVRATRI — garba colours after dark. Royal blue and magenta
+   with mirror-work gold.
+   =========================================================== */
+:root[data-theme="navratri"] {
+  --bg: #140a33;
+  --texture:
+    radial-gradient(760px 500px at 84% -6%, rgba(255,61,143,.22), transparent 68%),
+    radial-gradient(680px 460px at 6% 14%, rgba(56,102,255,.24), transparent 70%),
+    radial-gradient(820px 480px at 48% 106%, rgba(255,196,61,.16), transparent 70%);
+
+  --ink: #ece4ff; --ink-strong: #fdfaff; --ink-soft: #b9abdd; --ink-quiet: #8778b0;
+  --surface: #1e1147; --surface-2: #281759;
+  --line: rgba(236,228,255,.16); --line-strong: rgba(255,196,61,.34);
+  --border-w: 2px;
+
+  --brand: #ff3d8f;  --brand-ink: #2a0417; --brand-edge: #ff8ab8;
+  --accent: #ffc43d; --accent-ink: #2a1e04;
+  --hot: #ff5c7a;
+  --wa: #4fd8a8; --wa-edge: #82f0c6; --wa-ink: #4fd8a8;
+
+  --stage: radial-gradient(125% 100% at 50% 0%, #46258c 0%, #261560 58%, #140a33 100%);
+  --stage-border: 2px solid rgba(255,196,61,.36);
+  --grid: rgba(255,196,61,.16);
+  --sheen: rgba(255,232,180,.2);
+  --scrim: rgba(9,4,24,.75);
+
+  --art-1: #3866ff; --art-2: #ff3d8f; --art-3: #ffc43d; --art-4: #140a33;
+  --art-glow: rgba(255,61,143,.55);
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 20px; --r-xl: 28px;
+
+  --shadow-1: 0 1px 0 rgba(255,232,180,.14) inset, 0 18px 40px -22px rgba(0,0,0,.9);
+  --shadow-2: 0 1px 0 rgba(255,232,180,.2) inset, 0 30px 64px -28px rgba(255,61,143,.55);
+  --shadow-3: -20px 0 62px rgba(0,0,0,.7);
+  --btn-border: 2px solid rgba(255,196,61,.42);
+  --btn-shadow: 0 0 0 0 rgba(255,61,143,0);
+  --btn-shadow-hover: 0 0 0 1px var(--accent), 0 16px 34px -14px rgba(255,61,143,.8);
+  --btn-shadow-press: 0 0 0 1px var(--accent);
+  --card-border: 2px solid rgba(255,196,61,.2);
+  --tag-shadow: 0 8px 22px -10px rgba(255,61,143,.9);
+
+  --font-display: 'Bagel Fat One', 'Baloo 2', sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --body-weight: 500; --btn-case: uppercase; --btn-tracking: .08em;
+
+  --header-bg: rgba(20,10,51,.84); --header-blur: blur(14px);
+  --strip-bg: #ffc43d; --strip-ink: #2a1e04;
+  --save-bg: rgba(255,61,143,.2); --save-ink: #ff9ec4;
+  --code-bg: #0d0524; --code-ink: #ffdc9a;
+  --ring: rgba(255,61,143,.32); --focus: #ffc43d;
+  --layer-line: rgba(255,232,180,.22);
+  --search-bg: #170c3a;
+  --rig-line: rgba(255,196,61,.3); --rig-ink: rgba(236,228,255,.3); --rig-ink-2: #ffc43d;
+}
