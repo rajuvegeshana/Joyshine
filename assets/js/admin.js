@@ -313,6 +313,19 @@ document.addEventListener('click', e => {
     return (cloudOn() && window.CLOUD.signedIn()) ? publish() : download();
   }
   if (e.target.closest('#btnSave2')) return download();
+  if (e.target.closest('#btnCheck')) {
+    const box = $('#checkOut');
+    box.innerHTML = '<p class="ad-p">Checking…</p>';
+    window.CLOUD.diagnose().then(rows => {
+      box.innerHTML = rows.map(r => {
+        const cls = r.ok === true ? 'ok' : r.ok === false ? 'bad' : 'skip';
+        const mark = r.ok === true ? '\u2713' : r.ok === false ? '\u2717' : '\u2013';
+        return `<div class="ad-chk ${cls}${r.danger ? ' danger' : ''}">
+          <b>${mark}</b><span>${esc(r.label)}<i>${esc(r.detail || '')}</i></span></div>`;
+      }).join('');
+    });
+    return;
+  }
   if (e.target.closest('#btnSignout')) {
     window.CLOUD.signOut(); paintCloud(); toast('Signed out');
     return;

@@ -98,5 +98,85 @@ async function write(data, retried = false) {
   return (await r.json())[0];
 }
 
-return { ready, signIn, signOut, refresh, user, signedIn, read, write };
+/* ---- setup check ------------------------------------------
+   Proves the wiring is right instead of leaving you to hope.
+   The important one is "a stranger cannot write": if that ever
+   passes, anyone on the internet can rewrite your shop.        */
+function keyRole(key) {
+  try {
+    const p = JSON.parse(atob(key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return p.role || null;
+  } catch { return null; }
+}
+
+async function diagnose() {
+  const out = [];
+  const add = (label, ok, detail, danger) => out.push({ label, ok, detail, danger });
+  const c = CFG();
+
+  if (!c.url || !c.anonKey) {
+    add('Details filled in', false, 'Add url and anonKey to the supabase block in config.js');
+    return out;
+  }
+  add('Details filled in', true, c.url);
+
+  const role = keyRole(c.anonKey);
+  if (role === 'service_role') {
+    add('Correct key used', false,
+        'That is the service_role key. It ignores every security rule and must never be in a website. Replace it with the anon public key and rotate it in Supabase now.', true);
+    return out;
+  }
+  add('Correct key used', role === 'anon', role === 'anon'
+    ? 'anon public key'
+    : 'Could not read the key. Copy the anon public key from Project Settings - API.');
+
+  try {
+    const r = await fetch(`${base()}/rest/v1/`, { headers: headers() });
+    add('Project reachable', r.status < 500, `HTTP ${r.status}`);
+  } catch (e) {
+    add('Project reachable', false, 'No response. Check the URL.');
+    return out;
+  }
+
+  let row = null;
+  try {
+    row = await read();
+    add('Settings readable by the shop', !!row,
+        row ? 'The row exists' : 'No row yet. Run supabase/schema.sql in the SQL editor.');
+  } catch {
+    add('Settings readable by the shop', false, 'Blocked. Run supabase/schema.sql.');
+  }
+
+  /* the security check: an unauthenticated write must be refused */
+  try {
+    const r = await fetch(`${base()}/rest/v1/${table()}?on_conflict=id`, {
+      method: 'POST',
+      headers: { apikey: c.anonKey, Authorization: `Bearer ${c.anonKey}`,
+                 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ id: '__probe__', data: {} }]),
+    });
+    const blocked = r.status === 401 || r.status === 403;
+    add('A stranger cannot change your shop', blocked,
+        blocked ? `Refused with HTTP ${r.status}, as it should be`
+                : `NOT PROTECTED - the write was accepted (HTTP ${r.status}). Run supabase/schema.sql and check Row Level Security is on.`,
+        !blocked);
+  } catch {
+    add('A stranger cannot change your shop', true, 'Refused');
+  }
+
+  if (signedIn()) {
+    try {
+      await write(row?.data || { settings: {}, occasions: [] });
+      add('You can publish', true, `Signed in as ${user()?.email || 'you'}`);
+    } catch (e) {
+      add('You can publish', false, e.message);
+    }
+  } else {
+    add('You can publish', null, 'Sign in to check this');
+  }
+
+  return out;
+}
+
+return { ready, signIn, signOut, refresh, user, signedIn, read, write, diagnose };
 })();

@@ -158,6 +158,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-grid3 { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .ad-dates { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 
+/* ---- setup check ---- */
+.ad-check { display: grid; gap: .5rem; margin-top: .9rem; }
+.ad-check:empty { margin: 0; }
+.ad-chk { display: flex; gap: .6rem; align-items: flex-start; font-size: .88rem; }
+.ad-chk b { flex: none; width: 1.3rem; font-size: 1rem; line-height: 1.3; }
+.ad-chk.ok b    { color: var(--ad-good); }
+.ad-chk.bad b   { color: var(--ad-bad); }
+.ad-chk.skip b  { color: var(--ad-quiet); }
+.ad-chk span { color: var(--ad-ink); }
+.ad-chk i { font-style: normal; display: block; color: var(--ad-ink-2); font-size: .82rem; }
+.ad-chk.danger {
+  background: var(--ad-warn-bg); border: 1px solid var(--ad-bad);
+  border-radius: 9px; padding: .7rem .8rem;
+}
+.ad-chk.danger i { color: var(--ad-bad); font-weight: 700; }
+
 /* ---- misc ---- */
 .ad-steps { padding-left: 1.2rem; color: var(--ad-ink-2); font-size: .9rem; display: grid; gap: .45rem; }
 .ad-steps b { color: var(--ad-ink); }
