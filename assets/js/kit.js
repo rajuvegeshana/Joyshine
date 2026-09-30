@@ -114,6 +114,80 @@ const K = {
     spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.4"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 3.6v16.8M3.6 12h16.8M6 6l12 12M18 6 6 18"/></svg>',
     acc: '<g class="acc"><path d="M74 104q26 14 52 2l4 12q-30 14-58 0z" fill="var(--art-1)" opacity=".8"/><path d="M74 116q26 14 52 2l3 9q-28 13-54 0z" fill="var(--art-2)" opacity=".75"/><circle cx="100" cy="118" r="8" fill="none" stroke="var(--art-4)" stroke-width="2" opacity=".8"/><path d="M100 110v16M92 118h16M94.3 112.3l11.4 11.4M105.7 112.3l-11.4 11.4" stroke="var(--art-4)" stroke-width="1.4" opacity=".6"/></g>',
   },
+
+  /* ---- Valentine's week: seven days, seven rooms --------- */
+
+  rose: {
+    note: 'Petals on the print bed',
+    hud: 'Rose stem',
+    count: 12,
+    motif: '<svg viewBox="0 0 40 40"><path d="M20 4q14 6 14 18T20 36 6 22 20 4z" fill="var(--art-2)" opacity=".75"/><path d="M20 8q9 6 9 14t-9 10z" fill="var(--art-1)" opacity=".6"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2q9 4 9 11a9 9 0 0 1-18 0c0-7 9-11 9-11z"/></svg>',
+    acc: '<g class="acc"><path d="M150 96q12 2 14 14t-12 16q-10-4-10-16z" fill="var(--art-2)" opacity=".9"/><path d="M152 126v22" stroke="var(--art-3)" stroke-width="3" stroke-linecap="round"/><path d="M152 134q-10-2-12-10 10-1 12 6z" fill="var(--art-3)"/><path d="M96 74q6-8 14-4" stroke="var(--art-2)" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
+  },
+
+  propose: {
+    note: 'On one knee, nicely finished',
+    hud: 'Ring box',
+    count: 10,
+    motif: '<svg viewBox="0 0 40 40"><circle cx="20" cy="24" r="10" fill="none" stroke="var(--art-1)" stroke-width="3"/><path d="M20 6l3.4 6H16.6z" fill="var(--art-3)"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="15" r="6"/><path d="M12 3l3 4.4H9z" fill="currentColor" stroke="none"/></svg>',
+    acc: '<g class="acc"><rect x="126" y="150" width="36" height="24" rx="5" fill="var(--art-4)" opacity=".85"/><path d="M126 156h36" stroke="var(--art-3)" stroke-width="2" opacity=".6"/><circle cx="144" cy="142" r="8" fill="none" stroke="var(--art-1)" stroke-width="3"/><path d="M144 126l4 7h-8z" fill="var(--art-3)"/><path d="M104 60l2.6 6 6 2.6-6 2.6-2.6 6-2.6-6-6-2.6 6-2.6z" fill="var(--art-3)" opacity=".85"/></g>',
+  },
+
+  chocolate: {
+    note: 'Cocoa, caramel and cream',
+    hud: 'Truffle box',
+    count: 11,
+    motif: '<svg viewBox="0 0 40 40"><rect x="6" y="6" width="28" height="28" rx="4" fill="var(--art-2)"/><path d="M20 6v28M6 20h28" stroke="var(--art-4)" stroke-width="2" opacity=".45"/><rect x="9" y="9" width="8" height="8" rx="2" fill="var(--art-1)" opacity=".7"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 3v18M3 12h18" stroke="var(--brand-ink, #fff)" stroke-width="1.6" opacity=".5"/></svg>',
+    acc: '<g class="acc"><rect x="120" y="146" width="44" height="28" rx="5" fill="var(--art-2)"/><path d="M120 156h44M142 146v28" stroke="var(--art-4)" stroke-width="2.4" opacity=".5"/><path d="M92 66q10-6 18 0" stroke="var(--art-3)" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".8"/><circle cx="118" cy="120" r="5" fill="var(--art-3)" opacity=".8"/></g>',
+  },
+
+  teddy: {
+    note: 'Soft, stuffed and printed',
+    hud: 'Teddy set',
+    count: 10,
+    motif: '<svg viewBox="0 0 40 40"><circle cx="20" cy="24" r="9" fill="var(--art-1)" opacity=".8"/><circle cx="11" cy="13" r="4" fill="var(--art-1)" opacity=".7"/><circle cx="20" cy="10" r="4" fill="var(--art-1)" opacity=".7"/><circle cx="29" cy="13" r="4" fill="var(--art-1)" opacity=".7"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="15" r="6"/><circle cx="6" cy="7" r="2.8"/><circle cx="12" cy="5" r="2.8"/><circle cx="18" cy="7" r="2.8"/></svg>',
+    acc: '<g class="acc"><circle cx="46" cy="162" r="15" fill="var(--art-1)"/><circle cx="36" cy="149" r="6" fill="var(--art-1)"/><circle cx="56" cy="149" r="6" fill="var(--art-1)"/><circle cx="41" cy="160" r="2" fill="var(--art-4)"/><circle cx="51" cy="160" r="2" fill="var(--art-4)"/><ellipse cx="46" cy="167" rx="5" ry="4" fill="var(--art-3)"/><path d="M84 62q8-10 18-4" stroke="var(--art-2)" stroke-width="4" fill="none" stroke-linecap="round" opacity=".75"/></g>',
+  },
+
+  promise: {
+    note: 'Written down and kept',
+    hud: 'Knot charm',
+    count: 10,
+    motif: '<svg viewBox="0 0 40 40"><path d="M10 26q10-16 20 0" stroke="var(--art-1)" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="10" cy="26" r="3.4" fill="var(--art-2)"/><circle cx="30" cy="26" r="3.4" fill="var(--art-2)"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 15q6-10 12 0"/><circle cx="6" cy="15" r="2.2" fill="currentColor"/><circle cx="18" cy="15" r="2.2" fill="currentColor"/></svg>',
+    acc: '<g class="acc"><path d="M132 140q14-18 28 0" stroke="var(--art-1)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="132" cy="140" r="4.4" fill="var(--art-2)"/><circle cx="160" cy="140" r="4.4" fill="var(--art-2)"/><path d="M78 60h28" stroke="var(--art-3)" stroke-width="3" stroke-linecap="round" opacity=".7"/></g>',
+  },
+
+  hug: {
+    note: 'Arms out, printer warm',
+    hud: 'Round plush',
+    count: 9,
+    motif: '<svg viewBox="0 0 40 40"><path d="M6 24q6-12 14-4 8-8 14 4-7 12-14 12T6 24z" fill="var(--art-2)" opacity=".7"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 13q4-8 10-3 6-5 10 3-5 8-10 8T2 13z"/></svg>',
+    acc: '<g class="acc"><path d="M58 118q-16 10-10 30" stroke="var(--art-1)" stroke-width="11" fill="none" stroke-linecap="round" opacity=".85"/><path d="M148 110q18 8 12 30" stroke="var(--art-1)" stroke-width="11" fill="none" stroke-linecap="round" opacity=".85"/><path d="M92 70q10-8 18-2" stroke="var(--art-3)" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".7"/></g>',
+  },
+
+  kiss: {
+    note: 'Sealed with one',
+    hud: 'Lip charm',
+    count: 12,
+    motif: '<svg viewBox="0 0 40 40"><path d="M6 18q7-9 14-2 7-7 14 2-6 14-14 14T6 18z" fill="var(--art-1)"/><path d="M8 19h24" stroke="var(--art-4)" stroke-width="1.6" opacity=".4"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 9q6-7 10-1 4-6 10 1-5 11-10 11T2 9z"/></svg>',
+    acc: '<g class="acc"><path d="M128 94q6-7 11-1 5-6 11 1-5 10-11 10t-11-10z" fill="var(--art-1)" opacity=".92"/><path d="M96 78q9-7 16-1" stroke="var(--art-1)" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M52 150l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="var(--art-3)"/></g>',
+  },
+
+  valentine: {
+    note: 'Hearts wherever they fit',
+    hud: 'Heart plaque',
+    count: 13,
+    motif: '<svg viewBox="0 0 40 40"><path d="M20 34S5 24 5 15a7.4 7.4 0 0 1 15-4 7.4 7.4 0 0 1 15 4c0 9-15 19-15 19z" fill="var(--art-1)" opacity=".8"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21S3 15.4 3 9.8A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 9 2.8C21 15.4 12 21 12 21z"/></svg>',
+    acc: '<g class="acc"><path d="M44 172s-14-9-14-17a6.9 6.9 0 0 1 14-3.6 6.9 6.9 0 0 1 14 3.6c0 8-14 17-14 17z" fill="var(--art-1)"/><path d="M112 58s-9-6-9-11a4.4 4.4 0 0 1 9-2.4 4.4 4.4 0 0 1 9 2.4c0 5-9 11-9 11z" fill="var(--art-3)" opacity=".9"/><path d="M92 76q10-8 18-2" stroke="var(--art-1)" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".8"/></g>',
+  },
 };
 
 /* fixed scatter — deterministic, so nothing jumps between paints */

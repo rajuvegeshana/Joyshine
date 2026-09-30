@@ -648,6 +648,7 @@ async function boot() {
   await window.SETTINGS.load();
   await window.CATALOGUE.load();       /* database first, files as the net */
   window.OCC_NOW = window.SETTINGS.current();
+  window.CATALOGUE.arrange(window.OCC_NOW);
   applyTheme(null);
   applySeo();
   showLegalLinks();

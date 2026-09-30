@@ -60,6 +60,15 @@ function paintProducts(filter = '') {
         <button class="ad-btn ad-btn--primary" data-x="new">Add a product</button>
       </div>
     </div>
+    <div class="ad-card">
+      <h3>Line-up</h3>
+      <p class="ad-p">The order the shop leads with. Chosen products come first, in this order,
+        everywhere — the homepage rails, the shop grid, categories and search. Everything else
+        follows behind unless you tick <i>only these</i>. Pick an occasion to give that week its
+        own line-up; the everyday one takes over again when it ends.</p>
+      <div id="lineupBox"></div>
+    </div>
+
     ${!PRODUCTS.length ? `<div class="ad-card">
       <h3>Start from what you already have</h3>
       <p class="ad-p">The database is empty, so the shop is showing the ${window.PRODUCTS.length} placeholder
@@ -84,6 +93,79 @@ function paintProducts(filter = '') {
 }
 
 const catName = id => (CATS.find(c => c.id === id) || window.CATEGORIES.find(c => c.id === id) || {}).name || id || '—';
+
+/* ---------- the line-up ----------------------------------
+   Which products lead the shop, and in what order — for every
+   day, or for one occasion. Stored in the settings patch, so
+   it reaches the shop with Publish like any other setting.    */
+let lineFor = '';           /* '' = every day, otherwise an occasion id */
+
+const A = () => window.ADMIN;
+
+function lineRead() {
+  if (!A()) return { picks: [], only: false };
+  if (!lineFor) return { picks: A().getS('lineup.picks', []) || [], only: !!A().getS('lineup.only', false) };
+  const p = A().occPatch(lineFor);
+  const base = window.OCCASIONS.find(o => o.id === lineFor) || {};
+  return { picks: (p.picks || base.picks || []).slice(), only: p.picksOnly !== undefined ? !!p.picksOnly : !!base.picksOnly };
+}
+
+function lineWrite(picks, only) {
+  if (!A()) return;
+  if (!lineFor) { A().setS('lineup.picks', picks); A().setS('lineup.only', only); }
+  else {
+    const p = A().occPatch(lineFor);
+    p.picks = picks; p.picksOnly = only;
+    A().mark();
+  }
+  paintLineup();
+}
+
+/* every product the shop knows about, database first */
+function everyProduct() {
+  if (PRODUCTS.length) return PRODUCTS.map(r => ({ id: r.id, name: r.data.name || r.id }));
+  return (window.PRODUCTS || []).map(p => ({ id: p.id, name: p.name }));
+}
+
+function paintLineup() {
+  const box = $('#lineupBox');
+  if (!box || !A()) return;
+  const all = everyProduct();
+  const { picks, only } = lineRead();
+  const name = id => (all.find(p => p.id === id) || {}).name || id + ' (gone)';
+  const occs = A().occasions();
+  const left = all.filter(p => !picks.includes(p.id));
+
+  box.innerHTML = `
+    <div class="ad-lineup__bar">
+      <label class="ad-field" style="margin:0;min-width:15rem">
+        <span>Arranging for</span>
+        <select id="lineFor">
+          <option value=""${lineFor ? '' : ' selected'}>Every day — when no occasion is running</option>
+          ${occs.map(o => `<option value="${esc(o.id)}"${lineFor === o.id ? ' selected' : ''}>
+            ${esc(o.name)} — ${esc(A().themeName(o.theme))} look${o.on ? '' : ' (switched off)'}</option>`).join('')}
+        </select>
+      </label>
+      <label class="ad-chk"><input type="checkbox" id="lineOnly"${only ? ' checked' : ''}>
+        <i>Show only these products</i></label>
+    </div>
+
+    ${picks.length ? `<ol class="ad-lineup">
+      ${picks.map((id, i) => `<li data-li="${i}">
+        <b>${i + 1}</b><span>${esc(name(id))}</span>
+        <button class="ad-o__more" data-x="lnup"${i ? '' : ' disabled'} title="Up">&uarr;</button>
+        <button class="ad-o__more" data-x="lndown"${i === picks.length - 1 ? ' disabled' : ''} title="Down">&darr;</button>
+        <button class="ad-o__more ad-o__more--warn" data-x="lndel" title="Remove">&times;</button>
+      </li>`).join('')}
+    </ol>` : `<p class="ad-empty">Nothing chosen${lineFor ? ' for this one' : ''} — the shop shows everything in its usual order.</p>`}
+
+    ${left.length ? `<div class="ad-lineup__add">
+      <select id="lineAdd"><option value="">Add a product…</option>
+        ${left.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="lnadd">Add</button>
+      ${picks.length ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="lnclear">Clear the list</button>` : ''}
+    </div>` : ''}`;
+}
 
 /* ---------- one product ---------------------------------- */
 const TAGS = ['new', 'bestseller', 'trending', 'limited', 'personalised', 'madeinindia', 'gift', 'festival', 'quirky'];
@@ -796,6 +878,30 @@ function wire(t) {
     paintProducts(); paintCustom(); paintSizes(); paintMats(); paintImage(); return true;
   }
 
+  if (act === 'lnadd') {
+    const id = $('#lineAdd').value; if (!id) return true;
+    const { picks, only } = lineRead();
+    if (!picks.includes(id)) picks.push(id);
+    lineWrite(picks, only); return true;
+  }
+  if (act === 'lndel') {
+    const i = +t.closest('[data-li]').dataset.li;
+    const { picks, only } = lineRead();
+    picks.splice(i, 1); lineWrite(picks, only); return true;
+  }
+  if (act === 'lnup' || act === 'lndown') {
+    const i = +t.closest('[data-li]').dataset.li;
+    const j = act === 'lnup' ? i - 1 : i + 1;
+    const { picks, only } = lineRead();
+    if (j < 0 || j >= picks.length) return true;
+    [picks[i], picks[j]] = [picks[j], picks[i]];
+    lineWrite(picks, only); return true;
+  }
+  if (act === 'lnclear') {
+    if (!confirm('Clear this line-up? The shop goes back to its usual order.')) return true;
+    lineWrite([], lineRead().only); return true;
+  }
+
   if (act === 'szadd') { sizeDraft.push({ label: '', delta: 0, l: '', b: '', h: '' }); paintSizes(); return true; }
   if (act === 'szdel') { sizeDraft.splice(+t.closest('[data-szi]').dataset.szi, 1); paintSizes(); return true; }
   if (act === 'mtadd') { matDraft.push({ label: '', delta: 0, stock: '', note: '' }); paintMats(); return true; }
@@ -844,6 +950,8 @@ function wire(t) {
 }
 
 function wireChange(t) {
+  if (t.id === 'lineFor') { lineFor = t.value; paintLineup(); return true; }
+  if (t.id === 'lineOnly') { lineWrite(lineRead().picks, t.checked); return true; }
   if (t.dataset.szf) {
     const z = sizeDraft[+t.closest('[data-szi]').dataset.szi]; if (!z) return true;
     z[t.dataset.szf] = t.value;
@@ -885,7 +993,7 @@ async function paint(tab) {
   if (tab === 'products') {
     if (inn() && !PRODUCTS.length) await pull();
     paintProducts($('#prodFilter')?.value || '');
-    paintCustom(); paintSizes(); paintMats(); paintImage();
+    paintCustom(); paintSizes(); paintMats(); paintImage(); paintLineup();
   }
   if (tab === 'orders') paintOrders();
   if (tab === 'requests') paintRequests();

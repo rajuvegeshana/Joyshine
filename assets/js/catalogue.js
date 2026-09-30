@@ -54,6 +54,32 @@ async function load() {
   return { from, counts: { products: window.PRODUCTS.length, categories: window.CATEGORIES.length } };
 }
 
+/* ---- the line-up -------------------------------------------
+   The owner can say which products lead the shop, and in what
+   order, either for every day or for one occasion. Reordering
+   window.PRODUCTS here means every listing follows it — home
+   rails, the shop grid, categories and search — with no
+   special cases anywhere else.
+
+   A product left out of the list is not removed; it simply
+   follows the chosen ones, unless "only these" is set, in
+   which case the rest is hidden from the listings. Direct
+   links still work either way.                                */
+function arrange(occ) {
+  const own = window.JOYSHINE.lineup || {};
+  const picks = (occ && occ.picks && occ.picks.length) ? occ.picks : (own.picks || []);
+  const only  = (occ && occ.picks && occ.picks.length) ? !!occ.picksOnly : !!own.only;
+  if (!picks.length) return;
+
+  const rank = new Map(picks.map((id, i) => [id, i]));
+  const chosen = [], rest = [];
+  for (const p of window.PRODUCTS) (rank.has(p.id) ? chosen : rest).push(p);
+  chosen.sort((a, b) => rank.get(a.id) - rank.get(b.id));
+
+  if (only) for (const p of rest) p.hidden = true;
+  window.PRODUCTS = chosen.concat(rest);
+}
+
 /* ---- writing an order or a request from the shop ----------
    Anyone may insert; nobody may read them back. Failing here
    must never block the customer, so every error is swallowed
@@ -76,5 +102,5 @@ async function post(table, row) {
 const logOrder = o => post('orders', { ref: ref('JS'), ...o });
 const logRequest = q => post('requests', { ref: ref('CP'), ...q });
 
-return { load, logOrder, logRequest, get source() { return from; } };
+return { load, arrange, logOrder, logRequest, get source() { return from; } };
 })();

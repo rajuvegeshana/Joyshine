@@ -38,6 +38,8 @@ function applyOccasions(patches) {
     if (p.lead !== undefined)  occ.lead = +p.lead;
     if (p.trail !== undefined) occ.trail = +p.trail;
     if (p.banner)              deepMerge(occ.banner, p.banner);
+    if (p.picks)               occ.picks = p.picks.slice();
+    if (p.picksOnly !== undefined) occ.picksOnly = !!p.picksOnly;
     if (p.dates && occ.when?.type === 'set') {
       occ.when.dates = { ...(occ.when.dates || {}), ...p.dates };
     }

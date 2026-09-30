@@ -16,7 +16,10 @@ const YEAR = new Date().getFullYear();
 const THEME_LIST = [['clay','Clay'],['retro','Retro'],['future','Futuristic'],
   ['halloween','Halloween'],['diwali','Diwali'],['holi','Holi'],
   ['christmas','Christmas'],['navratri','Navratri'],
-  ['ganesh','Ganesh'],['krishna','Krishna'],['tiranga','Tiranga']];
+  ['ganesh','Ganesh'],['krishna','Krishna'],['tiranga','Tiranga'],
+  ['rose','Rose Day'],['propose','Propose Day'],['chocolate','Chocolate Day'],
+  ['teddy','Teddy Day'],['promise','Promise Day'],['hug','Hug Day'],
+  ['kiss','Kiss Day'],['valentine',"Valentine's"]];
 const PREVIEW = 'joyshine.preview';
 const DRAFT = 'joyshine.admin.draft';
 
@@ -639,6 +642,17 @@ if (cloudOn()) {
     err.textContent = rec.error + ' — send yourself a fresh link.';
   }
 }
+
+/* the catalogue tab edits the line-up, which lives in the settings
+   patch rather than in the database. Hand it the keys, not the buffer. */
+window.ADMIN = {
+  getS, setS,
+  occPatch, occView,
+  mark: () => mark(),
+  themeName: k => (THEME_LIST.find(t => t[0] === k) || [k, k])[1],
+  occasions: () => OCCS.map(o => ({ id: o.id, name: o.name, theme: occView(o).theme, on: occView(o).on })),
+  repaint: paintAll,
+};
 
 window.ADMINX?.setToast(toast);
 paintAll();

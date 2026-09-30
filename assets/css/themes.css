@@ -719,3 +719,443 @@
   --search-bg: #f3f4f1;
   --rig-line: rgba(29,43,69,.2); --rig-ink: rgba(29,43,69,.3); --rig-ink-2: #ff9933;
 }
+
+/* ===========================================================
+   12. ROSE DAY  —  a florist's cold room. Deep rose ink on blush paper,
+   petals everywhere, a serif with a long stem.
+   =========================================================== */
+:root[data-theme="rose"] {
+  --bg: #fff5f4;
+  --texture:
+    radial-gradient(900px 520px at 82% -8%, rgba(214,51,84,.14), transparent 70%),
+    radial-gradient(700px 460px at 4% 12%, rgba(255,164,180,.22), transparent 70%);
+
+  --ink: #5c2333; --ink-strong: #3a0f1e; --ink-soft: #7d4254; --ink-quiet: #ae8590;
+  --surface: #fffafa; --surface-2: #ffe9ec;
+  --line: rgba(92,35,51,.16); --line-strong: rgba(92,35,51,.3);
+  --border-w: 1px;
+
+  --brand: #d63354;   --brand-ink: #fffafa; --brand-edge: #f0658a;
+  --accent: #2f7d54;  --accent-ink: #f2fff7;
+  --hot: #c81e46;
+  --wa: #3ba45f; --wa-edge: #6fd18c; --wa-ink: #1f7a41;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #ffe3e7 0%, #ffd2da 58%, #ffc4cf 100%);
+  --stage-border: 1px solid rgba(214,51,84,.2);
+  --grid: rgba(214,51,84,.12);
+  --sheen: rgba(255,255,255,.7);
+  --scrim: rgba(58,15,30,.46);
+
+  --art-1: #e8496e; --art-2: #ff98ad; --art-3: #2f7d54; --art-4: #3a0f1e;
+  --art-glow: rgba(232,73,110,.45);
+
+  --r-s: 10px; --r-btn: 999px; --r-l: 20px; --r-xl: 28px;
+
+  --shadow-1: 0 10px 30px -18px rgba(92,35,51,.5);
+  --shadow-2: 0 26px 60px -30px rgba(214,51,84,.55);
+  --shadow-3: -18px 0 50px rgba(58,15,30,.28);
+  --btn-border: 1px solid rgba(214,51,84,.22);
+  --btn-shadow: 0 6px 18px -10px rgba(214,51,84,.7);
+  --btn-shadow-hover: 0 12px 26px -12px rgba(214,51,84,.8);
+  --btn-shadow-press: 0 3px 10px -8px rgba(214,51,84,.7);
+  --card-border: 1px solid rgba(92,35,51,.12);
+  --tag-shadow: 0 8px 18px -10px rgba(214,51,84,.7);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --display-weight: 700; --display-tracking: -.022em; --display-case: none;
+  --body-weight: 450; --btn-case: none; --btn-tracking: .01em;
+
+  --header-bg: rgba(255,245,244,.88); --header-blur: blur(12px);
+  --strip-bg: #3a0f1e; --strip-ink: #ffe9ec;
+  --save-bg: #ffd9e0; --save-ink: #8f1332;
+  --code-bg: #3a0f1e; --code-ink: #ffc4cf;
+  --ring: rgba(214,51,84,.28); --focus: #d63354;
+  --layer-line: rgba(92,35,51,.16);
+  --search-bg: #ffeaee;
+  --rig-line: rgba(214,51,84,.24); --rig-ink: rgba(92,35,51,.4); --rig-ink-2: #d63354;
+}
+
+/* ===========================================================
+   13. PROPOSE DAY  —  a jeweller's window at dusk. Champagne gold on
+   deep ivory, thin rules, everything a little ceremonial.
+   =========================================================== */
+:root[data-theme="propose"] {
+  --bg: #fdfaf3;
+  --texture:
+    radial-gradient(900px 520px at 78% -10%, rgba(196,154,74,.18), transparent 70%),
+    radial-gradient(700px 440px at 6% 8%, rgba(120,110,170,.12), transparent 70%);
+
+  --ink: #3f3a33; --ink-strong: #241f18; --ink-soft: #6b6357; --ink-quiet: #9c9385;
+  --surface: #fffdf8; --surface-2: #f5eee0;
+  --line: rgba(63,58,51,.16); --line-strong: rgba(63,58,51,.3);
+  --border-w: 1px;
+
+  --brand: #b08430;   --brand-ink: #fffdf8; --brand-edge: #d8ad5c;
+  --accent: #6b5fa8;  --accent-ink: #fbf9ff;
+  --hot: #c2452f;
+  --wa: #3f9b6b; --wa-edge: #74c79a; --wa-ink: #2c7a52;
+
+  --stage: linear-gradient(165deg, #f7edd8 0%, #efe4f0 52%, #e9e6f7 100%);
+  --stage-border: 1px solid rgba(176,132,48,.26);
+  --grid: rgba(176,132,48,.14);
+  --sheen: rgba(255,255,255,.75);
+  --scrim: rgba(36,31,24,.44);
+
+  --art-1: #d4a13c; --art-2: #b9a8e0; --art-3: #f0e2bd; --art-4: #241f18;
+  --art-glow: rgba(212,161,60,.5);
+
+  --r-s: 6px; --r-btn: 999px; --r-l: 14px; --r-xl: 20px;
+
+  --shadow-1: 0 8px 26px -18px rgba(36,31,24,.55);
+  --shadow-2: 0 24px 56px -30px rgba(176,132,48,.55);
+  --shadow-3: -16px 0 46px rgba(36,31,24,.25);
+  --btn-border: 1px solid rgba(176,132,48,.35);
+  --btn-shadow: 0 5px 16px -10px rgba(176,132,48,.7);
+  --btn-shadow-hover: 0 10px 24px -12px rgba(176,132,48,.85);
+  --btn-shadow-press: 0 2px 8px -7px rgba(176,132,48,.7);
+  --card-border: 1px solid rgba(63,58,51,.12);
+  --tag-shadow: 0 8px 18px -10px rgba(176,132,48,.7);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --display-weight: 600; --display-tracking: -.01em; --display-case: none;
+  --body-weight: 450; --btn-case: uppercase; --btn-tracking: .09em;
+
+  --header-bg: rgba(253,250,243,.9); --header-blur: blur(12px);
+  --strip-bg: #241f18; --strip-ink: #f5eee0;
+  --save-bg: #f2e6c9; --save-ink: #7a5a12;
+  --code-bg: #241f18; --code-ink: #e8cf98;
+  --ring: rgba(176,132,48,.3); --focus: #b08430;
+  --layer-line: rgba(63,58,51,.14);
+  --search-bg: #f6efe1;
+  --rig-line: rgba(176,132,48,.28); --rig-ink: rgba(63,58,51,.38); --rig-ink-2: #b08430;
+}
+
+/* ===========================================================
+   14. CHOCOLATE DAY  —  a cocoa counter. Dark couverture, caramel and
+   cream, soft rounded shapes you want to bite.
+   =========================================================== */
+:root[data-theme="chocolate"] {
+  --bg: #2a1a12;
+  --texture:
+    radial-gradient(900px 520px at 80% -8%, rgba(214,146,74,.2), transparent 70%),
+    radial-gradient(740px 460px at 4% 14%, rgba(120,66,40,.4), transparent 70%);
+
+  --ink: #ecd9c6; --ink-strong: #fff6ea; --ink-soft: #c8ac93; --ink-quiet: #967963;
+  --surface: #3a251a; --surface-2: #472e20;
+  --line: rgba(236,217,198,.14); --line-strong: rgba(236,217,198,.3);
+  --border-w: 1px;
+
+  --brand: #d9903f;   --brand-ink: #2a1a12; --brand-edge: #f0b366;
+  --accent: #f2d6a8;  --accent-ink: #3a251a;
+  --hot: #e3654a;
+  --wa: #5dc98c; --wa-edge: #8ae5b1; --wa-ink: #5dc98c;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #6b422a 0%, #46291a 60%, #2f1c13 100%);
+  --stage-border: 1px solid rgba(217,144,63,.26);
+  --grid: rgba(242,214,168,.12);
+  --sheen: rgba(255,236,208,.2);
+  --scrim: rgba(20,11,7,.66);
+
+  --art-1: #d9903f; --art-2: #8a5230; --art-3: #f2d6a8; --art-4: #24140d;
+  --art-glow: rgba(217,144,63,.5);
+
+  --r-s: 12px; --r-btn: 999px; --r-l: 22px; --r-xl: 30px;
+
+  --shadow-1: 0 12px 32px -20px rgba(0,0,0,.9);
+  --shadow-2: 0 28px 62px -30px rgba(217,144,63,.5);
+  --shadow-3: -18px 0 54px rgba(0,0,0,.6);
+  --btn-border: 1px solid rgba(242,214,168,.22);
+  --btn-shadow: 0 6px 18px -10px rgba(0,0,0,.8);
+  --btn-shadow-hover: 0 14px 30px -14px rgba(217,144,63,.7);
+  --btn-shadow-press: 0 3px 10px -9px rgba(0,0,0,.8);
+  --card-border: 1px solid rgba(236,217,198,.14);
+  --tag-shadow: 0 8px 20px -10px rgba(217,144,63,.8);
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --display-weight: 800; --display-tracking: -.02em; --display-case: none;
+  --body-weight: 500; --btn-case: none; --btn-tracking: .01em;
+
+  --header-bg: rgba(42,26,18,.86); --header-blur: blur(12px);
+  --strip-bg: #d9903f; --strip-ink: #2a1a12;
+  --save-bg: rgba(242,214,168,.16); --save-ink: #f2d6a8;
+  --code-bg: #1d100a; --code-ink: #f0b366;
+  --ring: rgba(217,144,63,.32); --focus: #f2d6a8;
+  --layer-line: rgba(242,214,168,.18);
+  --search-bg: #3a251a;
+  --rig-line: rgba(217,144,63,.26); --rig-ink: rgba(236,217,198,.32); --rig-ink-2: #d9903f;
+}
+
+/* ===========================================================
+   15. TEDDY DAY  —  a toy shelf. Honey fur, soft peach, fat rounded
+   corners and nothing sharp anywhere.
+   =========================================================== */
+:root[data-theme="teddy"] {
+  --bg: #fdf3e7;
+  --texture:
+    radial-gradient(900px 520px at 80% -10%, rgba(214,158,90,.18), transparent 70%),
+    radial-gradient(700px 460px at 6% 10%, rgba(255,186,160,.24), transparent 70%);
+
+  --ink: #5a4230; --ink-strong: #3a2718; --ink-soft: #7d6349; --ink-quiet: #a89076;
+  --surface: #fffaf2; --surface-2: #f7e7d4;
+  --line: rgba(90,66,48,.16); --line-strong: rgba(90,66,48,.3);
+  --border-w: 1px;
+
+  --brand: #c97b45;   --brand-ink: #fffaf2; --brand-edge: #e8a06a;
+  --accent: #ff9d8a;  --accent-ink: #4a1f16;
+  --hot: #e2604b;
+  --wa: #54bd85; --wa-edge: #86dcab; --wa-ink: #2f8a5a;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #ffe6c9 0%, #ffd7b8 58%, #ffcbb4 100%);
+  --stage-border: 1px solid rgba(201,123,69,.22);
+  --grid: rgba(201,123,69,.12);
+  --sheen: rgba(255,255,255,.72);
+  --scrim: rgba(58,39,24,.44);
+
+  --art-1: #d99a5c; --art-2: #ff9d8a; --art-3: #ffd98f; --art-4: #3a2718;
+  --art-glow: rgba(217,154,92,.5);
+
+  --r-s: 14px; --r-btn: 999px; --r-l: 26px; --r-xl: 34px;
+
+  --shadow-1: 0 12px 30px -20px rgba(90,66,48,.55);
+  --shadow-2: 0 26px 58px -30px rgba(201,123,69,.5);
+  --shadow-3: -18px 0 48px rgba(58,39,24,.26);
+  --btn-border: 1px solid rgba(201,123,69,.2);
+  --btn-shadow: 0 6px 18px -10px rgba(201,123,69,.65);
+  --btn-shadow-hover: 0 12px 26px -12px rgba(201,123,69,.8);
+  --btn-shadow-press: 0 3px 10px -8px rgba(201,123,69,.65);
+  --card-border: 1px solid rgba(90,66,48,.1);
+  --tag-shadow: 0 8px 18px -10px rgba(201,123,69,.7);
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --display-weight: 800; --display-tracking: -.024em; --display-case: none;
+  --body-weight: 500; --btn-case: none; --btn-tracking: 0;
+
+  --header-bg: rgba(253,243,231,.9); --header-blur: blur(12px);
+  --strip-bg: #3a2718; --strip-ink: #f7e7d4;
+  --save-bg: #ffe0bd; --save-ink: #8a4a12;
+  --code-bg: #3a2718; --code-ink: #ffd7b8;
+  --ring: rgba(201,123,69,.3); --focus: #c97b45;
+  --layer-line: rgba(90,66,48,.14);
+  --search-bg: #f8ecdd;
+  --rig-line: rgba(201,123,69,.24); --rig-ink: rgba(90,66,48,.38); --rig-ink-2: #c97b45;
+}
+
+/* ===========================================================
+   16. PROMISE DAY  —  ink and silver. A quiet, exact look: navy rules,
+   pale paper, the tone of something written down and kept.
+   =========================================================== */
+:root[data-theme="promise"] {
+  --bg: #f4f6fb;
+  --texture:
+    radial-gradient(900px 520px at 78% -8%, rgba(46,74,140,.14), transparent 70%),
+    radial-gradient(700px 460px at 4% 12%, rgba(150,170,205,.2), transparent 70%);
+
+  --ink: #2f3a54; --ink-strong: #16203a; --ink-soft: #4f5c7a; --ink-quiet: #8390a8;
+  --surface: #ffffff; --surface-2: #e8edf7;
+  --line: rgba(47,58,84,.16); --line-strong: rgba(47,58,84,.32);
+  --border-w: 1px;
+
+  --brand: #2e4a8c;   --brand-ink: #ffffff; --brand-edge: #5f7cc4;
+  --accent: #9aa7c4;  --accent-ink: #16203a;
+  --hot: #c94a5c;
+  --wa: #3a9d76; --wa-edge: #6fcaa4; --wa-ink: #28775a;
+
+  --stage: linear-gradient(168deg, #e7edfa 0%, #dde5f5 54%, #eef1f8 100%);
+  --stage-border: 1px solid rgba(46,74,140,.22);
+  --grid: rgba(46,74,140,.14);
+  --sheen: rgba(255,255,255,.8);
+  --scrim: rgba(22,32,58,.46);
+
+  --art-1: #4f6fc0; --art-2: #9aa7c4; --art-3: #c9d3ea; --art-4: #16203a;
+  --art-glow: rgba(79,111,192,.45);
+
+  --r-s: 6px; --r-btn: 999px; --r-l: 14px; --r-xl: 18px;
+
+  --shadow-1: 0 8px 24px -18px rgba(22,32,58,.55);
+  --shadow-2: 0 22px 52px -30px rgba(46,74,140,.5);
+  --shadow-3: -16px 0 44px rgba(22,32,58,.22);
+  --btn-border: 1px solid rgba(46,74,140,.28);
+  --btn-shadow: 0 5px 16px -10px rgba(46,74,140,.6);
+  --btn-shadow-hover: 0 10px 24px -12px rgba(46,74,140,.75);
+  --btn-shadow-press: 0 2px 8px -7px rgba(46,74,140,.6);
+  --card-border: 1px solid rgba(47,58,84,.12);
+  --tag-shadow: 0 8px 18px -10px rgba(46,74,140,.6);
+
+  --font-display: 'Space Grotesk', 'Nunito', sans-serif;
+  --display-weight: 600; --display-tracking: -.018em; --display-case: none;
+  --body-weight: 450; --btn-case: uppercase; --btn-tracking: .08em;
+
+  --header-bg: rgba(244,246,251,.9); --header-blur: blur(12px);
+  --strip-bg: #16203a; --strip-ink: #e8edf7;
+  --save-bg: #dde6fa; --save-ink: #20407f;
+  --code-bg: #16203a; --code-ink: #c9d3ea;
+  --ring: rgba(46,74,140,.28); --focus: #2e4a8c;
+  --layer-line: rgba(47,58,84,.14);
+  --search-bg: #e9eef8;
+  --rig-line: rgba(46,74,140,.24); --rig-ink: rgba(47,58,84,.38); --rig-ink-2: #2e4a8c;
+}
+
+/* ===========================================================
+   17. HUG DAY  —  terracotta and cloud. Warm earth on soft white,
+   everything wide, round and low-contrast. Nothing shouts.
+   =========================================================== */
+:root[data-theme="hug"] {
+  --bg: #fbf4ef;
+  --texture:
+    radial-gradient(900px 520px at 80% -10%, rgba(200,108,78,.16), transparent 70%),
+    radial-gradient(720px 460px at 5% 12%, rgba(240,200,180,.3), transparent 70%);
+
+  --ink: #5b4038; --ink-strong: #3b2520; --ink-soft: #7d5f55; --ink-quiet: #ab8d83;
+  --surface: #fffbf8; --surface-2: #f5e6dd;
+  --line: rgba(91,64,56,.16); --line-strong: rgba(91,64,56,.3);
+  --border-w: 1px;
+
+  --brand: #c06a4c;   --brand-ink: #fffbf8; --brand-edge: #dd9075;
+  --accent: #8aa48f;  --accent-ink: #20301f;
+  --hot: #cf5a4a;
+  --wa: #4fae7f; --wa-edge: #84d3a6; --wa-ink: #2f7f57;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #fae0d3 0%, #f2cfc0 58%, #ecd9d0 100%);
+  --stage-border: 1px solid rgba(192,106,76,.2);
+  --grid: rgba(192,106,76,.1);
+  --sheen: rgba(255,255,255,.7);
+  --scrim: rgba(59,37,32,.42);
+
+  --art-1: #cf8163; --art-2: #e8b39c; --art-3: #8aa48f; --art-4: #3b2520;
+  --art-glow: rgba(207,129,99,.45);
+
+  --r-s: 16px; --r-btn: 999px; --r-l: 28px; --r-xl: 38px;
+
+  --shadow-1: 0 12px 32px -22px rgba(91,64,56,.5);
+  --shadow-2: 0 26px 60px -32px rgba(192,106,76,.45);
+  --shadow-3: -18px 0 48px rgba(59,37,32,.22);
+  --btn-border: 1px solid rgba(192,106,76,.18);
+  --btn-shadow: 0 6px 18px -12px rgba(192,106,76,.6);
+  --btn-shadow-hover: 0 12px 26px -14px rgba(192,106,76,.72);
+  --btn-shadow-press: 0 3px 10px -9px rgba(192,106,76,.6);
+  --card-border: 1px solid rgba(91,64,56,.1);
+  --tag-shadow: 0 8px 18px -10px rgba(192,106,76,.6);
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --display-weight: 700; --display-tracking: -.02em; --display-case: none;
+  --body-weight: 500; --btn-case: none; --btn-tracking: 0;
+
+  --header-bg: rgba(251,244,239,.9); --header-blur: blur(12px);
+  --strip-bg: #3b2520; --strip-ink: #f5e6dd;
+  --save-bg: #f7dccd; --save-ink: #8c3f26;
+  --code-bg: #3b2520; --code-ink: #f2cfc0;
+  --ring: rgba(192,106,76,.28); --focus: #c06a4c;
+  --layer-line: rgba(91,64,56,.14);
+  --search-bg: #f6e9e1;
+  --rig-line: rgba(192,106,76,.22); --rig-ink: rgba(91,64,56,.36); --rig-ink-2: #c06a4c;
+}
+
+/* ===========================================================
+   18. KISS DAY  —  lipstick on a napkin. Hot red on warm cream, a
+   little louder than the rest of the week.
+   =========================================================== */
+:root[data-theme="kiss"] {
+  --bg: #fff4ee;
+  --texture:
+    radial-gradient(900px 520px at 82% -8%, rgba(226,44,72,.16), transparent 70%),
+    radial-gradient(700px 460px at 4% 12%, rgba(255,142,120,.24), transparent 70%);
+
+  --ink: #5a1f2a; --ink-strong: #3c0d18; --ink-soft: #7e3b46; --ink-quiet: #b17d85;
+  --surface: #fffaf7; --surface-2: #ffe5de;
+  --line: rgba(90,31,42,.16); --line-strong: rgba(90,31,42,.32);
+  --border-w: 2px;
+
+  --brand: #e22c48;   --brand-ink: #fffaf7; --brand-edge: #3c0d18;
+  --accent: #ff9a6b;  --accent-ink: #3c0d18;
+  --hot: #c00f34;
+  --wa: #43b479; --wa-edge: #3c0d18; --wa-ink: #1f7a45;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #ffd9d0 0%, #ffc0bd 56%, #ffb3c6 100%);
+  --stage-border: 2px solid rgba(60,13,24,.9);
+  --grid: rgba(60,13,24,.14);
+  --sheen: rgba(255,255,255,.66);
+  --scrim: rgba(60,13,24,.46);
+
+  --art-1: #e94060; --art-2: #ff9a6b; --art-3: #ffd166; --art-4: #3c0d18;
+  --art-glow: rgba(233,64,96,.5);
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 18px; --r-xl: 24px;
+
+  --shadow-1: 4px 4px 0 #3c0d18;
+  --shadow-2: 8px 8px 0 #3c0d18;
+  --shadow-3: -14px 0 40px rgba(60,13,24,.3);
+  --btn-border: 2px solid #3c0d18;
+  --btn-shadow: 3px 3px 0 #3c0d18;
+  --btn-shadow-hover: 6px 6px 0 #3c0d18;
+  --btn-shadow-press: 1px 1px 0 #3c0d18;
+  --card-border: 2px solid #3c0d18;
+  --tag-shadow: 3px 3px 0 #3c0d18;
+
+  --font-display: 'Bagel Fat One', 'Baloo 2', sans-serif;
+  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --body-weight: 500; --btn-case: uppercase; --btn-tracking: .07em;
+
+  --header-bg: rgba(255,244,238,.9); --header-blur: blur(12px);
+  --strip-bg: #3c0d18; --strip-ink: #ffe5de;
+  --save-bg: #ffd7cf; --save-ink: #a1102f;
+  --code-bg: #3c0d18; --code-ink: #ffc0bd;
+  --ring: rgba(226,44,72,.3); --focus: #e22c48;
+  --layer-line: rgba(90,31,42,.18);
+  --search-bg: #ffe9e2;
+  --rig-line: rgba(60,13,24,.26); --rig-ink: rgba(90,31,42,.4); --rig-ink-2: #e22c48;
+}
+
+/* ===========================================================
+   19. VALENTINE'S DAY  —  the full card. Deep red and rose on ivory,
+   gold edges, hearts wherever they fit.
+   =========================================================== */
+:root[data-theme="valentine"] {
+  --bg: #fff6f7;
+  --texture:
+    radial-gradient(960px 540px at 80% -10%, rgba(198,28,62,.18), transparent 70%),
+    radial-gradient(720px 460px at 4% 10%, rgba(255,150,178,.26), transparent 70%);
+
+  --ink: #59202f; --ink-strong: #3a0c1b; --ink-soft: #7c4152; --ink-quiet: #b0838f;
+  --surface: #fffbfb; --surface-2: #ffe7ec;
+  --line: rgba(89,32,47,.16); --line-strong: rgba(89,32,47,.32);
+  --border-w: 1px;
+
+  --brand: #c61c3e;   --brand-ink: #fffbfb; --brand-edge: #e8577a;
+  --accent: #c9a227;  --accent-ink: #3a0c1b;
+  --hot: #a80f31;
+  --wa: #3ea86d; --wa-edge: #74cf9b; --wa-ink: #237a4a;
+
+  --stage: radial-gradient(120% 95% at 50% 0%, #ffe0e6 0%, #ffcdd8 56%, #ffdbc7 100%);
+  --stage-border: 1px solid rgba(198,28,62,.24);
+  --grid: rgba(198,28,62,.12);
+  --sheen: rgba(255,255,255,.72);
+  --scrim: rgba(58,12,27,.46);
+
+  --art-1: #e03a5f; --art-2: #ff9bb4; --art-3: #c9a227; --art-4: #3a0c1b;
+  --art-glow: rgba(224,58,95,.5);
+
+  --r-s: 12px; --r-btn: 999px; --r-l: 22px; --r-xl: 30px;
+
+  --shadow-1: 0 12px 32px -20px rgba(89,32,47,.55);
+  --shadow-2: 0 28px 62px -30px rgba(198,28,62,.5);
+  --shadow-3: -18px 0 50px rgba(58,12,27,.28);
+  --btn-border: 1px solid rgba(198,28,62,.24);
+  --btn-shadow: 0 6px 18px -10px rgba(198,28,62,.7);
+  --btn-shadow-hover: 0 14px 28px -12px rgba(198,28,62,.85);
+  --btn-shadow-press: 0 3px 10px -8px rgba(198,28,62,.7);
+  --card-border: 1px solid rgba(89,32,47,.12);
+  --tag-shadow: 0 8px 20px -10px rgba(198,28,62,.75);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --display-weight: 700; --display-tracking: -.024em; --display-case: none;
+  --body-weight: 450; --btn-case: none; --btn-tracking: .01em;
+
+  --header-bg: rgba(255,246,247,.9); --header-blur: blur(12px);
+  --strip-bg: #3a0c1b; --strip-ink: #ffe7ec;
+  --save-bg: #ffdbe3; --save-ink: #8f0c2f;
+  --code-bg: #3a0c1b; --code-ink: #ffcdd8;
+  --ring: rgba(198,28,62,.3); --focus: #c61c3e;
+  --layer-line: rgba(89,32,47,.16);
+  --search-bg: #ffecf0;
+  --rig-line: rgba(198,28,62,.26); --rig-ink: rgba(89,32,47,.4); --rig-ink-2: #c61c3e;
+}

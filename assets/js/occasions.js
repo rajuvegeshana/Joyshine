@@ -32,7 +32,46 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Republic Day', title: 'Made in India, every layer.',
       note: 'Designed, sliced and printed here.' } },
 
-  { id: 'valentines', name: "Valentine's Day", on: true, theme: 'clay',
+  /* ---- Valentine's week: 7 to 14 February ----------------
+     Each day is its own single-day window, so it beats the
+     fortnight-long Valentine's run-up on the day itself. */
+
+  { id: 'rose-day', name: 'Rose Day', on: true, theme: 'rose',
+    when: { type: 'fixed', md: '02-07' }, lead: 0, trail: 0, tag: 'gift',
+    banner: { eyebrow: 'Rose Day', title: 'One that will not wilt.',
+      note: 'Printed roses, stems and little keepsakes for the seventh.' } },
+
+  { id: 'propose-day', name: 'Propose Day', on: true, theme: 'propose',
+    when: { type: 'fixed', md: '02-08' }, lead: 0, trail: 0, tag: 'personalised',
+    banner: { eyebrow: 'Propose Day', title: 'Say it in something solid.',
+      note: 'Name plaques, boxes and pieces made to be handed over.' } },
+
+  { id: 'chocolate-day', name: 'Chocolate Day', on: true, theme: 'chocolate',
+    when: { type: 'fixed', md: '02-09' }, lead: 0, trail: 0, tag: 'gift',
+    banner: { eyebrow: 'Chocolate Day', title: 'Everything but the cocoa.',
+      note: 'Boxes, trays and toppers to go with the sweet part.' } },
+
+  { id: 'teddy-day', name: 'Teddy Day', on: true, theme: 'teddy',
+    when: { type: 'fixed', md: '02-10' }, lead: 0, trail: 0, tag: 'quirky',
+    banner: { eyebrow: 'Teddy Day', title: 'Soft things, hard plastic.',
+      note: 'Little printed companions for the shelf and the desk.' } },
+
+  { id: 'promise-day', name: 'Promise Day', on: true, theme: 'promise',
+    when: { type: 'fixed', md: '02-11' }, lead: 0, trail: 0, tag: 'personalised',
+    banner: { eyebrow: 'Promise Day', title: 'Put it in writing.',
+      note: 'Engraved plaques and keepsakes with your words on them.' } },
+
+  { id: 'hug-day', name: 'Hug Day', on: true, theme: 'hug',
+    when: { type: 'fixed', md: '02-12' }, lead: 0, trail: 0, tag: 'gift',
+    banner: { eyebrow: 'Hug Day', title: 'Something to hold.',
+      note: 'Round, warm, palm-sized pieces for the twelfth.' } },
+
+  { id: 'kiss-day', name: 'Kiss Day', on: true, theme: 'kiss',
+    when: { type: 'fixed', md: '02-13' }, lead: 0, trail: 0, tag: 'personalised',
+    banner: { eyebrow: 'Kiss Day', title: 'Sealed with one.',
+      note: 'Small printed somethings for the day before the day.' } },
+
+  { id: 'valentines', name: "Valentine's Day", on: true, theme: 'valentine',
     when: { type: 'fixed', md: '02-14' }, lead: 14, trail: 1, tag: 'personalised',
     banner: { eyebrow: "Valentine's", title: 'Put their name on it.',
       note: 'Personalised plaques, keychains and little printed somethings.' } },
