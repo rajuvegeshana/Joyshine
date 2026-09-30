@@ -65,11 +65,12 @@ let later  = read(K.later, []).filter(i => byId(i.id));
 let recent = read(K.recent, []).filter(byId);
 let seen   = read(K.seen, []);
 
-const key = i => [i.id, i.v?.size || '', i.v?.material || '', i.v?.colour || '', i.note || ''].join('|');
+const key = i => [i.id, i.v?.size || '', i.v?.material || '', i.v?.colour || '',
+                  i.note || '', JSON.stringify(i.opts || {})].join('|');
 const save = () => { write(K.cart, cart); write(K.wish, wish); write(K.later, later); };
 
-function add(id, v, note, qty = 1) {
-  const item = { id, v: v || {}, note: note || '', qty };
+function add(id, v, note, qty = 1, opts = null) {
+  const item = { id, v: v || {}, note: note || '', qty, opts: opts || undefined };
   const hit = cart.find(i => key(i) === key(item));
   if (hit) hit.qty += qty; else cart.push(item);
   save();

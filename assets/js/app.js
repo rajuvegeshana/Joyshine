@@ -107,7 +107,8 @@ function render() {
     case 'c':        html = V.shop({ ...q, cat: seg[1] }); title = S.catName(seg[1]) + ' · ' + title; break;
     case 'p': {
       const p = S.byId(seg[1]);
-      if (p) { pdp = { p, v: S.defaults(p), qty: 1, note: '' }; S.sawProduct(p.id); title = p.name + ' · ' + title; }
+      if (p) { pdp = { p, v: S.defaults(p), qty: 1, note: '' }; S.sawProduct(p.id);
+               window.CUSTOM.reset(); title = p.name + ' · ' + title; }
       html = V.product(seg[1], pdp?.v); break;
     }
     case 'search':   html = V.searchPage(q.q || ''); title = 'Search · ' + title; break;
@@ -207,17 +208,15 @@ function syncPdp() {
 }
 
 function pdpItem() {
-  const note = $('#pdpNote')?.value.trim() || '';
-  return { id: pdp.p.id, v: pdp.v, note, qty: pdp.qty };
+  const opts = window.CUSTOM.read(pdp.p);
+  return { id: pdp.p.id, v: pdp.v, note: window.CUSTOM.summarise(opts),
+           opts: Object.keys(opts).length ? opts : undefined, qty: pdp.qty };
 }
+/* every required option filled in? */
 function pdpNeedsNote() {
-  if (!pdp.p.personalise) return false;
-  const el = $('#pdpNote');
-  if (el.value.trim()) return false;
-  el.setAttribute('aria-invalid', 'true');
-  el.parentElement.querySelector('u').textContent = 'We print exactly this, so we need it.';
-  el.focus();
-  toast(`${pdp.p.personalise.label} first`, I.info);
+  if (!window.CUSTOM.has(pdp.p)) return false;
+  if (window.CUSTOM.check(pdp.p)) return false;
+  toast('A couple of details are still needed', I.info);
   return true;
 }
 
@@ -237,7 +236,10 @@ function lineHTML(it, i, later) {
     <div>
       <h4><a href="#/p/${p.id}">${esc(p.name)}</a></h4>
       <small>${esc(S.variantText(p, it.v)) || esc(p.specs.Material)}</small>
-      ${it.note ? `<small class="pers-note">${esc(p.personalise?.label || 'Note')}: <b>${esc(it.note)}</b></small>` : ''}
+      ${it.opts ? Object.entries(it.opts).map(([k, v]) => `<small class="pers-note">${esc(k)}:
+          ${/^https?:/.test(v) ? `<a href="${esc(v)}" target="_blank" rel="noopener"><b>file attached</b></a>`
+                               : `<b>${esc(v)}</b>`}</small>`).join('')
+        : (it.note ? `<small class="pers-note">${esc(it.note)}</small>` : '')}
       ${l.off ? `<small class="save">${l.off}% bulk discount</small>` : ''}
       ${later ? `<button class="linky" data-back="${i}" style="margin-top:.4rem">Move to cart</button>`
         : `<div class="qty" style="margin-top:.4rem">
@@ -414,7 +416,8 @@ function orderMessage() {
     const p = S.byId(it.id), l = S.lineTotal(it);
     L.push(`${i + 1}. ${p.name} × ${it.qty} — ${money(l.net)}`);
     const vt = S.variantText(p, it.v); if (vt) L.push(`   ${vt}`);
-    if (it.note) L.push(`   ${p.personalise?.label || 'Note'}: ${it.note}`);
+    if (it.opts) Object.entries(it.opts).forEach(([k, v]) => L.push(`   ${k}: ${v}`));
+    else if (it.note) L.push(`   Note: ${it.note}`);
     if (l.off) L.push(`   ${l.off}% bulk discount`);
   });
   L.push('', `Subtotal: ${money(t.sub)}`);
@@ -618,7 +621,7 @@ function recordOrder(channel, items, totals, paymentId, buyer) {
     items: items.map(it => {
       const p = S.byId(it.id), l = S.lineTotal(it);
       return { id: it.id, name: p.name, qty: it.qty, variant: S.variantText(p, it.v),
-               note: it.note || '', unit: l.unit, total: l.net };
+               note: it.note || '', options: it.opts || null, unit: l.unit, total: l.net };
     }),
     totals: { sub: totals.sub, saved: totals.saved, ship: totals.ship, grand: totals.grand, count: totals.count },
     customer: { name: who.name || '', phone: who.phone || '', email: who.email || '',
@@ -652,6 +655,7 @@ async function boot() {
 
   window.PROMO.start();
   window.GA.start();
+  window.CUSTOM.wire();
 
   const bar = $('#topbar');
   const measure = () => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px');
@@ -689,7 +693,7 @@ async function boot() {
     /* card buttons */
     const add = t.closest('[data-add]');
     if (add) { const p = S.byId(add.dataset.add);
-      if (p.personalise) { toast('Pick your text on the product page', I.info); location.hash = '#/p/' + p.id; return; }
+      if (window.CUSTOM.has(p)) { toast('This one needs your details', I.info); location.hash = '#/p/' + p.id; return; }
       S.add(p.id, S.defaults(p));
       GA.event('add_to_cart', { currency: CFG.currency, value: p.price, items: [GA.item(p, 1)] });
       paintCart(false);
@@ -699,11 +703,11 @@ async function boot() {
       return; }
     const buy = t.closest('[data-buy]');
     if (buy) { const p = S.byId(buy.dataset.buy);
-      if (p.personalise) { location.hash = '#/p/' + p.id; return; }
+      if (window.CUSTOM.has(p)) { location.hash = '#/p/' + p.id; return; }
       return pay([{ id: p.id, v: S.defaults(p), note: '', qty: 1 }], buy); }
     const wab = t.closest('[data-wa]');
     if (wab) { const p = S.byId(wab.dataset.wa);
-      if (p.personalise) { location.hash = '#/p/' + p.id; return; }
+      if (window.CUSTOM.has(p)) { location.hash = '#/p/' + p.id; return; }
       return openWA([{ id: p.id, v: S.defaults(p), note: '', qty: 1 }]); }
     const quote = t.closest('[data-quote]'); if (quote) { location.hash = '#/custom?p=' + quote.dataset.quote; return; }
 
@@ -714,7 +718,8 @@ async function boot() {
     if (pq && pdp) { pdp.qty = Math.max(1, pdp.qty + +pq.dataset.pq); syncPdp(); return; }
     if (t.closest('#pdpAdd') && pdp) { if (pdpNeedsNote()) return;
       const it = pdpItem(); const name = pdp.p.name;
-      S.add(it.id, it.v, it.note, it.qty);
+      S.add(it.id, it.v, it.note, it.qty, it.opts);
+      window.CUSTOM.reset();
       GA.event('add_to_cart', { currency: CFG.currency, value: S.unitPrice(pdp.p, it.v) * it.qty,
                                 items: [GA.item(pdp.p, it.qty, S.variantText(pdp.p, it.v))] });
       paintCart(false);

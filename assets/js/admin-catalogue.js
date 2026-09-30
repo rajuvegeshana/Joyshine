@@ -165,11 +165,14 @@ function productForm(r) {
   </div>
 
   <div class="ad-card">
-    <h3>Personalisation</h3>
-    <div class="ad-grid3">
-      <label class="ad-field"><span>What you ask for (blank = none)</span><input id="p_label" value="${esc(p.personalise?.label)}" placeholder="Name to print"></label>
-      <label class="ad-field"><span>Character limit</span><input id="p_max" type="number" min="1" value="${p.personalise?.max ?? 20}"></label>
-      <label class="ad-field" style="margin-bottom:0"><span>Example</span><input id="p_ph" value="${esc(p.personalise?.placeholder)}" placeholder="e.g. Aarohi"></label>
+    <h3>What the customer fills in</h3>
+    <p class="ad-p">Each one becomes a field on the product page. Text for a name or a
+      message, a dropdown for a choice you want to limit, a colour picker, or a file
+      upload for a logo or artwork. Leave it empty and the product has no options.</p>
+    <div id="custList" class="ad-occ"></div>
+    <div class="ad-btns" style="margin-top:.9rem">
+      ${Object.entries(window.CUSTOM.TYPES).map(([t, n]) =>
+        `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="cuadd" data-type="${t}">+ ${n}</button>`).join('')}
     </div>
   </div>
 
@@ -187,6 +190,52 @@ function productForm(r) {
     <p class="ad-p">Hiding keeps the product and takes it off the shop. Deleting cannot be undone.</p>
     <button class="ad-btn ad-btn--warn" data-x="delete"${r.isNew ? ' disabled' : ''}>Delete this product</button>
   </div>`;
+}
+
+/* ---------- the customisation builder --------------------- */
+let custDraft = [];
+
+function paintCustom() {
+  const box = $('#custList'); if (!box) return;
+  if (!custDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No options yet. This product is sold as it is shown.</p>';
+    return;
+  }
+  box.innerHTML = custDraft.map((f, i) => `
+    <div class="ad-o on" data-cui="${i}">
+      <div class="ad-o__bar">
+        <span class="ad-pill ad-pill--clay">${esc(window.CUSTOM.TYPES[f.type] || f.type)}</span>
+        <span class="ad-o__name">${esc(f.label || 'Untitled option')}</span>
+        ${f.required ? '<span class="ad-pill ad-pill--need">required</span>' : ''}
+        <button class="ad-o__more" data-x="cuup" ${i === 0 ? 'disabled' : ''}>&uarr;</button>
+        <button class="ad-o__more" data-x="cudown" ${i === custDraft.length - 1 ? 'disabled' : ''}>&darr;</button>
+        <button class="ad-o__more" data-x="cudel">Remove</button>
+      </div>
+      <div class="ad-o__body" style="display:grid">
+        <div class="ad-grid3">
+          <label class="ad-field" style="margin:0"><span>What you ask for</span>
+            <input data-cuf="label" data-i="${i}" value="${esc(f.label)}" placeholder="Name to print"></label>
+          ${f.type === 'text' || f.type === 'textarea' ? `
+            <label class="ad-field" style="margin:0"><span>Character limit</span>
+              <input type="number" min="1" data-cuf="max" data-i="${i}" value="${f.max || 24}"></label>
+            <label class="ad-field" style="margin:0"><span>Example to show</span>
+              <input data-cuf="placeholder" data-i="${i}" value="${esc(f.placeholder)}" placeholder="e.g. Aarohi"></label>` : ''}
+          ${f.type === 'select' ? `
+            <label class="ad-field" style="margin:0;grid-column:span 2"><span>Choices, separated by commas</span>
+              <input data-cuf="options" data-i="${i}" value="${esc((f.options || []).join(', '))}"
+                     placeholder="Serif, Rounded, Block"></label>` : ''}
+          ${f.type === 'colour' ? `
+            <label class="ad-field" style="margin:0"><span>Starting colour</span>
+              <input type="color" data-cuf="value" data-i="${i}" value="${esc(f.value || '#ff9fc4')}"></label>` : ''}
+        </div>
+        <label class="ad-field" style="margin:0"><span>Helper note under the field</span>
+          <input data-cuf="hint" data-i="${i}" value="${esc(f.hint)}"
+                 placeholder="${f.type === 'image' ? 'PNG or SVG. A plain background prints best.' : 'Optional'}"></label>
+        <label class="ad-row--switch" style="margin:0">
+          <input type="checkbox" data-cuf="required" data-i="${i}" ${f.required ? 'checked' : ''}>
+          <span><b>They must fill this in</b><i>Adding to the basket is blocked until they do.</i></span></label>
+      </div>
+    </div>`).join('');
 }
 
 function readForm(r) {
@@ -219,7 +268,8 @@ function readForm(r) {
   if (on('v_colour') && V.COLOURS) variants.colour = V.COLOURS;
   if (Object.keys(variants).length) data.variants = variants;
 
-  if (g('p_label')) data.personalise = { label: g('p_label'), max: n('p_max') || 20, placeholder: g('p_ph') };
+  const custom = custDraft.filter(f => (f.label || '').trim());
+  if (custom.length) data.custom = custom;
 
   return { id: r.id || slug(name), data, sort: n('f_sort') ?? 0, hidden: on('f_hidden') };
 }
@@ -580,10 +630,30 @@ function wire(t) {
     if (confirm('Delete the code ' + code + '?')) CLOUD.remove('offers', 'code=eq.' + encodeURIComponent(code)).then(paintOffers);
     return true;
   }
-  if (act === 'new') { editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length }; paintProducts(); return true; }
+  if (act === 'new') {
+    editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
+    custDraft = []; paintProducts(); paintCustom(); return true;
+  }
   if (act === 'edit') {
     const id = t.closest('[data-pid]').dataset.pid;
-    editing = PRODUCTS.find(r => r.id === id); paintProducts(); return true;
+    editing = PRODUCTS.find(r => r.id === id);
+    custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
+    paintProducts(); paintCustom(); return true;
+  }
+
+  if (act === 'cuadd') {
+    const type = t.closest('[data-type]').dataset.type;
+    custDraft.push({ type, label: '', required: false,
+      ...(type === 'text' || type === 'textarea' ? { max: 24 } : {}),
+      ...(type === 'select' ? { options: [] } : {}) });
+    paintCustom(); return true;
+  }
+  if (act === 'cudel') { custDraft.splice(+t.closest('[data-cui]').dataset.cui, 1); paintCustom(); return true; }
+  if (act === 'cuup' || act === 'cudown') {
+    const i = +t.closest('[data-cui]').dataset.cui;
+    const j = act === 'cuup' ? i - 1 : i + 1;
+    if (j >= 0 && j < custDraft.length) { [custDraft[i], custDraft[j]] = [custDraft[j], custDraft[i]]; paintCustom(); }
+    return true;
   }
   if (act === 'cancel') { editing = null; paintProducts(); return true; }
   if (act === 'save') return saveProduct();
@@ -613,6 +683,16 @@ function wire(t) {
 }
 
 function wireChange(t) {
+  if (t.dataset.cuf) {
+    const f = custDraft[+t.dataset.i]; if (!f) return true;
+    const k = t.dataset.cuf;
+    if (k === 'required') f.required = t.checked;
+    else if (k === 'options') f.options = t.value.split(',').map(s => s.trim()).filter(Boolean);
+    else if (k === 'max') f.max = +t.value || 24;
+    else f[k] = t.value;
+    if (k === 'label' || k === 'required') paintCustom();
+    return true;
+  }
   if (t.id === 'prodFilter') { paintProducts(t.value); return true; }
   if (t.dataset.ostatus) { CLOUD.update('orders', 'id=eq.' + t.dataset.ostatus, { status: t.value }).then(() => toast('Order updated')); return true; }
   if (t.dataset.qstatus) { CLOUD.update('requests', 'id=eq.' + t.dataset.qstatus, { status: t.value }).then(() => toast('Request updated')); return true; }
@@ -630,7 +710,7 @@ function wireFile() {
 async function paint(tab) {
   wireFile();
   if (tab === 'marketing') { paintOffers(); paintVisits(); }
-  if (tab === 'products') { if (inn() && !PRODUCTS.length) await pull(); paintProducts($('#prodFilter')?.value || ''); }
+  if (tab === 'products') { if (inn() && !PRODUCTS.length) await pull(); paintProducts($('#prodFilter')?.value || ''); paintCustom(); }
   if (tab === 'orders') paintOrders();
   if (tab === 'requests') paintRequests();
   if (tab === 'reviews') { if (inn() && !PRODUCTS.length) await pull(); paintReviews(); }

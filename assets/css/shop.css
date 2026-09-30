@@ -369,3 +369,49 @@
 .legal__body p { color: var(--ink-soft); margin-bottom: .9rem; font-size: .94rem; }
 .legal__body strong { color: var(--ink-strong); }
 .legal__body a { color: var(--brand); border-bottom: 1px solid currentColor; }
+
+/* ===== product customisation ============================= */
+.cust {
+  margin: 1.6rem 0; padding: 1.1rem 1.15rem;
+  border: var(--border-w) dashed var(--line-strong);
+  border-radius: var(--r-l); background: var(--surface-2);
+  display: grid; gap: 1rem;
+}
+.cust__h {
+  font-family: var(--font-display); font-size: .72rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-quiet);
+}
+.cust__f { margin: 0; }
+.cust__f small { font-size: .74rem; }
+.cust__f--bad input, .cust__f--bad textarea, .cust__f--bad select,
+.cust__f--bad .cust__up { border-color: var(--hot); }
+.cust__f u { display: none; font-size: .76rem; color: var(--hot); text-decoration: none; }
+.cust__f--bad u { display: block; }
+
+.cust__col { display: flex; gap: .5rem; align-items: center; }
+.cust__col input[type=color] {
+  width: 52px; height: 42px; padding: 3px; cursor: pointer;
+  border: var(--border-w) solid var(--line-strong); border-radius: var(--r-s);
+  background: var(--surface);
+}
+.cust__col input[type=text] { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .04em; }
+
+.cust__up {
+  display: flex; align-items: center; gap: .7rem; flex-wrap: wrap;
+  padding: .8rem; border: var(--border-w) dashed var(--line-strong);
+  border-radius: var(--r-s); background: var(--surface);
+  transition: border-color .2s, background .2s;
+}
+.cust__up--over { border-color: var(--brand); background: var(--ring); }
+.cust__upname { font-size: .82rem; color: var(--ink-quiet); min-width: 0; overflow-wrap: anywhere; }
+.cust__prev {
+  display: flex; align-items: center; gap: .8rem; margin-top: .6rem;
+  padding: .6rem; border-radius: var(--r-s); background: var(--surface);
+  border: var(--border-w) solid var(--line);
+}
+.cust__prev img {
+  width: 64px; height: 64px; object-fit: contain;
+  border-radius: var(--r-s); background: var(--surface-2);
+}
+.cust__prev span { font-size: .84rem; overflow-wrap: anywhere; }
+.cust__prev .linky { margin-left: auto; flex: none; }

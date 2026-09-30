@@ -347,12 +347,7 @@ function product(id, sel) {
       </div>
       ${p.variants?.colour ? `<p class="quiet sel__now">Colour: <b>${esc((p.variants.colour.find(c => c.k === v.colour) || {}).label || '')}</b></p>` : ''}
 
-      ${p.personalise ? `<label class="field pers">
-        <span>${esc(p.personalise.label)} <i>*</i></span>
-        <input type="text" id="pdpNote" maxlength="${p.personalise.max}" placeholder="${esc(p.personalise.placeholder)}">
-        <u></u>
-        <small class="quiet">Printed exactly as you type it. ${p.personalise.max} characters max.</small>
-      </label>` : ''}
+      ${window.CUSTOM.render(p)}
 
       <div class="qtyrow">
         <div class="qty" data-pdpqty>
