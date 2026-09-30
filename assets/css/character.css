@@ -406,8 +406,8 @@
 .printer__img { width: 78%; height: auto; display: block; margin: 0 auto; }
 .ico-img { width: 1.1em; height: 1.1em; object-fit: contain; display: inline-block; }
 
-/* 1. PRINT — the default: it builds up off the bed */
-.printer[data-anim="print"] .printer__art { animation: inherit; }
+/* 1. PRINT — the default: it builds up off the bed and keeps
+   whatever idle motion the theme gives it. No rule needed. */
 
 /* 2. FLOAT — it hangs in the air, shadow breathing underneath */
 .printer[data-anim="float"] .printer__art,
