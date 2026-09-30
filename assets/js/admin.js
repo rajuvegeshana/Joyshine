@@ -302,11 +302,13 @@ document.addEventListener('click', e => {
        the name rather than the element and both stay in step */
     $$('.ad-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === want));
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
-    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look',
+    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', products: 'Products',
+                     orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
                      shop: 'Shop & contact', publish: 'Publish' };
     $('#paneTitle').textContent = titles[want] || 'Control panel';
     scrollTo({ top: 0, behavior: 'instant' });
     paintAll();
+    window.ADMINX?.paint(want);
     return;
   }
   const more = e.target.closest('[data-more]');
@@ -395,6 +397,7 @@ document.addEventListener('click', e => {
 
 document.addEventListener('change', e => {
   const t = e.target;
+  if (window.ADMINX?.wireChange(t)) return;
 
   /* occasion rows */
   const row = t.closest('.ad-o');
@@ -475,6 +478,8 @@ $('#signinForm').addEventListener('submit', async e => {
     await window.CLOUD.signIn($('#suEmail').value.trim(), $('#suPass').value);
     $('#suPass').value = '';
     paintCloud(); await pullCloud(); paintAll();
+    await window.ADMINX?.pull();
+    window.ADMINX?.paint($$('.ad-tab.on')[0]?.dataset.tab);
     toast('Signed in');
   } catch (ex) {
     err.textContent = ex.message; err.hidden = false;
@@ -507,6 +512,7 @@ if (cloudOn()) {
   }
 }
 
+window.ADMINX?.setToast(toast);
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
 if (cloudOn() && window.CLOUD.signedIn()) window.CLOUD.refresh().then(() => { paintCloud(); pullCloud(); });

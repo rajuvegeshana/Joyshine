@@ -136,6 +136,33 @@ async function write(data, retried = false) {
   return (await r.json())[0];
 }
 
+/* ---- generic table access, signed in --------------------- */
+async function req(method, path, body, retried = false) {
+  if (!ready()) throw new Error('Supabase is not configured');
+  const opts = { method, headers: { ...headers(true) } };
+  if (method === 'POST' || method === 'PATCH') {
+    opts.headers.Prefer = method === 'POST'
+      ? 'resolution=merge-duplicates,return=representation' : 'return=representation';
+    opts.body = JSON.stringify(body);
+  }
+  const r = await fetch(`${base()}/rest/v1/${path}`, opts);
+  if (r.status === 401 && !retried) {
+    if (await refresh()) return req(method, path, body, true);
+    throw new Error('Your session expired. Sign in again.');
+  }
+  if (!r.ok) {
+    const d = await r.json().catch(() => ({}));
+    throw new Error(d.message || d.hint || `Request failed (${r.status})`);
+  }
+  if (r.status === 204) return null;
+  return r.json().catch(() => null);
+}
+
+const rows    = path            => req('GET', path);
+const upsert  = (table, body)   => req('POST', `${table}?on_conflict=id`, Array.isArray(body) ? body : [body]);
+const update  = (table, q, b)   => req('PATCH', `${table}?${q}`, b);
+const remove  = (table, q)      => req('DELETE', `${table}?${q}`);
+
 /* ---- setup check ------------------------------------------
    Proves the wiring is right instead of leaving you to hope.
    The important one is "a stranger cannot write": if that ever
@@ -222,5 +249,6 @@ async function diagnose() {
 }
 
 return { ready, signIn, signOut, refresh, user, signedIn, read, write, diagnose,
-         sendRecovery, recoveryInUrl, setPassword };
+         sendRecovery, recoveryInUrl, setPassword,
+         rows, upsert, update, remove };
 })();

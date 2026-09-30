@@ -383,6 +383,7 @@ const buildOrderPreview = () => { $('#waPreview').textContent = orderMessage(); 
 function sendOrder() {
   if (!validateOrder(true)) { $('[aria-invalid="true"]')?.focus(); toast('A few fields still need you', I.info); return; }
   S.write(S.K.buyer, F());
+  recordOrder('whatsapp', waItems, S.totals(waItems), null, F());
   openWhatsApp(orderMessage());
   closePanels(); confetti();
   toast('WhatsApp is open — press send there to confirm', I.wa, 6000);
@@ -460,6 +461,16 @@ function sendCustom() {
 
   const b = S.read(S.K.buyer, {}) || {};
   S.write(S.K.buyer, { ...b, name, phone, email: $('#c_email').value.trim() });
+  const g = id => $('#' + id)?.value.trim() || '';
+  const file = $('#c_file')?.files?.[0];
+  window.CATALOGUE.logRequest({
+    kind: cpath,
+    detail: { what: g('c_what'), link: g('c_link'), idea: g('c_idea'),
+              file: file ? `${file.name} (${Math.round(file.size / 1024)} KB)` : '',
+              qty: g('c_qty'), size: g('c_size'), material: g('c_mat'),
+              colour: g('c_col'), by: g('c_by'), notes: g('c_notes') },
+    customer: { name, phone, email: g('c_email') },
+  });
   openWhatsApp(customMessage());
   confetti();
   $('#customForm').innerHTML = `<div class="done">${I.check}
@@ -536,6 +547,27 @@ function paid(paymentId, items) {
     `*Order paid*\n\nPayment id: ${paymentId}\nTotal: ${money(t.grand)}\n\n${lines.join('\n')}\n\nMy delivery address:\n`);
 }
 
+/* ===== RECORDING ==========================================
+   A copy of every order and custom request goes to Supabase so
+   the dashboard has something to show. It is a record of what
+   the customer asked for, not proof of payment — nothing here
+   is server-verified. If it fails, the customer never notices. */
+function recordOrder(channel, items, totals, paymentId, buyer) {
+  const who = buyer || S.read(S.K.buyer, {}) || {};
+  window.CATALOGUE.logOrder({
+    channel, payment_id: paymentId || null,
+    items: items.map(it => {
+      const p = S.byId(it.id), l = S.lineTotal(it);
+      return { id: it.id, name: p.name, qty: it.qty, variant: S.variantText(p, it.v),
+               note: it.note || '', unit: l.unit, total: l.net };
+    }),
+    totals: { sub: totals.sub, saved: totals.saved, ship: totals.ship, grand: totals.grand, count: totals.count },
+    customer: { name: who.name || '', phone: who.phone || '', email: who.email || '',
+                address: who.addr || '', landmark: who.mark || '', city: who.city || '',
+                pin: who.pin || '', state: who.state || '', mode: who.mode || '', notes: who.notes || '' },
+  });
+}
+
 /* ===== SHARE ============================================== */
 async function share(id) {
   const p = S.byId(id);
@@ -549,6 +581,7 @@ async function share(id) {
 /* ===== BOOT =============================================== */
 async function boot() {
   await window.SETTINGS.load();
+  await window.CATALOGUE.load();       /* database first, files as the net */
   window.OCC_NOW = window.SETTINGS.current();
   applyTheme(null);
   fillBrand();
