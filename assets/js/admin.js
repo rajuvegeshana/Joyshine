@@ -55,6 +55,24 @@ function getS(path, fallback) {
   for (const p of parts) { if (cfg == null) return fallback; cfg = cfg[p]; }
   return cfg ?? fallback;
 }
+/* A pinned look beats the default and every occasion, which is easy to
+   forget a month later when the default will not budge. Say so. */
+function paintPin() {
+  const note = $('#pinNote'); if (!note) return;
+  const pin = getS('occasions.forceTheme', '') || '';
+  const def = getS('defaultTheme', 'clay');
+  const name = k => (THEME_LIST.find(t => t[0] === k) || [k, k])[1];
+  note.hidden = !pin;
+  if (!pin) return;
+  note.innerHTML = pin === def
+    ? `<b>${name(pin)}</b> is pinned, so occasions will not change the look.
+       <button class="ad-btn ad-btn--ghost ad-btn--sm" id="btnUnpin">Unpin it</button>`
+    : `The shop is showing <b>${name(pin)}</b>, not ${name(def)} — ${name(pin)} is pinned
+       below and a pin beats the default and every occasion.
+       <button class="ad-btn ad-btn--ghost ad-btn--sm" id="btnUnpin">Unpin it</button>
+       <button class="ad-btn ad-btn--ghost ad-btn--sm" id="btnPinDef">Pin ${name(def)} instead</button>`;
+}
+
 function occPatch(id) {
   let p = patch.occasions.find(o => o.id === id);
   if (!p) { p = { id }; patch.occasions.push(p); }
@@ -199,6 +217,7 @@ function paintSettings() {
   $('#occAuto').checked       = getS('occasions.auto', true);
   $('#defaultTheme').value    = getS('defaultTheme', 'clay');
   $('#forceTheme').value      = getS('occasions.forceTheme', '') || '';
+  paintPin();
   $('#engActive').checked     = getS('engineering.active', true);
   $('#engName').value         = getS('engineering.name', '');
   $('#engBlurb').value        = getS('engineering.blurb', '');
@@ -459,6 +478,19 @@ document.addEventListener('click', e => {
     window.CLOUD.signOut(); paintCloud(); toast('Signed out');
     return;
   }
+  if (e.target.closest('#btnUnpin')) {
+    setS('occasions.forceTheme', null);
+    $('#forceTheme').value = ''; paintPin(); paintToday();
+    toast('Unpinned. Publish to put it live.');
+    return;
+  }
+  if (e.target.closest('#btnPinDef')) {
+    const def = getS('defaultTheme', 'clay');
+    setS('occasions.forceTheme', def);
+    $('#forceTheme').value = def; paintPin(); paintToday();
+    toast('Pinned. Publish to put it live.');
+    return;
+  }
   if (e.target.closest('#btnLoad')) return $('#fileIn').click();
 
   if (e.target.closest('#btnPreview')) {
@@ -531,8 +563,8 @@ document.addEventListener('change', e => {
 
   const map = {
     occAuto:      () => setS('occasions.auto', t.checked),
-    defaultTheme: () => setS('defaultTheme', t.value),
-    forceTheme:   () => setS('occasions.forceTheme', t.value || null),
+    defaultTheme: () => { setS('defaultTheme', t.value); paintPin(); },
+    forceTheme:   () => { setS('occasions.forceTheme', t.value || null); paintPin(); },
     forceOccasion:() => setS('occasions.forceOccasion', t.value || null),
     engActive:    () => setS('engineering.active', t.checked),
     engName:      () => setS('engineering.name', t.value),
