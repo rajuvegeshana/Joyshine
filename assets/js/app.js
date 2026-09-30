@@ -385,19 +385,118 @@ const F = () => ({
   email: $('#f_email').value.trim(), pin: $('#f_pin').value.trim(),
   addr: $('#f_addr').value.trim(), city: $('#f_city').value.trim(),
   state: $('#f_state').value.trim(), mark: $('#f_mark').value.trim(),
+  flat: $('#f_flat')?.value.trim() || '', bldg: $('#f_bldg')?.value.trim() || '',
+  floor: $('#f_floor')?.value.trim() || '', area: $('#f_area')?.value || '',
   notes: $('#f_notes').value.trim(),
   mode: ($('input[name=mode]:checked') || {}).value || 'Delivery',
 });
+
+/* the street line, as it would be written on a parcel */
+function addrLine(f) {
+  const one = [f.flat, f.bldg, f.floor && f.floor + ' floor'].filter(Boolean).join(', ');
+  return [one, f.addr, f.area].filter(Boolean).join(', ');
+}
 
 const PHONE = v => /^(\+?91[-\s]?)?[6-9]\d{9}$/.test(v.replace(/[\s-]/g, ''));
 const ORULES = {
   f_name: v => v.length >= 2 || 'Tell us who to address it to',
   f_phone: v => PHONE(v) || 'A 10-digit Indian mobile number',
-  f_pin: v => /^\d{6}$/.test(v) || '6-digit PIN code',
-  f_addr: v => v.length >= 8 || 'House / street, please',
+  /* a PIN has to be six digits AND exist: pinOk is set by the lookup */
+  f_pin: v => (/^[1-9]\d{5}$/.test(v) ? (pinOk === v ? true : (pinBad === v ? 'No such PIN code in India' : 'Checking that PIN code…'))
+                                       : 'A real 6-digit Indian PIN code'),
+  f_flat: v => v.length >= 1 || 'Flat or house number',
+  f_addr: v => v.length >= 4 || 'Street or road, please',
   f_city: v => v.length >= 2 || 'Which city?',
   f_state: v => v.length >= 2 || 'Which state?',
 };
+
+/* ---- PIN codes -------------------------------------------
+   India Post's own directory, asked over https, nothing sent
+   but the six digits. A PIN that it does not know cannot be
+   used: it is the commonest reason a parcel goes missing.     */
+let pinOk = '', pinBad = '', pinBusy = '';
+const PIN_CACHE = new Map();
+
+async function lookupPin(pin) {
+  if (!/^[1-9]\d{5}$/.test(pin) || pinBusy === pin) return;
+  if (PIN_CACHE.has(pin)) return usePin(pin, PIN_CACHE.get(pin));
+  pinBusy = pin;
+  say('Checking ' + pin + '…');
+  try {
+    const r = await fetch('https://api.postalpincode.in/pincode/' + pin, { cache: 'force-cache' });
+    const j = await r.json();
+    const rec = Array.isArray(j) ? j[0] : null;
+    const offices = (rec && rec.Status === 'Success' && rec.PostOffice) || null;
+    PIN_CACHE.set(pin, offices);
+    usePin(pin, offices);
+  } catch {
+    /* offline or blocked: do not hold the customer hostage to a lookup */
+    pinOk = pin; say('Could not check that PIN code just now — carry on.', 'warn');
+  } finally {
+    pinBusy = '';
+    validateOrder(false); buildOrderPreview();
+  }
+}
+
+function say(msg, kind = '') {
+  const el = $('#f_pinsay'); if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'pinsay' + (kind ? ' pinsay--' + kind : '');
+}
+
+function usePin(pin, offices) {
+  if ($('#f_pin').value.trim() !== pin) return;
+  const areaSel = $('#f_area');
+  if (!offices || !offices.length) {
+    pinBad = pin; pinOk = '';
+    if (areaSel) { areaSel.innerHTML = '<option>—</option>'; areaSel.disabled = true; }
+    say('India Post has no record of ' + pin + '. Check the digits.', 'bad');
+    return;
+  }
+  pinOk = pin; pinBad = '';
+  const first = offices[0];
+  $('#f_city').value = first.District || '';
+  $('#f_state').value = first.State || '';
+  if (areaSel) {
+    areaSel.disabled = false;
+    areaSel.innerHTML = '<option value="">Pick your locality</option>' +
+      offices.map(o => `<option>${esc(o.Name)}</option>`).join('');
+  }
+  say(`${first.District}, ${first.State} — ${offices.length} ${offices.length === 1 ? 'locality' : 'localities'} here.`, 'ok');
+}
+
+/* ---- locate me -------------------------------------------
+   The browser asks the customer first. We reverse-geocode with
+   OpenStreetMap, fill in what it gives us, and leave the flat,
+   building and floor to the person who lives there.           */
+function locateMe() {
+  const btn = $('#f_locate');
+  if (!navigator.geolocation) { toast('This browser cannot share a location', I.info); return; }
+  btn.disabled = true; btn.textContent = 'Finding you…';
+  const done = (msg, kind) => { btn.disabled = false; btn.textContent = 'Locate me'; if (msg) say(msg, kind); };
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lon } = pos.coords;
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+        { headers: { Accept: 'application/json' } });
+      const j = await r.json();
+      const a = j.address || {};
+      const pin = (a.postcode || '').replace(/\D/g, '').slice(0, 6);
+      const road = [a.road, a.suburb || a.neighbourhood || a.village].filter(Boolean).join(', ');
+      if (road) $('#f_addr').value = road;
+      if (a.city || a.town || a.state_district) $('#f_city').value = a.city || a.town || a.state_district;
+      if (a.state) $('#f_state').value = a.state;
+      if (pin) { $('#f_pin').value = pin; await lookupPin(pin); }
+      done(pin ? '' : 'Found the street but not the PIN code — type it in.', pin ? '' : 'warn');
+      $('#f_flat').focus();
+      toast('Filled in what we could — add your flat and floor', I.check);
+    } catch { done('Could not turn that location into an address', 'bad'); }
+    validateOrder(false); buildOrderPreview();
+  }, err => {
+    done(err.code === 1 ? 'Location permission was declined — type the PIN code instead.' : 'Could not get a location', 'warn');
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 300000 });
+}
 
 function validateOrder(showAll) {
   let ok = true;
@@ -430,7 +529,7 @@ function orderMessage() {
   L.push(`*${f.mode}*`, f.name || '-', f.phone || '-');
   if (f.email) L.push(f.email);
   if (f.mode === 'Delivery') {
-    L.push(f.addr || '-');
+    L.push(addrLine(f) || '-');
     if (f.mark) L.push(`Landmark: ${f.mark}`);
     L.push(`${f.city || '-'} ${f.pin || ''}`.trim(), f.state || '-');
   }
@@ -465,16 +564,26 @@ function prefillBuyer() {
   ({ f_name: 'name', f_phone: 'phone', f_email: 'email', f_pin: 'pin', f_addr: 'addr',
      f_city: 'city', f_state: 'state', f_mark: 'mark' });
   const map = { f_name: 'name', f_phone: 'phone', f_email: 'email', f_pin: 'pin',
-                f_addr: 'addr', f_city: 'city', f_state: 'state', f_mark: 'mark' };
+                f_addr: 'addr', f_city: 'city', f_state: 'state', f_mark: 'mark',
+                f_flat: 'flat', f_bldg: 'bldg', f_floor: 'floor' };
   for (const [id, k] of Object.entries(map)) if (b[k] && $('#' + id)) $('#' + id).value = b[k];
+  if (b.pin) lookupPin(b.pin);
 }
 
 /* ===== CUSTOM PRINT FORM ================================== */
+const FILE_FIELD = accept => `
+  <label class="field"><span>Your file</span>
+    <input id="c_file" type="file" accept="${accept}">
+    <small class="quiet">Up to ${window.JOYSHINE.custom.maxSizeMB} MB. It uploads when you send, and WhatsApp gets the link.</small><u></u></label>
+  <div class="upbar" id="c_upbar" hidden><i></i></div>
+  <label class="field"><span>Or paste a link <small class="quiet">Google Drive, Dropbox, WeTransfer, MakerWorld…</small></span>
+    <input id="c_drive" type="url" placeholder="https://drive.google.com/…"><u></u></label>`;
+
 const PATH_FIELDS = {
   image: `<label class="field"><span>What are we making</span><input id="c_what" type="text" placeholder="e.g. a plaque with our surname on it"><u></u></label>
-          <label class="field"><span>Your file</span><input id="c_file" type="file" accept=".jpg,.jpeg,.png,.pdf,.stl,.3mf,.obj"><small class="quiet">Picked here for reference only — attach it in WhatsApp when it opens.</small></label>`,
+          ${FILE_FIELD('.jpg,.jpeg,.png,.pdf,.stl,.3mf,.obj')}`,
   stl:   `<label class="field"><span>Model name</span><input id="c_what" type="text" placeholder="e.g. articulated dragon v3"><u></u></label>
-          <label class="field"><span>Your 3D file</span><input id="c_file" type="file" accept=".stl,.3mf,.obj"><small class="quiet">Picked here for reference only — attach it in WhatsApp when it opens.</small></label>`,
+          ${FILE_FIELD('.stl,.3mf,.obj,.step,.stp,.zip')}`,
   link:  `<label class="field"><span>MakerWorld link <i>*</i></span><input id="c_link" type="url" placeholder="https://makerworld.com/en/models/..."><u></u></label>
           <p class="quiet" style="font-size:.8rem;margin-top:-.4rem">We only print models whose licence allows it. If it doesn't, we'll tell you.</p>`,
   idea:  `<label class="field"><span>Describe your idea <i>*</i></span><textarea id="c_idea" placeholder="I want a small tractor model with my son's name on it, about 15 cm long, in red."></textarea><u></u></label>`,
@@ -504,7 +613,10 @@ function customMessage() {
   if (g('c_link')) L.push(`Link: ${g('c_link')}`);
   if (g('c_idea')) L.push(`Idea: ${g('c_idea')}`);
   const f = $('#c_file')?.files?.[0];
-  if (f) L.push(`File: ${f.name} (${Math.round(f.size / 1024)} KB) — attaching in this chat`);
+  if (f) L.push(uploadedUrl
+    ? `File: ${f.name} (${Math.round(f.size / 1024)} KB)\n${uploadedUrl}`
+    : `File: ${f.name} (${Math.round(f.size / 1024)} KB) — attaching in this chat`);
+  if (g('c_drive')) L.push(`Shared link: ${g('c_drive')}`);
   L.push('', `Quantity: ${g('c_qty') || 1}`, `Size: ${g('c_size')}`, `Material: ${g('c_mat')}`, `Colour: ${g('c_col')}`);
   if (g('c_by')) L.push(`Needed by: ${g('c_by')}`);
   L.push('', `Name: ${g('c_name') || '-'}`, `Mobile: ${g('c_phone') || '-'}`);
@@ -515,7 +627,29 @@ function customMessage() {
 }
 const buildCustomPreview = () => { const el = $('#cPreview'); if (el) el.textContent = customMessage(); };
 
-function sendCustom() {
+let uploadedUrl = '';
+
+/* put the file somewhere WhatsApp can reach before opening it */
+async function pushFile() {
+  const f = $('#c_file')?.files?.[0];
+  if (!f) return '';
+  const cap = (CFG.custom.maxSizeMB || 25) * 1024 * 1024;
+  if (f.size > cap) { toast(`That file is over ${CFG.custom.maxSizeMB} MB — send a link instead`, I.info, 6000); return ''; }
+  const bar = $('#c_upbar'), fill = bar?.querySelector('i');
+  if (bar) { bar.hidden = false; bar.dataset.state = ''; }
+  try {
+    const url = await window.CATALOGUE.uploadFile(f, p => { if (fill) fill.style.width = Math.round(p * 100) + '%'; });
+    if (fill) fill.style.width = '100%';
+    if (bar) bar.dataset.state = 'done';
+    return url;
+  } catch {
+    if (bar) { bar.dataset.state = 'fail'; }
+    toast('Could not upload the file — attach it in WhatsApp instead', I.info, 6000);
+    return '';
+  }
+}
+
+async function sendCustom() {
   const name = $('#c_name').value.trim(), phone = $('#c_phone').value.trim();
   const fail = (el, msg) => { el.setAttribute('aria-invalid', 'true');
     el.parentElement.querySelector('u').textContent = msg; el.focus(); toast(msg, I.info); };
@@ -528,9 +662,17 @@ function sendCustom() {
   S.write(S.K.buyer, { ...b, name, phone, email: $('#c_email').value.trim() });
   const g = id => $('#' + id)?.value.trim() || '';
   const file = $('#c_file')?.files?.[0];
+
+  const btn = $('#cSend');
+  if (btn) { btn.disabled = true; btn.dataset.was = btn.innerHTML; btn.textContent = 'Uploading…'; }
+  uploadedUrl = await pushFile();
+  if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.was; }
+  buildCustomPreview();
+
   window.CATALOGUE.logRequest({
     kind: cpath,
-    detail: { what: g('c_what'), link: g('c_link'), idea: g('c_idea'),
+    detail: { what: g('c_what'), link: g('c_link'), idea: g('c_idea'), drive: g('c_drive'),
+              fileUrl: uploadedUrl,
               file: file ? `${file.name} (${Math.round(file.size / 1024)} KB)` : '',
               qty: g('c_qty'), size: g('c_size'), material: g('c_mat'),
               colour: g('c_col'), by: g('c_by'), notes: g('c_notes') },
@@ -541,7 +683,10 @@ function sendCustom() {
   confetti();
   $('#customForm').innerHTML = `<div class="done">${I.check}
     <h3>Your idea is on its way! ✨</h3>
-    <p>WhatsApp should be open with your enquiry. ${$('#c_file')?.files?.[0] ? 'Attach the file there and press send.' : 'Press send there and we will reply with a price and a print slot.'}</p>
+    <p>WhatsApp should be open with your enquiry. ${
+      uploadedUrl ? 'Your file went up with it — just press send.'
+      : ($('#c_file')?.files?.[0] ? 'Attach the file there and press send.'
+      : 'Press send there and we will reply with a price and a print slot.')}</p>
     <div class="hero__cta"><a class="btn btn--ghost btn--sm" href="#/shop">Keep exploring</a></div></div>`;
 }
 
@@ -629,7 +774,7 @@ function recordOrder(channel, items, totals, paymentId, buyer) {
     }),
     totals: { sub: totals.sub, saved: totals.saved, ship: totals.ship, grand: totals.grand, count: totals.count },
     customer: { name: who.name || '', phone: who.phone || '', email: who.email || '',
-                address: who.addr || '', landmark: who.mark || '', city: who.city || '',
+                address: addrLine(who) || who.addr || '', landmark: who.mark || '', city: who.city || '',
                 pin: who.pin || '', state: who.state || '', mode: who.mode || '', notes: who.notes || '' },
   });
 }
@@ -768,6 +913,7 @@ async function boot() {
     if (t.closest('#payCart')) return pay(S.cart, $('#payCart'));
     if (t.closest('#waCart')) { closePanels(); return setTimeout(() => openWA(S.cart), 250); }
     if (t.closest('#waSend')) return sendOrder();
+    if (t.closest('#f_locate')) return locateMe();
     if (t.closest('#dropCode')) { window.PROMO.clear(); paintCart(); toast('Code removed'); return; }
 
     if (t.closest('#engQuote') || t.closest('#engQuote2')) {
@@ -781,7 +927,11 @@ async function boot() {
   document.addEventListener('input', e => {
     const t = e.target;
     if (t.id === 'q') { paintSearch(t.value); return; }
-    if (t.closest('#waForm')) { t.dataset.touched = '1'; validateOrder(false); buildOrderPreview(); return; }
+    if (t.closest('#waForm')) {
+      t.dataset.touched = '1';
+      if (t.id === 'f_pin') { pinOk = ''; pinBad = ''; lookupPin(t.value.trim()); }
+      validateOrder(false); buildOrderPreview(); return;
+    }
     if (t.closest('#customForm')) { t.removeAttribute('aria-invalid'); buildCustomPreview(); return; }
     if (t.id === 'pdpNote') { t.removeAttribute('aria-invalid'); t.parentElement.querySelector('u').textContent = ''; return; }
   });

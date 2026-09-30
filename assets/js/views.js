@@ -468,7 +468,7 @@ function custom(q) {
     </div>
 
     <form class="cform r" id="customForm" novalidate>
-      <div class="note">${I.info}<span>Files are not uploaded from this page. Fill this in, press the button, and WhatsApp opens with your enquiry typed out — attach the file there in one tap. Accepted: ${esc(c.fileTypes)}, up to ${c.maxSizeMB} MB.</span></div>
+      <div class="note">${I.info}<span>Attach your file here and it uploads when you press send, so WhatsApp opens with the link already in the message. Too big, or already on a drive? Paste the link instead. Accepted: ${esc(c.fileTypes)}, up to ${c.maxSizeMB} MB.</span></div>
 
       <div id="pathFields"></div>
 

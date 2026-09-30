@@ -54,6 +54,35 @@ async function load() {
   return { from, counts: { products: window.PRODUCTS.length, categories: window.CATEGORIES.length } };
 }
 
+/* ---- a customer's file --------------------------------------
+   Uploaded straight to a bucket of its own, so WhatsApp gets a
+   link rather than "please attach it yourself". The bucket
+   carries its own size and type limits (see
+   supabase/schema-4-uploads.sql); if it is not set up, or the
+   upload fails, the caller falls back to attaching by hand and
+   nothing is lost.                                             */
+const BUCKET = 'customer-uploads';
+
+function uploadFile(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (!ready()) return reject(new Error('not configured'));
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8);
+    const safe = file.name.replace(/[^\w.\- ]+/g, '').slice(-60) || 'file.' + ext;
+    const key = `${new Date().toISOString().slice(0, 10)}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}-${safe}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${base()}/storage/v1/object/${BUCKET}/${encodeURI(key)}`);
+    xhr.setRequestHeader('apikey', CFG().anonKey);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + CFG().anonKey);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+    xhr.onload = () => xhr.status >= 200 && xhr.status < 300
+      ? resolve(`${base()}/storage/v1/object/public/${BUCKET}/${encodeURI(key)}`)
+      : reject(new Error('upload refused (' + xhr.status + ')'));
+    xhr.onerror = () => reject(new Error('upload failed'));
+    xhr.send(file);
+  });
+}
+
 /* ---- the line-up -------------------------------------------
    The owner can say which products lead the shop, and in what
    order, either for every day or for one occasion. Reordering
@@ -102,5 +131,5 @@ async function post(table, row) {
 const logOrder = o => post('orders', { ref: ref('JS'), ...o });
 const logRequest = q => post('requests', { ref: ref('CP'), ...q });
 
-return { load, arrange, logOrder, logRequest, get source() { return from; } };
+return { load, arrange, uploadFile, logOrder, logRequest, get source() { return from; } };
 })();

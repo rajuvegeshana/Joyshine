@@ -19,12 +19,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400&family=Michroma&family=Space+Grotesk:wght@300..700&family=Baloo+2:wght@500..800&family=Nunito:wght@400..800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/base.css?v=202609301854">
-<link rel="stylesheet" href="assets/css/components.css?v=202609301854">
-<link rel="stylesheet" href="assets/css/shop.css?v=202609301854">
-<link rel="stylesheet" href="assets/css/rig.css?v=202609301854">
-<link rel="stylesheet" href="assets/css/character.css?v=202609301854">
-<link rel="stylesheet" href="assets/css/themes.css?v=202609301854">
+<link rel="stylesheet" href="assets/css/base.css?v=202609301857">
+<link rel="stylesheet" href="assets/css/components.css?v=202609301857">
+<link rel="stylesheet" href="assets/css/shop.css?v=202609301857">
+<link rel="stylesheet" href="assets/css/rig.css?v=202609301857">
+<link rel="stylesheet" href="assets/css/character.css?v=202609301857">
+<link rel="stylesheet" href="assets/css/themes.css?v=202609301857">
 </head>
 <body>
 
@@ -173,13 +173,24 @@
       </div>
       <label class="field"><span>Email</span><input id="f_email" type="email" autocomplete="email" placeholder="you@example.com"><u></u></label>
       <div id="addrBlock" class="stack">
-        <label class="field"><span>Flat, building, street <i>*</i></span><textarea id="f_addr" autocomplete="street-address" placeholder="302, Sunbeam Residency, 4th Cross Road"></textarea><u></u></label>
-        <label class="field"><span>Landmark</span><input id="f_mark" type="text" placeholder="Opposite the water tank"><u></u></label>
         <div class="row2">
-          <label class="field"><span>City <i>*</i></span><input id="f_city" type="text" autocomplete="address-level2" placeholder="Hyderabad"><u></u></label>
           <label class="field"><span>PIN code <i>*</i></span><input id="f_pin" type="text" inputmode="numeric" maxlength="6" autocomplete="postal-code" placeholder="500081"><u></u></label>
+          <div class="field"><span>Or let the phone do it</span>
+            <button class="btn btn--ghost btn--sm btn--block" id="f_locate" type="button">Locate me</button></div>
+        </div>
+        <p class="pinsay" id="f_pinsay" aria-live="polite"></p>
+        <div class="row2">
+          <label class="field"><span>Area / locality</span><select id="f_area" disabled><option>Enter the PIN code first</option></select><u></u></label>
+          <label class="field"><span>City / district <i>*</i></span><input id="f_city" type="text" autocomplete="address-level2" placeholder="Hyderabad"><u></u></label>
         </div>
         <label class="field"><span>State <i>*</i></span><input id="f_state" type="text" autocomplete="address-level1" placeholder="Telangana"><u></u></label>
+        <div class="row3">
+          <label class="field"><span>Flat / house no. <i>*</i></span><input id="f_flat" type="text" placeholder="302"><u></u></label>
+          <label class="field"><span>Building</span><input id="f_bldg" type="text" placeholder="Sunbeam Residency"><u></u></label>
+          <label class="field"><span>Floor</span><input id="f_floor" type="text" placeholder="3rd"><u></u></label>
+        </div>
+        <label class="field"><span>Street / road <i>*</i></span><textarea id="f_addr" autocomplete="street-address" placeholder="4th Cross Road, Kondapur"></textarea><u></u></label>
+        <label class="field"><span>Landmark</span><input id="f_mark" type="text" placeholder="Opposite the water tank"><u></u></label>
       </div>
       <label class="field"><span>Delivery instructions</span><textarea id="f_notes" placeholder="Gift wrap it, and the horn in gold if possible"></textarea><u></u></label>
       <div class="field"><span>Message preview</span><div class="preview" id="waPreview" aria-live="polite"></div></div>
@@ -196,21 +207,21 @@
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609301854"></script>
-<script src="assets/js/occasions.js?v=202609301854"></script>
-<script src="assets/js/products.js?v=202609301854"></script>
-<script src="assets/js/cloud.js?v=202609301854"></script>
-<script src="assets/js/settings.js?v=202609301854"></script>
-<script src="assets/js/catalogue.js?v=202609301854"></script>
-<script src="assets/js/customise.js?v=202609301854"></script>
-<script src="assets/js/promo.js?v=202609301854"></script>
-<script src="assets/js/analytics.js?v=202609301854"></script>
-<script src="assets/js/legal.js?v=202609301854"></script>
-<script src="assets/js/store.js?v=202609301854"></script>
-<script src="assets/js/kit.js?v=202609301854"></script>
-<script src="assets/js/views.js?v=202609301854"></script>
-<script src="assets/js/fly.js?v=202609301854"></script>
-<script src="assets/js/app.js?v=202609301854"></script>
-<script src="assets/js/rig.js?v=202609301854"></script>
+<script src="assets/js/config.js?v=202609301857"></script>
+<script src="assets/js/occasions.js?v=202609301857"></script>
+<script src="assets/js/products.js?v=202609301857"></script>
+<script src="assets/js/cloud.js?v=202609301857"></script>
+<script src="assets/js/settings.js?v=202609301857"></script>
+<script src="assets/js/catalogue.js?v=202609301857"></script>
+<script src="assets/js/customise.js?v=202609301857"></script>
+<script src="assets/js/promo.js?v=202609301857"></script>
+<script src="assets/js/analytics.js?v=202609301857"></script>
+<script src="assets/js/legal.js?v=202609301857"></script>
+<script src="assets/js/store.js?v=202609301857"></script>
+<script src="assets/js/kit.js?v=202609301857"></script>
+<script src="assets/js/views.js?v=202609301857"></script>
+<script src="assets/js/fly.js?v=202609301857"></script>
+<script src="assets/js/app.js?v=202609301857"></script>
+<script src="assets/js/rig.js?v=202609301857"></script>
 </body>
 </html>
