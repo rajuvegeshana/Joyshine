@@ -72,6 +72,24 @@ In the spreadsheet these are two columns. `sizes` holds
 L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
 (blank for made to order). Semicolons separate the rows.
 
+### What a theme changes
+
+A look is not only a palette. Each one brings its own motif drifting behind the
+page — bats for Halloween, flames for Diwali, powder for Holi, snow for
+Christmas, dandiya for Navratri, feathers for Krishna, ribbons for the national
+days, stars for retro, a scan over a grid for futuristic — and each drifts in
+its own way. The hero unicorn dresses for it: a witch hat and a pumpkin, a diya
+and a rangoli ring, a santa hat, a dupatta, a modak, a peacock feather, a
+tricolour sash. The accent icon in the buttons changes with it, the display
+typeface changes, and a small chip beside the hero says what the look is.
+
+All of it is decoration. It sits behind the page, ignores the pointer, and
+holds completely still for anyone whose device asks for less motion.
+
+**The engineering page** follows the shop by default. The switch in Look —
+*Give the engineering page its own look* — keeps it futuristic instead,
+whatever the shop is wearing.
+
 ### Orders
 Every order placed on the shop, whether paid by Razorpay or sent on WhatsApp.
 Items, variants, totals, the delivery address, and a status you move through

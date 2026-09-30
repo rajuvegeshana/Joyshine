@@ -554,7 +554,7 @@ function engineering() {
   const E = CFG.engineering;
   if (!E || !E.active) return notFound();
   return `<section class="eng-hero wrap">
-    <p class="eyebrow r">Service line</p>
+    <p class="eyebrow r">Service line<span class="chip chip--theme" data-themenote></span></p>
     <h1 class="r" style="--d:60ms">${esc(E.name)}</h1>
     <p class="lede r" style="--d:120ms">${esc(E.blurb)}</p>
     <div class="hero__cta r" style="--d:180ms">
