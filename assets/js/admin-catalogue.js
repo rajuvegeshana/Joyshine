@@ -254,7 +254,7 @@ function paintMats() {
       <div class="ad-vgrid ad-vgrid--mat" data-mti="${i}">
         <input data-mtf="label" value="${esc(m.label)}" placeholder="PLA">
         <input data-mtf="delta" type="number" step="10" value="${m.delta ?? 0}">
-        <input data-mtf="stock" type="number" min="0" value="${m.stock ?? ''}" placeholder="made to order">
+        <input data-mtf="stock" type="number" min="0" value="${m.stock ?? ''}" placeholder="to order">
         <input data-mtf="note" value="${esc(m.note)}" placeholder="Sturdy, matte, everyday">
         <button class="ad-o__more ad-o__more--warn" data-x="mtdel" title="Remove">&times;</button>
       </div>`).join('')}`;

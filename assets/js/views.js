@@ -51,6 +51,17 @@ function dims(o) {
   return esc(o.label || '');
 }
 
+/* what the customer has chosen, in words */
+function selNow(p, v) {
+  const find = (list, k) => (p.variants?.[list] || []).find(o => o.k === v[list]);
+  const sz = find('size'), mt = find('material'), cl = find('colour');
+  const bits = [];
+  if (sz) bits.push(`Size <b>${esc(sz.label || sz.k)}</b> \u00b7 ${dims(sz)} (L \u00d7 B \u00d7 H)`);
+  if (mt) bits.push(`Material <b>${esc(mt.label || mt.k)}</b>`);
+  if (cl) bits.push(`Colour <b>${esc(cl.label)}</b>`);
+  return bits.join(' &nbsp;\u00b7&nbsp; ');
+}
+
 const priceBlock = p => p.quote
   ? `<div class="price"><b>Quoted</b><em>on WhatsApp</em></div>`
   : `<div class="price"><b class="num">${money(p.price)}</b>${p.was
@@ -362,16 +373,7 @@ function product(id, sel) {
           `<button class="sw${v.colour === o.k ? ' on' : ''}" data-v="colour" data-val="${o.k}"
             title="${esc(o.label)}" aria-label="${esc(o.label)}"><i style="background:${o.hex}"></i></button>`)}
       </div>
-      <p class="quiet sel__now">
-        ${(() => {
-          const sz = (p.variants?.size || []).find(o => o.k === v.size);
-          const cl = (p.variants?.colour || []).find(c => c.k === v.colour);
-          const bits = [];
-          if (sz) bits.push(`Size <b>${esc(sz.label || sz.k)}</b> \u00b7 ${dims(sz)} (L \u00d7 B \u00d7 H)`);
-          if (cl) bits.push(`Colour <b>${esc(cl.label)}</b>`);
-          return bits.join(' &nbsp;\u00b7&nbsp; ');
-        })()}
-      </p>
+      <p class="quiet sel__now">${selNow(p, v)}</p>
 
       ${window.CUSTOM.render(p)}
 
@@ -661,7 +663,7 @@ function notFound() {
     '<a class="btn btn--pay btn--sm" href="#/">Back to the shop</a>')}</section>`;
 }
 
-return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner,
+return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow,
          home, shop, product, custom, wishlist, faq, about, engineering,
          searchPage, noResults, notFound };
 })();

@@ -203,8 +203,8 @@ function syncPdp() {
   if (bulk) bulk.textContent = off ? `${off}% bulk discount applied · ${money(Math.round(unit * qty * (1 - off / 100)))} total`
     : (p.bulk && qty < 5 ? `Buy 5 or more for ${CFG.bulk.tiers[1].off}% off` : '');
   $$('[data-v]').forEach(b => b.classList.toggle('on', v[b.dataset.v] === b.dataset.val));
-  const now = $('.sel__now b');
-  if (now) now.textContent = (p.variants?.colour || []).find(c => c.k === v.colour)?.label || '';
+  const now = $('.sel__now');
+  if (now) now.innerHTML = V.selNow(p, v);
 }
 
 function pdpItem() {
