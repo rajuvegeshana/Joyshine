@@ -119,6 +119,7 @@ function paintToday() {
 
   const missing = list.filter(o => o.on && stuck(o));
   $('#missingBox').hidden = !missing.length;
+  $('#dotToday').hidden = !missing.length;   /* nudge on the sidebar */
   $('#missingBox').innerHTML = missing.length
     ? `<h3>${missing.length} switched-on festival${missing.length > 1 ? 's need' : ' needs'} a date</h3>
        <p class="ad-p">These follow the moon, so the date moves every year. They stay switched off
@@ -296,8 +297,15 @@ async function pullCloud() {
 document.addEventListener('click', e => {
   const tab = e.target.closest('.ad-tab');
   if (tab) {
-    $$('.ad-tab').forEach(t => t.classList.toggle('on', t === tab));
-    $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === tab.dataset.tab));
+    const want = tab.dataset.tab;
+    /* the sidebar and the mobile bar hold the same tabs, so match on
+       the name rather than the element and both stay in step */
+    $$('.ad-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === want));
+    $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
+    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look',
+                     shop: 'Shop & contact', publish: 'Publish' };
+    $('#paneTitle').textContent = titles[want] || 'Control panel';
+    scrollTo({ top: 0, behavior: 'instant' });
     paintAll();
     return;
   }
