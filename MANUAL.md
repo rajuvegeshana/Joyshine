@@ -72,6 +72,27 @@ In the spreadsheet these are two columns. `sizes` holds
 L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
 (blank for made to order). Semicolons separate the rows.
 
+### The line-up: what shows, and in what order
+
+In Products, the **Line-up** card decides which products the shop leads with.
+Add products, move them up and down, and that becomes the order everywhere at
+once — the homepage rails, the shop grid, categories and search. Everything you
+did not choose follows behind, unless you tick **Show only these products**, in
+which case the rest is kept off the listings (a direct link to one still works).
+
+Pick an occasion at the top of the card to give that day or week its own
+line-up. Rose Day can lead with roses, Chocolate Day with boxes, and the
+everyday order returns the moment the occasion ends. Leave it on *Every day* to
+set the order the shop uses the rest of the year.
+
+### Valentine's week
+
+Seven days, seven looks, and an eighth for the fourteenth: Rose, Propose,
+Chocolate, Teddy, Promise, Hug, Kiss, and Valentine's. Each day is a one-day
+occasion, so it takes over on its own date and hands back to the Valentine's
+run-up afterwards. They are switched on by default and each can be turned off
+in Occasions like any other.
+
 ### What a theme changes
 
 A look is not only a palette. Each one brings its own motif drifting behind the
