@@ -35,6 +35,10 @@ joyshine/
   supabase/schema-3-media-reviews.sql  image bucket, customer reviews, offers, visits
   supabase/schema-4-uploads.sql     bucket for files customers attach to an enquiry
   supabase/schema-5-reviews-sales.sql  pinned reviews, and the real "how many sold"
+  supabase/schema-6-site-assets.sql  room for GIFs, fonts and Lottie animations
+  supabase/schema-7-workshop.sql    filament, bills, expenses — signed in only
+  supabase/schema-8-tidy.sql        let the owner delete an order or a request
+  assets/js/admin-shop.js    the Workshop: filament, billing, money out, dashboard
   assets/js/skin.js          hero art, icon overrides, per-theme type
   assets/js/review.js        the confirm-before-publishing bar
   assets/js/icons.js         the icon set, shared by shop and panel

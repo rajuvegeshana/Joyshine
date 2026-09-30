@@ -72,6 +72,40 @@ In the spreadsheet these are two columns. `sizes` holds
 L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
 (blank for made to order). Semicolons separate the rows.
 
+### The Workshop — your side of the business
+
+Three tabs of your own, in their own group. None of it is on the shop, and the
+tables behind it are readable only by a signed-in session: the public key that
+ships in the site opens nothing here.
+
+**Filament.** Every spool, with the date you bought it, what it weighed new and
+what it cost. How much is left is counted from the bills that named the spool —
+never guessed, never typed in. Under 150 g a spool is flagged. When you add one,
+tick the box and its price is recorded under Money out at the same time, so it
+counts against your takings without a second trip.
+
+**Billing.** Write up anything you sell, whether it came through the shop or
+somebody walked in. Pick a product and its name and price fill themselves in, or
+type your own line. Record the grams it took and which spool they came from and
+the bill tells you what the filament in it cost and what share of the price that
+is — the number that tells you whether a thing is worth printing. Every bill
+prints on one page.
+
+**Money out.** Eleven categories, a receipt you can photograph, and a chart of
+where the year went. Receipts live in a private bucket: they are fetched with
+your session and shown from memory, never on a public link, because a receipt
+carries your supplier and your prices.
+
+**The dashboard** adds it all up: whether the shop is answering and how quickly,
+when it was last published, what look it is wearing, takings and spending this
+month and all time with the difference, orders waiting, filament nearly out,
+whether the Razorpay key is missing, a test key or live, and whether analytics is
+on. Every figure comes from something you recorded. Where there is nothing, it
+says so rather than showing a zero that looks like a fact.
+
+Razorpay's own dashboard holds settlements and refunds. This panel never sees
+your Razorpay secret, so it cannot read them, and does not pretend to.
+
 ### Content & art
 
 A tab of its own, in folding sections.
