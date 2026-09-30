@@ -384,3 +384,56 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .bottomnav .nav-link .dot { position: absolute; top: 10px; right: 50%; margin-right: -16px; }
   .ad-toasts { bottom: calc(var(--bottomnav-h) + var(--space-4)); }
 }
+
+/* ---- the variant row editors ------------------------------ */
+.ad-vgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 5.5rem 4.5rem 4.5rem 4.5rem 2rem;
+  gap: .45rem;
+  align-items: center;
+  margin-bottom: .45rem;
+}
+.ad-vgrid--mat { grid-template-columns: minmax(0, 1.3fr) 5.5rem 6rem minmax(0, 2fr) 2rem; }
+.ad-vgrid input { width: 100%; min-width: 0; }
+.ad-vgrid--head {
+  font-size: .74rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+  margin-bottom: .3rem;
+}
+.ad-vgrid--head span { padding-left: .2rem; }
+.ad-o__more--warn:hover { border-color: #e2536b; color: #e2536b; }
+
+@media (max-width: 720px) {
+  .ad-vgrid, .ad-vgrid--mat { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2rem; }
+  .ad-vgrid--head { display: none; }
+  .ad-vgrid {
+    padding: .6rem;
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+  }
+  .ad-vgrid input:first-child { grid-column: 1 / -1; }
+}
+
+/* ---- the photograph field --------------------------------- */
+.ad-up {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+  padding: .8rem;
+  border: 1.5px dashed var(--c-line);
+  border-radius: 12px;
+  transition: border-color .18s ease, background .18s ease;
+}
+.ad-up.on { border-color: var(--c-primary); background: color-mix(in oklab, var(--c-primary) 6%, transparent); }
+#f_imgprev { margin-top: .6rem; }
+#f_imgprev img {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  display: block;
+}

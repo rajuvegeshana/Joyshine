@@ -126,7 +126,7 @@ section { position: relative; }
    bar carries Home / Shop / Search / Custom / Saved, the shop page has
    its own sticky category bar, and the footer holds the rest. */
 @media (max-width: 899px) {
-  .topbar__in { gap: .45rem .5rem; min-height: 0; flex-wrap: nowrap; }
+  .topbar__in { gap: .45rem .5rem; min-height: 0; padding-block: .3rem; flex-wrap: nowrap; }
   .nav { display: none; }
   .logo { margin-right: auto; }
   .logo__word { font-size: 1.1rem; }

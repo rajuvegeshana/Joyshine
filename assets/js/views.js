@@ -44,6 +44,13 @@ function art(p, hex, cls = '') {
   return `<svg class="${cls}" viewBox="0 0 200 200" role="img" aria-label="${esc(p.name)}"${style}>${p.art}</svg>`;
 }
 
+/* "90 x 90 x 120 mm" when we know it, the old text if we only have that */
+function dims(o) {
+  if (o.l && o.b && o.h) return `${o.l} \u00d7 ${o.b} \u00d7 ${o.h} mm`;
+  if (o.dim) return esc(o.dim);
+  return esc(o.label || '');
+}
+
 const priceBlock = p => p.quote
   ? `<div class="price"><b>Quoted</b><em>on WhatsApp</em></div>`
   : `<div class="price"><b class="num">${money(p.price)}</b>${p.was
@@ -304,7 +311,10 @@ function product(id, sel) {
     <div class="pdp__media">
       <div class="pdp__stage" id="pdpStage">${art(p, hex, 'pdp__art')}
         ${badgeOf(p) ? `<span class="card__tag">${esc(badgeOf(p))}</span>` : ''}
-        <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}" aria-label="Save to wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
+        <div class="pdp__acts">
+          <button class="heart" data-share="${p.id}" aria-label="Share this">${I.share}</button>
+          <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}" aria-label="Save to wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
+        </div>
       </div>
       <div class="thumbs">
         ${(p.variants?.colour || [{ k: '', hex: null, label: 'As shown' }]).slice(0, 6).map(c =>
@@ -337,15 +347,31 @@ function product(id, sel) {
       <div class="opts">
         ${optRow('size', 'Size', p.variants?.size, o =>
           `<button class="pill${v.size === o.k ? ' on' : ''}" data-v="size" data-val="${o.k}">
-            <b>${o.k}</b><span>${esc(o.label)}</span></button>`)}
-        ${optRow('material', 'Material', p.variants?.material, o =>
-          `<button class="pill${v.material === o.k ? ' on' : ''}" data-v="material" data-val="${o.k}">
-            <b>${esc(o.label)}</b>${o.delta ? `<span>+${money(o.delta)}</span>` : '<span>included</span>'}</button>`)}
+            <b>${esc(o.label || o.k)}</b>
+            <span>${dims(o)}</span></button>`)}
+        ${optRow('material', 'Material', p.variants?.material, o => {
+          const gone = o.stock != null && o.stock <= 0;
+          return `<button class="pill${v.material === o.k ? ' on' : ''}${gone ? ' pill--gone' : ''}"
+            data-v="material" data-val="${o.k}"${gone ? ' disabled' : ''}>
+            <b>${esc(o.label)}</b>
+            <span>${gone ? 'out of stock' : (o.delta ? `+${money(o.delta)}` : 'included')}</span>
+            ${o.stock != null && o.stock > 0 && o.stock <= 5 ? `<i class="pill__low">only ${o.stock} left</i>` : ''}
+          </button>`;
+        })}
         ${optRow('colour', 'Colour', p.variants?.colour, o =>
           `<button class="sw${v.colour === o.k ? ' on' : ''}" data-v="colour" data-val="${o.k}"
             title="${esc(o.label)}" aria-label="${esc(o.label)}"><i style="background:${o.hex}"></i></button>`)}
       </div>
-      ${p.variants?.colour ? `<p class="quiet sel__now">Colour: <b>${esc((p.variants.colour.find(c => c.k === v.colour) || {}).label || '')}</b></p>` : ''}
+      <p class="quiet sel__now">
+        ${(() => {
+          const sz = (p.variants?.size || []).find(o => o.k === v.size);
+          const cl = (p.variants?.colour || []).find(c => c.k === v.colour);
+          const bits = [];
+          if (sz) bits.push(`Size <b>${esc(sz.label || sz.k)}</b> \u00b7 ${dims(sz)} (L \u00d7 B \u00d7 H)`);
+          if (cl) bits.push(`Colour <b>${esc(cl.label)}</b>`);
+          return bits.join(' &nbsp;\u00b7&nbsp; ');
+        })()}
+      </p>
 
       ${window.CUSTOM.render(p)}
 
@@ -386,7 +412,6 @@ function product(id, sel) {
       </div>
 
       <div class="pdp__share">
-        <button class="linky" data-share="${p.id}">${I.share} Share</button>
         <span class="quiet">${esc(CFG.brand.origin)}</span>
       </div>
 

@@ -415,3 +415,17 @@
 }
 .cust__prev span { font-size: .84rem; overflow-wrap: anywhere; }
 .cust__prev .linky { margin-left: auto; flex: none; }
+
+/* ===== product page actions ============================== */
+.pdp__acts {
+  position: absolute; top: .7rem; right: .7rem; z-index: 3;
+  display: flex; gap: .45rem;
+}
+.pdp__acts .heart { position: static; }
+.pill--gone { opacity: .5; cursor: not-allowed; }
+.pill--gone b { text-decoration: line-through; }
+.pill__low {
+  grid-column: 1 / -1; font-style: normal; font-size: .62rem;
+  color: var(--hot); font-weight: 700;
+}
+.sel__now { min-height: 1.2em; }

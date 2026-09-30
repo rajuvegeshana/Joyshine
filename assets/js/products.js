@@ -21,16 +21,19 @@ window.CATEGORIES = [
 ];
 
 /* ---------- shared variant options -------------------------- */
+/* l, b, h are length, breadth and height in millimetres. They are
+   shown on the product page so nobody has to guess what "Large" means. */
 const SIZES = [
-  { k: 'S',  label: 'Small',  delta: -150, dim: 'approx. 60 mm' },
-  { k: 'M',  label: 'Medium', delta: 0,    dim: 'approx. 90 mm' },
-  { k: 'L',  label: 'Large',  delta: 250,  dim: 'approx. 130 mm' },
-  { k: 'XL', label: 'X-Large',delta: 550,  dim: 'approx. 180 mm' },
+  { k: 'S',  label: 'Small',   delta: -150, l: 60,  b: 60,  h: 80 },
+  { k: 'M',  label: 'Medium',  delta: 0,    l: 90,  b: 90,  h: 120 },
+  { k: 'L',  label: 'Large',   delta: 250,  l: 130, b: 130, h: 170 },
+  { k: 'XL', label: 'X-Large', delta: 550,  l: 180, b: 180, h: 230 },
 ];
+/* stock: a number to track it, or null for made to order */
 const MATERIALS = [
-  { k: 'PLA',  label: 'PLA',  delta: 0,   note: 'Plant-derived, matte finish. Indoor use.' },
-  { k: 'PGLA', label: 'PGLA', delta: 120, note: 'Tougher and glossier than PLA.' },
-  { k: 'ABS',  label: 'ABS',  delta: 220, note: 'Heat-tolerant. Best where it gets handled.' },
+  { k: 'PLA',  label: 'PLA',  delta: 0,   stock: null, note: 'Plant-derived, matte finish. Indoor use.' },
+  { k: 'PGLA', label: 'PGLA', delta: 120, stock: null, note: 'Tougher and glossier than PLA.' },
+  { k: 'ABS',  label: 'ABS',  delta: 220, stock: null, note: 'Heat-tolerant. Best where it gets handled.' },
 ];
 const COLOURS = [
   { k: 'white',  label: 'Pearl white', hex: '#f4f1ea' },

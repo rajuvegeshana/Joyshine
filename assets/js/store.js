@@ -116,12 +116,14 @@ function totals(items) {
   let sub = 0, saved = 0;
   items.forEach(it => { const l = lineTotal(it); sub += l.net; saved += l.gross - l.net; });
 
-  /* a discount code comes off before shipping is worked out */
+  /* A code comes off the products only — never the shipping. The
+     free-shipping threshold is judged on what they actually spent on
+     goods, so a coupon cannot quietly take free delivery away. */
   const d = window.PROMO ? window.PROMO.discount(sub) : { off: 0, why: '' };
   const off = Math.min(d.off, sub);
   const afterCode = sub - off;
 
-  const free = afterCode >= CFG.shipping.freeAbove || afterCode === 0;
+  const free = sub >= CFG.shipping.freeAbove || sub === 0;
   const ship = free ? 0 : CFG.shipping.flat;
   return {
     sub, saved, off, offerWhy: d.why,

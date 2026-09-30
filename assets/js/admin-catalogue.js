@@ -128,7 +128,16 @@ function productForm(r) {
       <label class="ad-field"><span>Picture</span><select id="f_art">
         ${arts.map(k => `<option value="${k}"${p.artKey === k ? ' selected' : ''}>${k}</option>`).join('')}
       </select><i class="ad-hint">Drawn art that recolours with the theme. A photo URL below wins over it.</i></label>
-      <label class="ad-field"><span>Photo URL (optional)</span><input id="f_photo" value="${esc(p.photo)}" placeholder="assets/img/thing.jpg"></label>
+      <div class="ad-field"><span>Photograph</span>
+        <div class="ad-up" data-imgdrop>
+          <input type="file" id="f_imgfile" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
+          <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="imgpick">Upload from this computer</button>
+          <span class="ad-hint" id="f_imgmsg">or drag one here, or paste a link below</span>
+        </div>
+        <input id="f_photo" value="${esc(p.photo)}" placeholder="https://… or assets/img/thing.jpg" style="margin-top:.5rem">
+        <div id="f_imgprev" ${p.photo ? '' : 'hidden'}>${p.photo ? `<img src="${esc(p.photo)}" alt="">` : ''}</div>
+        <i class="ad-hint">A photograph replaces the drawn picture. Uploads go to your own Supabase storage.</i>
+      </div>
       <div class="ad-field"><span>Badges and rails</span>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
           ${TAGS.map(t => `<label class="ad-pill" style="cursor:pointer">
@@ -154,14 +163,26 @@ function productForm(r) {
       </div>
     </div>
     <div class="ad-card">
-      <h3>Options the customer picks</h3>
-      <label class="ad-row--switch"><input type="checkbox" id="v_size"${v.size ? ' checked' : ''}>
-        <span><b>Sizes</b><i>Small to X-Large, with the price steps built in.</i></span></label>
-      <label class="ad-row--switch"><input type="checkbox" id="v_material"${v.material ? ' checked' : ''}>
-        <span><b>Materials</b><i>PLA, PGLA and ABS, priced accordingly.</i></span></label>
+      <h3>Colours</h3>
       <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="v_colour"${v.colour ? ' checked' : ''}>
-        <span><b>Colours</b><i>Eight filament colours. The drawn art recolours to match.</i></span></label>
+        <span><b>Offer the filament colours</b><i>Eight of them. The drawn art recolours to match.</i></span></label>
     </div>
+  </div>
+
+  <div class="ad-card">
+    <h3>Sizes</h3>
+    <p class="ad-p">The dimensions show on the product page, so nobody has to guess what
+      "Large" means. Leave this empty and the product is one size.</p>
+    <div id="sizeList"></div>
+    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="szadd" style="margin-top:.7rem">+ Add a size</button>
+  </div>
+
+  <div class="ad-card">
+    <h3>Materials, pricing and stock</h3>
+    <p class="ad-p">The extra charge is added to the base price. Leave stock blank for made to
+      order; put a number in and the shop shows "only N left", then greys the option out at zero.</p>
+    <div id="matList"></div>
+    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="mtadd" style="margin-top:.7rem">+ Add a material</button>
   </div>
 
   <div class="ad-card">
@@ -190,6 +211,68 @@ function productForm(r) {
     <p class="ad-p">Hiding keeps the product and takes it off the shop. Deleting cannot be undone.</p>
     <button class="ad-btn ad-btn--warn" data-x="delete"${r.isNew ? ' disabled' : ''}>Delete this product</button>
   </div>`;
+}
+
+/* ---------- the size builder ------------------------------ */
+let sizeDraft = [];
+let matDraft = [];
+
+const num = (x, d = 0) => (x === '' || x === null || x === undefined || isNaN(+x) ? d : +x);
+
+function paintSizes() {
+  const box = $('#sizeList'); if (!box) return;
+  if (!sizeDraft.length) {
+    box.innerHTML = '<p class="ad-empty">One size only. Add sizes if this product comes in more than one.</p>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="ad-vgrid ad-vgrid--head">
+      <span>Name</span><span>Extra ₹</span><span>L mm</span><span>B mm</span><span>H mm</span><span></span>
+    </div>
+    ${sizeDraft.map((z, i) => `
+      <div class="ad-vgrid" data-szi="${i}">
+        <input data-szf="label" value="${esc(z.label)}" placeholder="Medium">
+        <input data-szf="delta" type="number" step="10" value="${z.delta ?? 0}">
+        <input data-szf="l" type="number" min="0" value="${z.l ?? ''}">
+        <input data-szf="b" type="number" min="0" value="${z.b ?? ''}">
+        <input data-szf="h" type="number" min="0" value="${z.h ?? ''}">
+        <button class="ad-o__more ad-o__more--warn" data-x="szdel" title="Remove">&times;</button>
+      </div>`).join('')}`;
+}
+
+function paintMats() {
+  const box = $('#matList'); if (!box) return;
+  if (!matDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No choice of material. Printed in whatever the spec says.</p>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="ad-vgrid ad-vgrid--mat ad-vgrid--head">
+      <span>Name</span><span>Extra ₹</span><span>In stock</span><span>Note for the customer</span><span></span>
+    </div>
+    ${matDraft.map((m, i) => `
+      <div class="ad-vgrid ad-vgrid--mat" data-mti="${i}">
+        <input data-mtf="label" value="${esc(m.label)}" placeholder="PLA">
+        <input data-mtf="delta" type="number" step="10" value="${m.delta ?? 0}">
+        <input data-mtf="stock" type="number" min="0" value="${m.stock ?? ''}" placeholder="made to order">
+        <input data-mtf="note" value="${esc(m.note)}" placeholder="Sturdy, matte, everyday">
+        <button class="ad-o__more ad-o__more--warn" data-x="mtdel" title="Remove">&times;</button>
+      </div>`).join('')}`;
+}
+
+/* a key the cart can rely on: stable, short, and never blank */
+function vkey(label, i) {
+  const k = String(label || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  return k || 'V' + (i + 1);
+}
+
+function loadVariantDrafts(p) {
+  const V = window.VARIANT_OPTIONS || {};
+  const v = (p && p.variants) || {};
+  const copy = a => JSON.parse(JSON.stringify(a || []));
+  sizeDraft = copy(v.size);
+  matDraft = copy(v.material);
+  return V;
 }
 
 /* ---------- the customisation builder --------------------- */
@@ -263,8 +346,17 @@ function readForm(r) {
   if (on('f_quote')) { data.quote = true; data.price = 0; }
 
   const variants = {};
-  if (on('v_size') && V.SIZES) variants.size = V.SIZES;
-  if (on('v_material') && V.MATERIALS) variants.material = V.MATERIALS;
+  const sizes = sizeDraft.filter(z => (z.label || '').trim()).map((z, i) => ({
+    k: z.k || vkey(z.label, i), label: z.label.trim(), delta: num(z.delta),
+    l: num(z.l, null), b: num(z.b, null), h: num(z.h, null),
+  }));
+  const mats = matDraft.filter(m => (m.label || '').trim()).map((m, i) => ({
+    k: m.k || vkey(m.label, i), label: m.label.trim(), delta: num(m.delta),
+    stock: m.stock === '' || m.stock === null || m.stock === undefined ? null : num(m.stock),
+    note: (m.note || '').trim(),
+  }));
+  if (sizes.length) variants.size = sizes;
+  if (mats.length) variants.material = mats;
   if (on('v_colour') && V.COLOURS) variants.colour = V.COLOURS;
   if (Object.keys(variants).length) data.variants = variants;
 
@@ -418,7 +510,7 @@ async function paintReviews() {
    plain columns so Excel and Google Sheets can both handle it. */
 const COLS = ['id','name','category','price','was','tags','blurb','story','photo','picture',
   'spec_material','spec_layer','spec_print','spec_size',
-  'has_sizes','has_materials','has_colours',
+  'sizes','materials','has_colours',
   'personalise_label','personalise_max','personalise_example',
   'bulk','quote','hidden','sort',
   'details_materials','details_dimensions','details_care','details_production','details_shipping'];
@@ -432,7 +524,10 @@ function toRow(r) {
     photo: p.photo || '', picture: p.artKey || '',
     spec_material: sp.Material || '', spec_layer: sp.Layer || '',
     spec_print: sp.Print || '', spec_size: sp.Size || '',
-    has_sizes: v.size ? 'yes' : '', has_materials: v.material ? 'yes' : '', has_colours: v.colour ? 'yes' : '',
+    sizes: (v.size || []).map(z => [z.label, z.delta || 0, [z.l, z.b, z.h].join('x')].join('|')).join(' ; '),
+    materials: (v.material || []).map(m => [m.label, m.delta || 0,
+      m.stock === null || m.stock === undefined ? '' : m.stock].join('|')).join(' ; '),
+    has_colours: v.colour ? 'yes' : '',
     personalise_label: p.personalise?.label || '', personalise_max: p.personalise?.max || '',
     personalise_example: p.personalise?.placeholder || '',
     bulk: p.bulk ? 'yes' : '', quote: p.quote ? 'yes' : '', hidden: r.hidden ? 'yes' : '',
@@ -466,9 +561,24 @@ function fromRow(row) {
   if (row.photo) data.photo = String(row.photo);
   if (yes(row.quote)) { data.quote = true; data.price = 0; }
 
+  const cells = s => String(s || '').split(';').map(x => x.trim()).filter(Boolean);
   const variants = {};
-  if (yes(row.has_sizes) && V.SIZES) variants.size = V.SIZES;
-  if (yes(row.has_materials) && V.MATERIALS) variants.material = V.MATERIALS;
+
+  const sizes = cells(row.sizes).map((cell, i) => {
+    const [label, delta, dim] = cell.split('|').map(x => (x || '').trim());
+    const [l, b, h] = String(dim || '').toLowerCase().split(/[x×*]/).map(x => Number(x) || null);
+    return { k: vkey(label, i), label, delta: Number(delta) || 0, l, b, h };
+  }).filter(z => z.label);
+  const mats = cells(row.materials).map((cell, i) => {
+    const [label, delta, stock] = cell.split('|').map(x => (x || '').trim());
+    return { k: vkey(label, i), label, delta: Number(delta) || 0,
+             stock: stock === '' ? null : Number(stock) || 0, note: '' };
+  }).filter(m => m.label);
+
+  if (sizes.length) variants.size = sizes;
+  else if (yes(row.has_sizes) && V.SIZES) variants.size = V.SIZES;
+  if (mats.length) variants.material = mats;
+  else if (yes(row.has_materials) && V.MATERIALS) variants.material = V.MATERIALS;
   if (yes(row.has_colours) && V.COLOURS) variants.colour = V.COLOURS;
   if (Object.keys(variants).length) data.variants = variants;
 
@@ -595,6 +705,46 @@ async function paintVisits() {
     </div>` : '<p class="ad-empty" style="margin-top:.8rem">Nothing recorded yet.</p>'}`;
 }
 
+/* ---------- the product photograph ------------------------ */
+function paintImage() {
+  const box = $('#f_imgprev'); const url = $('#f_photo')?.value.trim();
+  if (!box) return;
+  box.hidden = !url;
+  box.innerHTML = url ? `<img src="${esc(url)}" alt="">` : '';
+
+  const drop = $('[data-imgdrop]'), file = $('#f_imgfile');
+  if (file && !file.dataset.wired) {
+    file.dataset.wired = '1';
+    file.addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) putImage(f); });
+  }
+  if (drop && !drop.dataset.wired) {
+    drop.dataset.wired = '1';
+    ['dragenter', 'dragover'].forEach(n => drop.addEventListener(n, e => {
+      e.preventDefault(); drop.classList.add('on');
+    }));
+    ['dragleave', 'drop'].forEach(n => drop.addEventListener(n, e => {
+      e.preventDefault(); drop.classList.remove('on');
+    }));
+    drop.addEventListener('drop', e => { const f = e.dataTransfer?.files?.[0]; if (f) putImage(f); });
+  }
+}
+
+async function putImage(file) {
+  const msg = $('#f_imgmsg');
+  if (!/^image\//.test(file.type)) { if (msg) msg.textContent = 'That is not an image'; return; }
+  if (msg) msg.textContent = 'Uploading ' + file.name + '…';
+  try {
+    const url = await CLOUD.uploadImage(file);
+    $('#f_photo').value = url;
+    paintImage();
+    if (msg) msg.textContent = 'Uploaded. Save the product to keep it.';
+    toast('Photograph uploaded');
+  } catch (e) {
+    if (msg) msg.textContent = e.message;
+    toast(e.message);
+  }
+}
+
 /* ---------- events --------------------------------------- */
 function wire(t) {
   const act = t.closest('[data-x]')?.dataset.x;
@@ -632,14 +782,25 @@ function wire(t) {
   }
   if (act === 'new') {
     editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
-    custDraft = []; paintProducts(); paintCustom(); return true;
+    custDraft = [];
+    const V0 = loadVariantDrafts(null);
+    sizeDraft = JSON.parse(JSON.stringify(V0.SIZES || []));
+    matDraft = JSON.parse(JSON.stringify(V0.MATERIALS || []));
+    paintProducts(); paintCustom(); paintSizes(); paintMats(); paintImage(); return true;
   }
   if (act === 'edit') {
     const id = t.closest('[data-pid]').dataset.pid;
     editing = PRODUCTS.find(r => r.id === id);
     custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
-    paintProducts(); paintCustom(); return true;
+    loadVariantDrafts(editing.data);
+    paintProducts(); paintCustom(); paintSizes(); paintMats(); paintImage(); return true;
   }
+
+  if (act === 'szadd') { sizeDraft.push({ label: '', delta: 0, l: '', b: '', h: '' }); paintSizes(); return true; }
+  if (act === 'szdel') { sizeDraft.splice(+t.closest('[data-szi]').dataset.szi, 1); paintSizes(); return true; }
+  if (act === 'mtadd') { matDraft.push({ label: '', delta: 0, stock: '', note: '' }); paintMats(); return true; }
+  if (act === 'mtdel') { matDraft.splice(+t.closest('[data-mti]').dataset.mti, 1); paintMats(); return true; }
+  if (act === 'imgpick') { $('#f_imgfile')?.click(); return true; }
 
   if (act === 'cuadd') {
     const type = t.closest('[data-type]').dataset.type;
@@ -683,6 +844,17 @@ function wire(t) {
 }
 
 function wireChange(t) {
+  if (t.dataset.szf) {
+    const z = sizeDraft[+t.closest('[data-szi]').dataset.szi]; if (!z) return true;
+    z[t.dataset.szf] = t.value;
+    return true;
+  }
+  if (t.dataset.mtf) {
+    const m = matDraft[+t.closest('[data-mti]').dataset.mti]; if (!m) return true;
+    m[t.dataset.mtf] = t.value;
+    return true;
+  }
+  if (t.id === 'f_photo') { paintImage(); return true; }
   if (t.dataset.cuf) {
     const f = custDraft[+t.dataset.i]; if (!f) return true;
     const k = t.dataset.cuf;
@@ -710,7 +882,11 @@ function wireFile() {
 async function paint(tab) {
   wireFile();
   if (tab === 'marketing') { paintOffers(); paintVisits(); }
-  if (tab === 'products') { if (inn() && !PRODUCTS.length) await pull(); paintProducts($('#prodFilter')?.value || ''); paintCustom(); }
+  if (tab === 'products') {
+    if (inn() && !PRODUCTS.length) await pull();
+    paintProducts($('#prodFilter')?.value || '');
+    paintCustom(); paintSizes(); paintMats(); paintImage();
+  }
   if (tab === 'orders') paintOrders();
   if (tab === 'requests') paintRequests();
   if (tab === 'reviews') { if (inn() && !PRODUCTS.length) await pull(); paintReviews(); }

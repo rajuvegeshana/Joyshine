@@ -136,6 +136,24 @@ async function write(data, retried = false) {
   return (await r.json())[0];
 }
 
+/* ---- put an image in the catalogue bucket ----------------- */
+async function uploadImage(file) {
+  if (!ready()) throw new Error('Supabase is not configured');
+  if (!signedIn()) throw new Error('Sign in first');
+  if (file.size > 5 * 1024 * 1024) throw new Error('That image is over 5 MB');
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const r = await fetch(`${base()}/storage/v1/object/product-images/${name}`, {
+    method: 'POST',
+    headers: { apikey: CFG().anonKey, Authorization: `Bearer ${session.access_token}`,
+               'Content-Type': file.type || 'application/octet-stream' },
+    body: file,
+  });
+  if (!r.ok) throw new Error('That upload did not go through');
+  return `${base()}/storage/v1/object/public/product-images/${name}`;
+}
+
 /* ---- generic table access, signed in --------------------- */
 async function req(method, path, body, retried = false) {
   if (!ready()) throw new Error('Supabase is not configured');
@@ -250,5 +268,5 @@ async function diagnose() {
 
 return { ready, signIn, signOut, refresh, user, signedIn, read, write, diagnose,
          sendRecovery, recoveryInUrl, setPassword,
-         rows, upsert, update, remove };
+         rows, upsert, update, remove, uploadImage };
 })();
