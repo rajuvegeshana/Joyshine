@@ -51,8 +51,26 @@ real products → save → Publish → *Upload a spreadsheet*. Keep the `id` col
 as it is and rows update; clear it and you get a new product.
 
 Editing one at a time works too: price, category, badges, the four specs on the
-card, which options customers can pick, personalisation, and the five
-expandable sections.
+card, personalisation, and the five expandable sections.
+
+**Sizes** are rows you write yourself: a name, what it adds to the price, and
+the length, breadth and height in millimetres. Those dimensions show under the
+size on the product page, so nobody has to guess what "Large" means. Leave the
+list empty and the product is one size.
+
+**Materials** are rows too: a name, what it adds to the price, how many you
+have, and a line of explanation. Leave the stock box blank for made to order.
+Put a number in and the shop shows "only 3 left" once it drops to five, then
+greys the material out at zero so it cannot be ordered.
+
+**The photograph** can come from your computer — the *Upload* button, or drag
+the file onto the dotted box — or from anywhere online by pasting the link.
+Uploads go into your own Supabase storage, up to 5 MB each.
+
+In the spreadsheet these are two columns. `sizes` holds
+`Medium|0|90x90x120 ; Large|250|130x130x170` — name, extra charge, then
+L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
+(blank for made to order). Semicolons separate the rows.
 
 ### Orders
 Every order placed on the shop, whether paid by Razorpay or sent on WhatsApp.
