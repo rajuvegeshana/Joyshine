@@ -168,7 +168,7 @@ function paint() {
         </select>
       </label>
       <div id="curBox"></div>
-      <input type="file" id="curFile" accept=".png,.svg,image/png,image/svg+xml" hidden>
+      <input type="file" id="curFile" accept=".png,.svg,.gif,.json,image/png,image/svg+xml,image/gif,application/json" hidden>
     </details>
 
     <details class="ad-card ad-fold" id="errCard">
@@ -260,22 +260,58 @@ function paintCursor() {
   const box = $('#curBox'); if (!box) return;
   const t = $('#curTheme').value;
   const c = (CFG().cursors || {})[t] || {};
-  const kinds = [['default', 'The ordinary arrow', 'What every visitor expects.'],
-                 ['pointer', 'Always the hand', 'Playful, but people may think everything is clickable.'],
-                 ['crosshair', 'Crosshair', 'Technical. Suits the futuristic look.'],
-                 ['grab', 'Open hand', 'Suits something soft and toylike.'],
-                 ['image', 'Your own picture', 'A small PNG or SVG, 32px is plenty. Never larger than 128px.']];
+  const kinds = [
+    ['default',   'The ordinary arrow',   'What every visitor expects. The safe answer.'],
+    ['pointer',   'Always the hand',      'Playful, but people may think everything is clickable.'],
+    ['crosshair', 'Crosshair',            'Technical. Suits the futuristic look.'],
+    ['grab',      'Open hand',            'Suits something soft and toylike.'],
+    ['image',     'Your own picture',     'A PNG, an SVG, or a .json animation. See the note below.'],
+  ];
+  const url = c.url || '';
+  const kind = url && /\.json($|\?)/i.test(url) ? 'lottie'
+             : url && /\.svg($|\?)/i.test(url) ? 'svg'
+             : url ? 'png' : '';
+
   box.innerHTML = `
     <div class="ad-picks">
       ${kinds.map(([k, name, note]) => `
         <button class="ad-pick${(c.kind || 'default') === k ? ' on' : ''}" data-c="cur" data-v="${k}">
           <b>${name}</b><span>${note}</span></button>`).join('')}
     </div>
-    ${c.kind === 'image' ? `<div class="ad-up" data-drop="cur" style="margin-top:.8rem">
-      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="curpick">Upload a pointer</button>
-      <span class="ad-hint" id="curMsg">${c.url ? 'In use' : 'PNG or SVG, up to 128px'}</span>
-      ${c.url ? `<img src="${esc(c.url)}" alt="" style="width:28px;height:28px;object-fit:contain">` : ''}
-    </div>` : ''}`;
+
+    ${c.kind === 'image' ? `
+      <div class="ad-up" data-drop="cur" style="margin-top:.9rem">
+        <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="curpick">Upload SVG, PNG, GIF or .json</button>
+        <span class="ad-hint" id="curMsg">${url ? 'In use' : 'Small and simple reads best — 32 to 48px'}</span>
+        ${url ? `<span class="ad-curprev" style="--s:${+c.size || (kind === 'lottie' ? 48 : 40)}px">${
+          window.SKIN.pictureHtml(url, '')}</span>` : ''}
+        ${url ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="curclear">Remove</button>` : ''}
+      </div>
+
+      ${url ? `<div class="ad-grid2" style="margin-top:.9rem">
+        <label class="ad-field"><span>Size on screen</span>
+          <input type="range" min="20" max="96" step="4" data-cz value="${+c.size || (kind === 'lottie' ? 48 : 40)}">
+          <i class="ad-hint"><b data-czn>${+c.size || (kind === 'lottie' ? 48 : 40)}</b> px across</i></label>
+        ${kind === 'png' ? `<div class="ad-grid2">
+          <label class="ad-field"><span>Tip across</span>
+            <input type="number" min="0" max="64" data-ch="hotX" value="${c.hotX ?? 6}"></label>
+          <label class="ad-field"><span>Tip down</span>
+            <input type="number" min="0" max="64" data-ch="hotY" value="${c.hotY ?? 4}"></label>
+        </div>` : ''}
+      </div>` : ''}
+
+      <p class="ad-note" style="margin-top:.9rem">
+        ${kind === 'png'
+          ? '<b>A PNG becomes a real cursor.</b> The browser draws it, so it never lags and the tip is wherever you say it is. Keep it under 64px — bigger and some browsers quietly ignore it.'
+          : kind === 'svg'
+          ? '<b>An SVG cannot be a real cursor.</b> Chrome needs it to carry its own width and height, and Safari refuses altogether — so the arrow is hidden and this follows the pointer instead.'
+          : kind === 'lottie'
+          ? '<b>An animation can never be a real cursor.</b> The arrow is hidden and this plays on the pointer instead.'
+          : 'A PNG becomes a real cursor. An SVG or a .json animation cannot be one, so the arrow is hidden and yours follows the pointer instead.'}
+        ${kind === 'svg' || kind === 'lottie'
+          ? ' It runs on a mouse only, never on a phone and never for anyone who has asked their device for less motion. The ordinary arrow comes back over anything they type into, and the moment the pointer leaves the window.'
+          : ''}
+      </p>` : ''}`;
 }
 
 /* ---- uploads ---------------------------------------------- */
@@ -313,11 +349,13 @@ function wireFiles() {
   });
   once($('#curFile'), async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (f.size > 512 * 1024) { toast('Keep a pointer under 512 KB — it is drawn on every frame'); return; }
     const url = await put(f, $('#curMsg'));
     if (!url) return;
     const t = $('#curTheme').value;
     A().setS('cursors.' + t + '.kind', 'image');
     A().setS('cursors.' + t + '.url', url);
+    if (!(CFG().cursors || {})[t]?.size) A().setS('cursors.' + t + '.size', /\.json($|\?)/i.test(url) ? 48 : 40);
     paint(); $('#curTheme').value = t; paintCursor(); window.SKIN.cursors();
     toast('Pointer set');
   });
@@ -387,6 +425,13 @@ function wire(t) {
     return true;
   }
   if (act === 'curpick') { $('#curFile').click(); return true; }
+  if (act === 'curclear') {
+    const t = $('#curTheme').value;
+    A().setS('cursors.' + t + '.url', '');
+    A().setS('cursors.' + t + '.kind', 'default');
+    paint(); $('#curTheme').value = t; paintCursor(); window.SKIN.cursors();
+    return true;
+  }
   if (act === 'fontclear') {
     const th = $('#fontTheme').value;
     A().setS('fonts.' + th + '.url', '');
@@ -400,6 +445,20 @@ function wireChange(t) {
   if (t.id === 'icoMicro') { A().setS('icons.micro', t.checked); return true; }
   if (t.id === 'fontTheme') { paintFonts(); return true; }
   if (t.id === 'curTheme') { paintCursor(); return true; }
+  if (t.dataset.cz !== undefined) {
+    const th = $('#curTheme').value;
+    A().setS('cursors.' + th + '.size', +t.value);
+    const n = $('[data-czn]'); if (n) n.textContent = t.value;
+    const prev = $('.ad-curprev'); if (prev) prev.style.setProperty('--s', t.value + 'px');
+    window.SKIN.cursors();
+    return true;
+  }
+  if (t.dataset.ch) {
+    const th = $('#curTheme').value;
+    A().setS('cursors.' + th + '.' + t.dataset.ch, +t.value);
+    window.SKIN.cursors();
+    return true;
+  }
   if (t.dataset.fw) {
     const th = $('#fontTheme').value;
     A().setS('fonts.' + th + '.weights.' + t.dataset.fw, t.value ? +t.value : '');

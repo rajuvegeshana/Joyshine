@@ -615,3 +615,6 @@ li[data-state="bad"] .ad-steps__dot::after {
 .ad-typeprev b { font-size: 1.5rem; }
 .ad-typeprev p { margin: 0; }
 .ad-typeprev span { font-size: .8rem; color: var(--c-text-3); }
+.ad-curprev { width: var(--s, 40px); height: var(--s, 40px); display: inline-grid; place-items: center; }
+.ad-curprev img, .ad-curprev svg, .ad-curprev .lot { width: 100%; height: 100%; object-fit: contain; }
+.ad-field input[type="range"] { width: 100%; accent-color: var(--c-primary); }

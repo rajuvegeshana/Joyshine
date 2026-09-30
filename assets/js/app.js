@@ -31,6 +31,7 @@ function setTheme(name, say) {
 function paintTheme(name) {
   document.documentElement.dataset.theme = name;
   window.KIT?.apply(name);
+  window.SKIN?.cursors();   /* a look may bring its own pointer */
   $$('.themer button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === name)));
 }
 

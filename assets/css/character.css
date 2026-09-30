@@ -512,3 +512,33 @@ main, .strip, .foot, footer { position: relative; z-index: 1; }
 @keyframes icoUp    { 40% { transform: translateY(-4px); } 70% { transform: translateY(1px); } }
 @keyframes icoSweep { 40% { transform: rotate(-18deg) scale(1.05); } 75% { transform: rotate(8deg); } }
 @keyframes icoSpin  { 100% { transform: rotate(180deg) scale(1.05); } }
+
+/* ===========================================================
+   A POINTER OF YOUR OWN
+   Only ever on a device with a mouse, and only when an SVG or
+   an animation has been chosen — a PNG is a real CSS cursor and
+   needs none of this.
+   =========================================================== */
+.cur {
+  position: fixed; left: 0; top: 0; z-index: 400;
+  width: var(--cur-size, 44px); height: var(--cur-size, 44px);
+  margin: calc(var(--cur-size, 44px) / -2.6) 0 0 calc(var(--cur-size, 44px) / -2.6);
+  pointer-events: none;
+  opacity: 0; transition: opacity .18s ease;
+  will-change: transform;
+}
+.cur.on { opacity: 1; }
+.cur img, .cur svg { width: 100%; height: 100%; display: block; object-fit: contain; }
+
+/* the arrow steps aside only while ours is on screen */
+html.has-cur, html.has-cur body { cursor: none; }
+/* …but never where someone is typing, or on a control they need to aim at */
+html.has-cur input, html.has-cur textarea, html.has-cur select,
+html.has-cur [contenteditable] { cursor: auto; }
+html.has-cur a, html.has-cur button, html.has-cur [role="button"],
+html.has-cur label, html.has-cur summary { cursor: pointer; }
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cur { display: none; }
+  html.has-cur, html.has-cur body { cursor: auto; }
+}

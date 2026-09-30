@@ -167,29 +167,109 @@ function fonts() {
 }
 
 /* ---- the mouse, per theme ----------------------------------
-   A cursor is set on the body so it covers the whole page, and
-   an uploaded one is capped at the size browsers accept (128px)
-   by the upload itself, not by us hoping.                      */
+   A PNG can be a cursor the ordinary way, through CSS. An SVG
+   cannot be relied on to work as one — Chrome needs explicit
+   dimensions and Safari refuses outright — and a Lottie
+   animation cannot be a CSS cursor at all. So for those two the
+   arrow is replaced by a small element that follows the pointer.
+
+   Hiding a real pointer is a thing to do carefully: the follower
+   only runs on a device with a mouse, never under a request for
+   less motion, the native arrow stays over anything you type
+   into, and it comes straight back the moment the pointer leaves
+   the window or the tab loses focus.
+   =========================================================== */
+const isSvgUrl = v => isUrl(v) && /\.svg($|\?)/i.test(v.trim());
+
+function cursorCss(sel, c) {
+  if (!c || c.kind === 'default') return '';
+  if (c.kind === 'pointer')   return `${sel}, ${sel} * { cursor: pointer; }\n`;
+  if (c.kind === 'crosshair') return `${sel} { cursor: crosshair; }\n`;
+  if (c.kind === 'grab')      return `${sel} { cursor: grab; }\n`;
+  /* a flat bitmap is the cheapest possible custom cursor */
+  if (c.kind === 'image' && isUrl(c.url) && !isSvgUrl(c.url) && !isJson(c.url))
+    return `${sel}, ${sel} * { cursor: url('${c.url}') ${c.hotX ?? 6} ${c.hotY ?? 4}, auto; }\n`;
+  return '';
+}
+
+/* which scope, if any, wants the follower */
+function followerFor() {
+  const map = CFG().cursors || {};
+  const theme = document.documentElement.dataset.theme;
+  const pick = map[theme] && map[theme].kind && map[theme].kind !== 'default' ? map[theme] : map.all;
+  if (!pick || pick.kind !== 'image' || !pick.url) return null;
+  if (isJson(pick.url)) return { url: pick.url, kind: 'lottie', size: +pick.size || 48 };
+  if (isSvgUrl(pick.url)) return { url: pick.url, kind: 'svg', size: +pick.size || 40 };
+  return null;                       /* a PNG goes through CSS instead */
+}
+
+let follower = null, curAt = { x: -100, y: -100 }, curTo = { x: -100, y: -100 }, curRun = false;
+
+function stopFollower() {
+  follower?.el.remove();
+  follower = null;
+  document.documentElement.classList.remove('has-cur');
+}
+
+function startFollower(spec) {
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!fine || still) return stopFollower();
+  if (follower && follower.url === spec.url && follower.size === spec.size) return;
+  stopFollower();
+
+  const el = document.createElement('div');
+  el.className = 'cur';
+  el.setAttribute('aria-hidden', 'true');
+  el.style.setProperty('--cur-size', spec.size + 'px');
+  document.body.appendChild(el);
+  follower = { ...spec, el };
+  document.documentElement.classList.add('has-cur');
+
+  if (spec.kind === 'lottie') playJson(el, spec.url);
+  else el.innerHTML = `<img src="${spec.url.replace(/"/g, '&quot;')}" alt="">`;
+
+  if (!curRun) {
+    curRun = true;
+    addEventListener('pointermove', e => {
+      curTo.x = e.clientX; curTo.y = e.clientY;
+      if (follower) follower.el.classList.add('on');
+    }, { passive: true });
+    /* give the arrow back whenever the pointer is not ours to draw */
+    addEventListener('pointerleave', () => follower?.el.classList.remove('on'));
+    addEventListener('blur', () => follower?.el.classList.remove('on'));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') follower?.el.classList.remove('on');
+    });
+    const tick = () => {
+      if (follower) {
+        /* a little lag reads as weight; too much reads as broken */
+        curAt.x += (curTo.x - curAt.x) * 0.35;
+        curAt.y += (curTo.y - curAt.y) * 0.35;
+        follower.el.style.transform = `translate3d(${curAt.x.toFixed(1)}px, ${curAt.y.toFixed(1)}px, 0)`;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+}
+
 function cursors() {
   const map = CFG().cursors || {};
-  let css = '';
-  const one = (sel, c) => {
-    if (!c || c.kind === 'default') return '';
-    if (c.kind === 'image' && isUrl(c.url)) return `${sel}, ${sel} * { cursor: url('${c.url}') 6 4, auto; }\n`;
-    if (c.kind === 'pointer') return `${sel}, ${sel} * { cursor: pointer; }\n`;
-    if (c.kind === 'crosshair') return `${sel} { cursor: crosshair; }\n`;
-    if (c.kind === 'grab') return `${sel} { cursor: grab; }\n`;
-    return '';
-  };
-  css += one('body', map.all);
+  let css = cursorCss('body', map.all);
   for (const [theme, c] of Object.entries(map)) {
     if (theme === 'all') continue;
-    css += one(`:root[data-theme="${theme}"] body`, c);
+    css += cursorCss(`:root[data-theme="${theme}"] body`, c);
   }
   let tag = document.getElementById('skinCursor');
-  if (!css) { tag?.remove(); return; }
-  if (!tag) { tag = document.createElement('style'); tag.id = 'skinCursor'; document.head.appendChild(tag); }
-  tag.textContent = css;
+  if (!css) tag?.remove();
+  else {
+    if (!tag) { tag = document.createElement('style'); tag.id = 'skinCursor'; document.head.appendChild(tag); }
+    tag.textContent = css;
+  }
+
+  const spec = followerFor();
+  if (spec) startFollower(spec); else stopFollower();
 }
 
 /* ---- the logo and the tab icon ----------------------------- */
