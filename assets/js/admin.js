@@ -340,6 +340,10 @@ async function pullCloud() {
 }
 
 document.addEventListener('click', e => {
+  /* the catalogue, orders, requests, reviews and offers panes handle
+     their own buttons; if one of them took the click we are done */
+  if (window.ADMINX?.wire(e.target)) return;
+
   const tab = e.target.closest('.ad-tab');
   if (tab) {
     const want = tab.dataset.tab;
