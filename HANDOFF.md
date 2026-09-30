@@ -1,228 +1,284 @@
-# Joyshine — handoff brief
+# Joyshine — the whole picture
 
-**Read this first if you are an AI assistant picking this project up.**
-It is written so any capable model can continue without re-deriving decisions.
-Everything below is fact as of the last commit, not aspiration.
+Everything you need to pick this up cold and keep going. Read `CLAUDE.md`
+first for the rules; this is the map.
 
----
-
-## 1. What this is
-
-A static e-commerce site for Joyshine, a 3D-printing studio in India, plus an
-optional Supabase backend. No build step, no framework, no bundler. Plain HTML,
-CSS and vanilla JavaScript, served by GitHub Pages.
-
-- **Live:** https://joyshine.in
-- **Control panel:** https://joyshine.in/admin.html
-- **Repository:** https://github.com/rajuvegeshana/Joyshine (branch `main`)
-- **Database:** Supabase project `fofjkevcrzxlaqbetqhq`, region as created
-- **Owner's GitHub:** `rajuvegeshana` (note: a second account `rajuvegesana98`
-  exists and does **not** have push access — see §9)
+Last written: 1 October 2026.
 
 ---
 
-## 2. Hard rules for whoever works on this next
+## 1. What Joyshine is
 
-These are not preferences. Breaking them breaks the product.
+A 3D-printing business in Hyderabad, run by one person. It prints and sells
+small things — puja pieces, lamps, keychains, desk objects, kids' toys,
+personalised gifts — and also takes custom work: send a photo, an STL, a
+MakerWorld link or just an idea, and get a quote.
 
-1. **No build step.** Every file must run when opened directly. No npm, no
-   bundler, no JSX, no TypeScript. Third-party code only from a CDN, and only
-   in `admin.html` (currently SheetJS). The shop itself has zero dependencies.
-2. **The database is optional.** The shop must render completely when Supabase
-   is empty, slow or unreachable. Files are the fallback, always. This is
-   tested; do not regress it.
-3. **Never invent business facts.** No fake reviews, no invented star ratings,
-   no made-up dispatch figures, no guessed festival dates. If a value is not
-   known, leave it blank and surface that in the panel.
-4. **The anon/publishable key is public.** It belongs in `config.js`. The
-   `service_role` / `sb_secret_` key must never appear in any file here. Row
-   Level Security is the actual protection.
-5. **Customer data is not world-readable.** Orders and requests hold names,
-   phone numbers and addresses. Anyone may INSERT one; only an authenticated
-   user may SELECT. Verified by attempting both.
-6. **Say what is true about payments.** Razorpay runs client-side with no
-   server, so nothing is signature-verified and discount arithmetic is not
-   tamper-proof. The README and the panel say this plainly. Do not quietly
-   imply otherwise.
-7. **Preserve `CNAME`.** It holds `joyshine.in`. Losing it detaches the domain.
-8. **Run `./bump.sh` before committing any CSS or JS change.** GitHub Pages
-   serves `cache-control: max-age=600`, so without a version stamp on the asset
-   URLs a returning visitor runs yesterday's JavaScript against today's HTML.
-   The script rewrites `?v=` on local `src`/`href` only — never a CDN or font.
+The site is a shop with **two ways to buy**: Razorpay for card/UPI, or a form
+that opens WhatsApp with the whole order typed out. WhatsApp is how most of the
+business actually happens.
+
+Tone throughout: *"Small things. Big joy."* Warm, plain, never shouty. British
+spelling. No exclamation marks in the interface.
 
 ---
 
-## 3. File map
+## 2. Shape of the thing
 
 ```
-index.html                 the shop: app shell, panels, mobile tab bar
-admin.html                 the control panel (Designer Kid design system)
-CNAME                      joyshine.in
-.nojekyll                  stops GitHub Pages running Jekyll
+index.html          the shop — one page, hash routing, everything rendered by JS
+admin.html          the control panel — same origin, no server, no password
+404.html            GitHub Pages serves this for real paths; hands back to the app
+CNAME               joyshine.in — deleting this detaches the domain
+bump.sh             stamps ?v=<timestamp> on local asset URLs; run before every commit
 
-assets/css/
-  base.css                 structure, type, layout, motion
-  components.css           buttons, cards, drawers, forms, toasts, ribbon, popup
-  shop.css                 rails, categories, product page, search, tab bar
-  rig.css                  the printer chrome (scale rails, feed, bed)
-  themes.css               retro / future / clay token sets
-  admin.css                the control panel, on Designer Kid tokens
-
-assets/js/
-  config.js      <- business settings; the panel overrides these
-  occasions.js   35 Indian occasions + the date resolver
-  products.js    30 placeholder products, the ART library, shared variants
-  cloud.js       Supabase REST client: auth, tables, storage, diagnostics
-  settings.js    merges Supabase / site.json over config.js defaults
-  catalogue.js   loads products & categories from Supabase, files as fallback
-  promo.js       ribbon, welcome popup, discount codes, visit counter
-  store.js       cart, wishlist, recently viewed, money, search, totals
-  views.js       every screen, rendered as HTML strings
-  fly.js         the fly-into-the-basket animation
-  app.js         router, interactions, Razorpay + WhatsApp, order recording
-  rig.js         the printer chrome, driven by scroll
-  admin.js       panel shell, occasions, settings, publishing
-  admin-catalogue.js  products, orders, requests, reviews, offers, visits, xlsx
-
-assets/data/site.json      what the panel saved (settings + occasion overrides)
-supabase/*.sql             three migrations, applied in order
+assets/css/         base · components · shop · rig · character · themes · admin
+assets/js/          see the table below
+assets/data/        site.json — the file fallback if Supabase is unreachable
+supabase/           eight SQL files, all of them run already
 ```
+
+**15,900 lines**, 51 files, no dependencies, no build.
+
+### The JavaScript, in load order
+
+| File | Lines | What it owns |
+|---|---|---|
+| `config.js` | 245 | Every business setting. The thing the panel edits. |
+| `occasions.js` | 337 | 45 Indian occasions + the resolver that picks today's |
+| `products.js` | 672 | The seed catalogue, variant options, ~29 drawn SVGs |
+| `cloud.js` | 272 | Supabase REST client — auth, settings, tables, uploads |
+| `settings.js` | 111 | Merges Supabase → site.json → defaults, in that order |
+| `catalogue.js` | 151 | Loads products/reviews/sales; customer file upload; line-up |
+| `customise.js` | 251 | Per-product custom fields (text, dropdown, colour, upload) |
+| `promo.js` | 167 | Ribbon, welcome popup, discount codes, visit counting |
+| `analytics.js` | 98 | GA4 behind a consent notice — nothing loads until agreed |
+| `legal.js` | 183 | Policy pages, hidden until the owner fills in three facts |
+| `store.js` | 185 | Cart, wishlist, recents, money, search, totals |
+| `icons.js` | 27 | The icon set, shared by shop and panel |
+| `skin.js` | 330 | Uploaded art, icon overrides, per-theme type, cursors, logo |
+| `kit.js` | 260 | Per-theme character: motif, accessory, accent icon, wording |
+| `views.js` | 846 | Every screen, rendered as a string |
+| `fly.js` | 190 | The add-to-basket arc (ported from a Motion component) |
+| `app.js` | 1038 | Router, all interaction, Razorpay, WhatsApp, orders, GA |
+| `review.js` | 121 | The confirm-before-publishing bar |
+| `rig.js` | 226 | The printer chrome: ruler, filament rail, print bed |
+| `admin.js` | 1184 | Panel shell, settings buffer, undo/redo, publish flow |
+| `admin-catalogue.js` | 1071 | Products, orders, requests, reviews, offers, xlsx, line-up |
+| `admin-content.js` | 486 | Content & art: hero, icons, type, brand, cursors, errors |
+| `admin-shop.js` | 735 | The Workshop: filament, billing, money out, dashboard |
 
 ---
 
-## 4. How data flows
+## 3. How the data flows
 
 ```
 config.js defaults
-   ↓  overridden by
-Supabase `settings` row  (or assets/data/site.json if no database)
-   ↓  read at boot by settings.js
-window.JOYSHINE
-
-products.js (30 placeholders)
-   ↓  replaced, only if the table has rows, by
-Supabase `products` + `categories`
-   ↓  read at boot by catalogue.js
-window.PRODUCTS / window.CATEGORIES
+      ↓ overridden by
+assets/data/site.json          (only if Supabase is unreachable)
+      ↓ overridden by
+Supabase `settings` table      (what Publish writes)
+      ↓ overridden by
+localStorage preview           (only in the owner's own browser)
 ```
 
-Boot order in `app.js`: `SETTINGS.load()` → `CATALOGUE.load()` → resolve theme
-→ render route → `PROMO.start()`.
+The catalogue works the same way: `products.js` is the seed and the safety net;
+if the `products` table has rows, they win. **Any rows at all override the
+whole seed** — which is why the shop currently shows one product.
 
 ---
 
-## 5. Database
+## 4. Supabase
 
-Project `fofjkevcrzxlaqbetqhq`. Tables and their access:
+Project `fofjkevcrzxlaqbetqhq`. Sign-in is **`jaoyshine.3d@gmail.com`** — note
+the extra *a*; it is not the shop's address.
 
-| Table | Anonymous | Signed in |
-| --- | --- | --- |
-| `settings` | read | read + write |
-| `categories` | read | read + write |
-| `products` | read | read + write |
-| `offers` | read | read + write |
-| `reviews` | read published, **insert unpublished only** | full |
-| `orders` | **insert only, cannot read** | full |
-| `requests` | **insert only, cannot read** | full |
-| `visits` | **insert only, cannot read** | read |
-| storage `product-images` | read | write |
+### Tables
 
-`public.claim_offer(text)` is a `security definer` function so a code's use
-count increments atomically without exposing the table to writes.
+| Table | Who can read | Who can write |
+|---|---|---|
+| `settings` | anyone | signed in |
+| `products`, `categories` | anyone | signed in |
+| `orders` | **signed in only** | anyone may insert; signed in may change or delete |
+| `requests` | **signed in only** | anyone may insert; signed in may change or delete |
+| `reviews` | published ones, or signed in | anyone may insert **unpublished**; signed in may publish or pin |
+| `posts` | published ones | signed in |
+| `offers` | anyone | signed in |
+| `visits` | signed in | anyone may insert |
+| `filaments`, `bills`, `expenses` | **signed in only** | **signed in only** |
+| `product_sales` (view) | anyone — id and count only | — |
+| `filament_left` (view) | signed in only | — |
 
-Auth: email + password, **signups disabled**. One user. Password recovery emails
-go through Supabase's shared SMTP and are unreliable — see §9.
+The asymmetry on `orders` is the important one: a customer must be able to
+place an order without an account, and nobody must be able to read anyone's
+address. Same for `requests` and for unpublished `reviews`.
 
----
+### Storage
 
-## 6. What is built
+| Bucket | Public | Who may add |
+|---|---|---|
+| `product-images` | yes | signed in — also holds uploaded logos, fonts, animations |
+| `customer-uploads` | readable by link | **anyone** — this is how a customer attaches an STL |
+| `receipts` | no | signed in only — a receipt shows your supplier and prices |
 
-- Shop: 8 categories, 30 products, variants (size/material/colour) with price
-  deltas, personalisation, bulk tiers, cart, wishlist, recently viewed
-- Search with a custom-print path when nothing matches
-- Two buying routes: Razorpay checkout, and WhatsApp with a pre-filled message
-- Custom Print: upload design / STL / MakerWorld link / describe, → WhatsApp
-- Engineering & prototyping service line at `#/engineering`, locked to the
-  futuristic theme
-- Three themes, switchable, plus a 35-occasion festival calendar that re-skins
-  the shop automatically around each date
-- The printer "rig": scale rails top and bottom, filament feed, print bed,
-  all driven by scroll, reporting the real material of the product in view
-- Fly-to-basket animation (arc, spring, ripple), ported from Motion
-- Control panel: occasions, themes, contact, shipping, bulk tiers, products,
-  orders, requests, reviews, marketing, SEO, publishing, connection checker
-- Products download to `.xlsx` and upload back
-- Ribbon, welcome popup, discount codes, visitor counting
+`customer-uploads` being open to anonymous writes is deliberate and is the only
+such door in the project. It is fenced by Supabase's own limits: 25 MB, and a
+fixed list of types. Worth watching if it is ever abused.
 
----
+### The SQL files — all eight have been run
 
-## 7. Future scope, in priority order
+1. `schema.sql` — settings
+2. `schema-2-catalogue.sql` — products, categories, orders, requests, reviews, posts
+3. `schema-3-media-reviews.sql` — product images bucket, customer reviews, offers, visits
+4. `schema-4-uploads.sql` — the customer upload bucket **and the list of file types it takes**
+5. `schema-5-reviews-sales.sql` — `reviews.pinned`, and the `product_sales` view
+6. `schema-6-site-assets.sql` — widened `product-images` to take GIFs, fonts, Lottie JSON
+7. `schema-7-workshop.sql` — filaments, bills, expenses, `filament_left`, receipts bucket
+8. `schema-8-tidy.sql` — lets the owner delete an order or a request
 
-Nothing below is started.
-
-**1. Replace the placeholder catalogue.** *Blocking everything.* All 30
-products, their prices, materials and print times are invented. The owner
-should export the spreadsheet, rewrite it, and upload it back.
-
-**2. Razorpay verification.** Add one serverless route that creates a Razorpay
-Order and a webhook that marks orders paid. Until then `orders` rows are a
-record of intent. README §4 has the code sketch.
-
-**3. Policy pages.** Terms, Privacy, Refund/Cancellation, Shipping, Contact.
-Razorpay activation normally requires them.
-
-**4. Section images and copy editing.** The panel edits settings and products
-but not hero copy, rail titles or per-section images. Needs a `content` table
-keyed by section id, and `views.js` reading from it with the current strings as
-fallback.
-
-**5. Blog.** The `posts` table already exists with RLS. Needs: a list page, a
-post page, and an editor pane. No migration required.
-
-**6. More themes + theme upload.** See the warning in §8.
-
-**7. Design-system editing.** Exposing radii, shadows, fonts and the icon set
-as editable tokens. Large; do §4 first.
-
-**8. Stock.** A quantity per product, decremented when an order is recorded.
-Only meaningful once §2 exists, otherwise counts drift.
-
-**9. Customer accounts and order tracking.** Genuinely needs auth for shoppers.
-Consider whether WhatsApp already serves this better.
+They are all safe to re-run. The panel checks which are in place: **Publish →
+Database setup → Check which are in place.**
 
 ---
 
-## 8. Known risks, and one to refuse politely
+## 5. What the shop does
 
-**Uploading arbitrary code as a theme.** The owner has asked for this. Be
-careful: accepting a JavaScript file and executing it on the shop means anyone
-who reaches the panel — or the storage bucket — can inject a script into a page
-that handles checkout. That is how card-skimming happens. The safe version is a
-**CSS-only theme**: a token file validated against an allow-list of custom
-properties, no `@import`, no `url()` to third parties. Offer that instead; it
-delivers the same outcome (new looks) without the hole.
+**Buying** — Razorpay ("Buy now") or WhatsApp with the order pre-written. Cart,
+wishlist, recently viewed, search with suggestions, bulk-price tiers, discount
+codes with expiry and usage limits.
 
-**Discount codes are client-side.** Expiry and usage limits are enforced by the
-database, but the arithmetic happens in the browser. Fine as marketing; not
-accounting-grade.
+**Delivery address** — the PIN code is checked against India Post's own
+directory: one it does not know cannot be used, one it does fills in district
+and state and offers that PIN's localities. "Locate me" reverse-geocodes with
+OpenStreetMap. Flat, building and floor are separate fields.
 
-**Supabase free-tier email is unreliable.** Password recovery frequently never
-arrives. Point SMTP at Resend/Brevo/SendGrid if it matters.
+**Custom print** — four ways in (photo, 3D file, MakerWorld link, an idea). The
+file uploads on send and WhatsApp gets the link; there is also a "paste a link"
+field for anything already on a drive.
 
-**Two GitHub accounts.** `gh auth token` returns the wrong account's token even
-when `gh auth status` shows the right one active. Always
-`gh auth token -u rajuvegeshana`.
+**Per-product customisation** — the owner defines fields per product (short
+text, long text, dropdown, colour, file upload), and the customer fills them in
+before adding to the cart.
+
+**Reviews** — a customer can write one but cannot publish it; the database
+refuses anything already marked published. The owner approves, and can pin one
+to the homepage.
+
+**"N people have bought this"** — read from a view over the real orders table,
+which exposes a product id and a count and nothing else. Appears only once
+something has genuinely sold.
+
+**Eleven + eight themes** — clay, retro, futuristic, halloween, diwali, holi,
+christmas, navratri, ganesh, krishna, tiranga, plus Valentine's week: rose,
+propose, chocolate, teddy, promise, hug, kiss, valentine. Each brings its own
+colours, typeface, motif drifting behind the page, accessory on the hero
+unicorn, accent icon, wording and easing.
+
+**The printer rig** — a ruler across the top that follows the pointer and the
+scroll, a filament rail down the left that feeds as you read, and a print bed
+along the bottom that fills as the page is consumed.
+
+**Error pages** — a dead link, a product that has gone, a search that found
+nothing, the database out of reach. Each offers the shop, the custom form, the
+FAQ, every category and a pre-written WhatsApp message; each is editable.
 
 ---
 
-## 9. Working practices that mattered
+## 6. What the panel does
 
-- **Never use the clipboard to move code into a browser.** It was overwritten
-  twice mid-task by passwords the owner had copied, which then landed in the
-  Supabase SQL editor. Write into the editor directly:
-  `monaco.editor.getModels()[0].setValue(sql)`.
-- Verify security by attempting the thing you are preventing, not by reading
-  the policy. Every claim in §5 was tested with curl.
-- The browser automation runs in a background tab where `requestAnimationFrame`
-  never fires. Anything driven by rAF needs a timeout fallback, and screenshots
-  taken right after a state change are often a stale frame.
+**Dashboard** — is the shop answering and how fast, when it was last published,
+what look it is wearing, takings and spending this month and all time, orders
+waiting, filament nearly out, Razorpay key state, analytics state.
+
+**Occasions** — 45 of them, each with a look, a banner, a featured tag and a
+window. Fixed dates compute for ever. Lunar festivals stay off until the owner
+sets the date — deliberately.
+
+**Look** — the default theme, a pin that overrides everything, and whether the
+engineering page keeps its own look.
+
+**Content & art** — hero animation (four), hero artwork, twelve replaceable
+icons with micro-interactions, per-theme typography with eight weights and
+uploadable fonts, logo/favicon/share picture, the mouse pointer, error pages.
+
+**Products** — full editor: sizes with L×B×H, materials with per-product
+pricing and stock, colours, customisation fields, photographs, spreadsheet
+import and export, and a **line-up** that decides which products lead the shop
+and in what order, per occasion or every day.
+
+**Orders, Requests, Reviews, Marketing, Traffic & SEO, Policies.**
+
+**Workshop (private)** — Filament (spools with purchase date, price, weight;
+what is left counted from bills), Billing (write up any sale, record grams and
+which spool, see what the filament cost as a share of the price, print it), and
+Money out (eleven categories, photographed receipts, a chart of the year).
+
+**Publishing** — three buttons. *Cancel changes* lists what it will throw away.
+*Save and preview* opens the shop wearing the changes. *Publish* stays closed
+until you have previewed, then walks five steps on screen and, if one fails,
+says which and offers the same settings as a file plus a link to commit them
+through GitHub instead. Undo and redo, with Ctrl+Z.
+
+---
+
+## 7. Waiting on the owner
+
+Nothing here can be invented. Each one blocks something real.
+
+1. **The real catalogue.** One product exists. Everything else on the shop is
+   placeholder art with invented prices. Fastest route: Publish → Download
+   products.xlsx → fill it in → upload it back.
+2. **The Razorpay Key ID.** Still `rzp_test_REPLACE_ME`, so "Buy now" cannot
+   take a payment. WhatsApp orders work.
+3. **Nine lunar festival dates** — Holi, Ugadi, Eid, Raksha Bandhan, Ganesh
+   Chaturthi, Navratri, Dussehra, Dhanteras, Diwali. All switched on, all
+   dateless, all therefore dormant.
+4. **Real shipping, returns and bulk numbers** for the policy pages.
+5. **GST status** — whether prices include it, and the number if registered.
+6. **`www` CNAME at Hostinger** — `www.joyshine.in` still does not resolve.
+
+---
+
+## 8. Known and deliberate
+
+- **Payments are not verified server-side.** The browser sets the amount and
+  writes the "paid" mark. Someone could pay ₹1 for a ₹5,000 order, or invent a
+  payment id entirely. The fix is a Supabase Edge Function that creates the
+  Razorpay order server-side and checks the signature. Until then: **check the
+  Razorpay dashboard before dispatch.** The owner has been told this plainly
+  and chose to leave it for now.
+- **The panel's work lives in one browser.** `localStorage` holds the draft, so
+  publish from the machine you edited on. Opening the panel elsewhere starts
+  from what is published.
+- **Pop-ups.** Save and preview opens a tab; if the browser blocks it the same
+  confirmation appears in the panel instead.
+- **The `products` table overrides the seed entirely** — one row hides thirty.
+
+## 9. Not built
+
+Blog posts (the table exists), section-by-section image and copy editing, a
+design-system editor, uploading a whole theme as a file (rejected on purpose —
+CSS tokens only, never someone else's JavaScript), Razorpay server
+verification, policy pages published (needs §7.4 and §7.5).
+
+---
+
+## 10. Things that have already gone wrong
+
+Kept because they will otherwise happen again.
+
+- A blanket `position: relative` rule to lift content above a background layer
+  knocked the printer rig, the tab bar, the panels and the toasts out of fixed
+  positioning. The filament rail vanished and the page grew 2,000px of nothing.
+- `bump.sh` was once written with a regex that dropped the closing quote on
+  every asset URL. Zero modules loaded. It is Python now, and it asserts.
+- A patch script whose anchor no longer existed wrote the file back unchanged,
+  leaving every button in the panel silently dead. **Assert before you write.**
+- The clipboard was hijacked twice by the owner copying a password while a
+  paste was pending, putting the password into the Supabase SQL editor. Use
+  `monaco.editor.getModels()[0].setValue()` instead.
+- The panel compared settings with `JSON.stringify`, but Postgres returns
+  `jsonb` with its own key order, so it always believed there were unsaved
+  changes. Sort keys before comparing.
+- GitHub's `gh auth token` returns the wrong account's token on this machine.
+  Always `-u rajuvegeshana`.
