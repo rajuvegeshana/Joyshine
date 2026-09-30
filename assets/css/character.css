@@ -388,3 +388,12 @@
   --stage-pattern-size: 20px 20px;
   --stage-pattern-a: .65;
 }
+
+/* A pink unicorn on a pink stage needs a glow that is not also pink,
+   or it disappears into its own light. */
+:root[data-theme="rose"],
+:root[data-theme="kiss"],
+:root[data-theme="valentine"] { --art-glow: rgba(255,243,230,.5); }
+:root[data-theme="valentine"] .printer__glow { opacity: .55; }
+:root[data-theme="rose"] .printer__glow,
+:root[data-theme="kiss"] .printer__glow { opacity: .6; }
