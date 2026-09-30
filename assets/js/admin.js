@@ -28,7 +28,49 @@ let patch = { settings: {}, occasions: [] };
 try { patch = JSON.parse(localStorage.getItem(DRAFT)) || patch; } catch {}
 
 let dirty = false;
-const mark = () => { dirty = true; $('#unsaved').hidden = false; save(); paintJson(); };
+
+/* ---- undo / redo, for this sitting -------------------------
+   Every edit pushes the whole patch onto a stack. It is small
+   — it holds only what differs from the defaults — so keeping
+   fifty of them costs nothing and makes every step reversible. */
+const past = [JSON.stringify(patch)];
+let at = 0;               /* where we are in `past` */
+let quiet = false;        /* true while undo/redo is rewriting */
+
+function pushHistory() {
+  if (quiet) return;
+  const now = JSON.stringify(patch);
+  if (now === past[at]) return;
+  past.splice(at + 1);                 /* a new edit forks the future */
+  past.push(now);
+  if (past.length > 60) past.shift();
+  at = past.length - 1;
+  paintHistory();
+}
+
+function paintHistory() {
+  const u = $('#btnUndo'), r = $('#btnRedo'), d = $('#btnDiscard');
+  if (u) u.disabled = at <= 0;
+  if (r) r.disabled = at >= past.length - 1;
+  if (d) d.hidden = !dirty;
+}
+
+function step(dir) {
+  const want = at + dir;
+  if (want < 0 || want >= past.length) return;
+  at = want;
+  quiet = true;
+  patch = JSON.parse(past[at]);
+  save();
+  dirty = at > 0 || Object.keys(patch.settings).length > 0 || patch.occasions.length > 0;
+  $('#unsaved').hidden = !dirty;
+  paintAll();
+  quiet = false;
+  paintHistory();
+  toast(dir < 0 ? 'Undone' : 'Redone');
+}
+
+const mark = () => { dirty = true; $('#unsaved').hidden = false; save(); paintJson(); pushHistory(); paintHistory(); };
 const save = () => { try { localStorage.setItem(DRAFT, JSON.stringify(patch)); } catch {} };
 
 function toast(msg) {
@@ -350,10 +392,12 @@ function paintHow(cloud, signedIn) {
 function paintCloud() {
   const badge = $('#cloudBadge'), wrap = $('#signinWrap'), state = $('#cloudState');
   const pub = $('#btnPublish'), out = $('#btnSignout'), main = $('#btnSave');
+  const now = $('#btnPublishNow');
 
   if (!cloudOn()) {
     paintHow(false, false);
     badge.hidden = true; wrap.hidden = true; pub.hidden = true; out.hidden = true;
+    if (now) now.hidden = true;
     main.textContent = 'Save changes';
     state.textContent = 'Supabase is not set up, so changes are published by downloading site.json and committing it. Fill in the supabase block in config.js to save straight to the live shop instead.';
     return;
@@ -365,6 +409,7 @@ function paintCloud() {
   badge.innerHTML = inn ? `Signed in as <b>${esc(window.CLOUD.user()?.email || '')}</b>` : 'Not signed in';
   wrap.hidden = inn;
   pub.hidden = !inn;
+  if (now) now.hidden = !inn;
   out.hidden = !inn;
   main.textContent = inn ? 'Publish' : 'Save changes';
   state.textContent = inn
@@ -379,6 +424,21 @@ const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>'
    browser's own storage, and does the writing itself. */
 const REVIEW = 'joyshine.review';
 
+/* Throw away everything since the last publish. The live shop is not
+   touched: this only clears what this browser is holding. */
+function discardAll() {
+  if (!dirty && at === 0) { toast('Nothing to cancel'); return; }
+  if (!confirm('Cancel every change you have made since the last publish?\n\nThe live shop is not touched. This cannot be undone.')) return;
+  patch = live ? JSON.parse(JSON.stringify({ settings: live.settings || {}, occasions: live.occasions || [] }))
+               : { settings: {}, occasions: [] };
+  past.length = 0; past.push(JSON.stringify(patch)); at = 0;
+  dirty = false;
+  try { localStorage.setItem(DRAFT, JSON.stringify(patch)); localStorage.removeItem(PREVIEW); localStorage.removeItem(REVIEW); } catch {}
+  $('#unsaved').hidden = true;
+  paintAll(); paintHistory();
+  toast(live ? 'Back to what is on the live shop' : 'Back to the built-in defaults');
+}
+
 function reviewFirst() {
   const changes = changeList();
   if (!changes.length) { toast('Nothing has changed yet'); return; }
@@ -387,9 +447,37 @@ function reviewFirst() {
     localStorage.setItem(REVIEW, JSON.stringify({ at: Date.now(), changes, data: build() }));
   } catch { toast('This browser will not let the panel store the preview'); return; }
   const w = window.open('index.html?review=1', '_blank', 'noopener');
-  if (!w) { toast('Allow pop-ups to review, or press Publish anyway below'); return; }
+  if (!w) { confirmHere(changes); return; }
   toast('Opened the shop with your changes — confirm there');
   paintCloud();
+}
+
+/* The same confirmation, inside the panel, for when the browser
+   will not open the review tab. */
+function confirmHere(changes) {
+  const rows = changes.map(c => c.occasion
+    ? `<li><b>${esc(c.label)}</b><span>${esc(c.to)}</span></li>`
+    : `<li><b>${esc(c.label)}</b><span><i>${esc(c.from)}</i> → <em>${esc(c.to)}</em></span></li>`).join('');
+  const box = document.createElement('div');
+  box.className = 'ad-modal';
+  box.innerHTML = `
+    <div class="ad-modal__card" role="dialog" aria-modal="true" aria-label="Changes about to be published">
+      <h3>Publish these changes?</h3>
+      <p class="ad-p">Your browser would not open the review tab, so here is the list.
+        Everything below goes to the live shop at once.</p>
+      <ul class="ad-modal__list">${rows}</ul>
+      <div class="ad-btns" style="justify-content:flex-end;margin:0">
+        <button class="ad-btn ad-btn--ghost" data-m="close">Not yet</button>
+        <button class="ad-btn ad-btn--primary" data-m="go">Publish to the live shop</button>
+      </div>
+    </div>`;
+  document.body.appendChild(box);
+  box.addEventListener('click', async e => {
+    if (e.target === box || e.target.closest('[data-m="close"]')) return box.remove();
+    if (!e.target.closest('[data-m="go"]')) return;
+    box.remove();
+    await publish();
+  });
 }
 
 /* Spell out what is waiting, in the owner's words rather than in
@@ -530,7 +618,7 @@ document.addEventListener('click', e => {
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
     const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', content: 'Content & art', products: 'Products',
                      orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
-                     marketing: 'Marketing', legal: 'Policies',
+                     marketing: 'Marketing', traffic: 'Traffic & SEO', legal: 'Policies',
                      shop: 'Shop & contact', publish: 'Publish' };
     $('#paneTitle').textContent = titles[want] || 'Control panel';
     scrollTo({ top: 0, behavior: 'instant' });
@@ -548,8 +636,12 @@ document.addEventListener('click', e => {
   }
   if (e.target.closest('#btnPublish')) return reviewFirst();
   if (e.target.closest('#btnSave')) {
-    return (cloudOn() && window.CLOUD.signedIn()) ? publish() : download();
+    return (cloudOn() && window.CLOUD.signedIn()) ? reviewFirst() : download();
   }
+  if (e.target.closest('#btnUndo')) return step(-1);
+  if (e.target.closest('#btnRedo')) return step(1);
+  if (e.target.closest('#btnDiscard')) return discardAll();
+  if (e.target.closest('#btnPublishNow')) return publish();
   if (e.target.closest('#btnSave2')) return download();
   const eye = e.target.closest('[data-eye]');
   if (eye) {
@@ -740,6 +832,16 @@ document.addEventListener('change', e => {
   if (map[t.id]) { map[t.id](); paintToday(); if (t.id === 'waNumber') $('#waNumber').value = t.value.replace(/\D/g, ''); }
 });
 
+addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (!mod || e.key.toLowerCase() !== 'z') return;
+  const el = document.activeElement;
+  /* let a text field have its own undo first */
+  if (el && /^(INPUT|TEXTAREA)$/.test(el.tagName) && el.value !== '') return;
+  e.preventDefault();
+  step(e.shiftKey ? 1 : -1);
+});
+
 $('#occFilter').addEventListener('input', e => paintOccasions(e.target.value));
 
 $('#resetForm').addEventListener('submit', async e => {
@@ -813,6 +915,7 @@ window.ADMINX?.setToast(toast);
 window.ADMINC?.setToast(toast);
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
+paintHistory();
 if (cloudOn() && window.CLOUD.signedIn()) window.CLOUD.refresh().then(() => { paintCloud(); pullCloud(); });
 else pullCloud();
 })();

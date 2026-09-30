@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/admin.css?v=202609301924">
+<link rel="stylesheet" href="assets/css/admin.css?v=202609301941">
 </head>
 <body>
 
@@ -65,6 +65,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
         Marketing
       </button>
+      <button class="nav-link ad-tab" data-tab="traffic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 16V9M11 16V5M16 16v-4"/></svg>
+        Traffic &amp; SEO
+      </button>
       <button class="nav-link ad-tab" data-tab="legal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
         Policies <span class="dot" id="dotLegal" hidden></span>
@@ -85,6 +89,15 @@
   <div>
     <header class="topbar">
       <h1 id="paneTitle">Today</h1>
+      <div class="ad-undo">
+        <button class="ad-btn ad-btn--ghost ad-btn--icon" id="btnUndo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+        </button>
+        <button class="ad-btn ad-btn--ghost ad-btn--icon" id="btnRedo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg>
+        </button>
+      </div>
+      <button class="ad-btn ad-btn--ghost" id="btnDiscard" hidden>Cancel changes</button>
       <button class="ad-btn ad-btn--ghost" id="btnPreview">Preview on site</button>
       <button class="ad-btn" id="btnSave">Save changes</button>
     </header>
@@ -316,28 +329,7 @@
 
         <div class="ad-card" id="offersCard"></div>
 
-        <div class="ad-card">
-          <h3>Search engines</h3>
-          <label class="ad-field"><span>Page title</span><input id="seoTitle"></label>
-          <label class="ad-field"><span>Description</span><textarea id="seoDesc" rows="2"></textarea>
-            <i class="ad-hint">Around 150 characters. This is what shows under the title in Google.</i></label>
-          <label class="ad-field"><span>Keywords</span><input id="seoKeys"></label>
-          <label class="ad-field" style="margin-bottom:0"><span>Share image URL</span><input id="seoOg" placeholder="https://joyshine.in/assets/img/share.jpg">
-            <i class="ad-hint">Shown when the link is shared on WhatsApp. 1200x630 works best.</i></label>
-        </div>
 
-        <div class="ad-card">
-          <h3>Google Analytics</h3>
-          <p class="ad-p">Nothing is sent to Google until a visitor agrees to the notice. Declining
-            means no Google cookies at all. Your own visitor count below is separate and always on.</p>
-          <label class="ad-row--switch"><input type="checkbox" id="gaOn">
-            <span><b>Use Google Analytics</b><i>Adds a consent notice to the shop, as the law requires.</i></span></label>
-          <label class="ad-field" style="margin-bottom:0"><span>Measurement ID</span>
-            <input id="gaId" placeholder="G-XXXXXXXXXX">
-            <i class="ad-hint">Google Analytics → Admin → Data Streams → your web stream.</i></label>
-        </div>
-
-        <div class="ad-card" id="visitsCard"></div>
       </section>
 
       <!-- ============ POLICIES ============ -->
@@ -397,13 +389,47 @@
         </div>
       </section>
 
+      <!-- ============ TRAFFIC & SEO ============ -->
+      <section class="ad-pane" data-pane="traffic">
+        <div class="ad-card">
+          <h3>What this page does</h3>
+          <p class="ad-p" style="margin:0">The words Google shows under your link, the picture WhatsApp shows when
+            somebody shares it, and how many people came to the shop. Changes here go live with Publish
+            like everything else.</p>
+        </div>
+
+        <div class="ad-card">
+          <h3>Search engines</h3>
+          <label class="ad-field"><span>Page title</span><input id="seoTitle"></label>
+          <label class="ad-field"><span>Description</span><textarea id="seoDesc" rows="2"></textarea>
+            <i class="ad-hint">Around 150 characters. This is what shows under the title in Google.</i></label>
+          <label class="ad-field"><span>Keywords</span><input id="seoKeys"></label>
+          <label class="ad-field" style="margin-bottom:0"><span>Share image URL</span><input id="seoOg" placeholder="https://joyshine.in/assets/img/share.jpg">
+            <i class="ad-hint">Shown when the link is shared on WhatsApp. 1200x630 works best.</i></label>
+        </div>
+
+        <div class="ad-card">
+          <h3>Google Analytics</h3>
+          <p class="ad-p">Nothing is sent to Google until a visitor agrees to the notice. Declining
+            means no Google cookies at all. Your own visitor count below is separate and always on.</p>
+          <label class="ad-row--switch"><input type="checkbox" id="gaOn">
+            <span><b>Use Google Analytics</b><i>Adds a consent notice to the shop, as the law requires.</i></span></label>
+          <label class="ad-field" style="margin-bottom:0"><span>Measurement ID</span>
+            <input id="gaId" placeholder="G-XXXXXXXXXX">
+            <i class="ad-hint">Google Analytics → Admin → Data Streams → your web stream.</i></label>
+        </div>
+
+        <div class="ad-card" id="visitsCard"></div>
+      </section>
+
       <!-- ============ PUBLISH ============ -->
       <section class="ad-pane" data-pane="publish">
         <div class="ad-card">
           <h3>Publishing your changes</h3>
           <div id="publishHow"></div>
           <div class="ad-btns">
-            <button class="ad-btn ad-btn--primary" id="btnPublish" hidden>Publish to the live shop</button>
+            <button class="ad-btn ad-btn--primary" id="btnPublish" hidden>Review, then publish</button>
+            <button class="ad-btn ad-btn--ghost" id="btnPublishNow" hidden>Publish without reviewing</button>
             <button class="ad-btn ad-btn--ghost" id="btnSave2">Download site.json</button>
             <button class="ad-btn ad-btn--ghost" id="btnLoad">Load a site.json</button>
             <input type="file" id="fileIn" accept="application/json" hidden>
@@ -479,17 +505,17 @@
 
 <div class="ad-toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609301924"></script>
-<script src="assets/js/occasions.js?v=202609301924"></script>
-<script src="assets/js/legal.js?v=202609301924"></script>
-<script src="assets/js/customise.js?v=202609301924"></script>
-<script src="assets/js/cloud.js?v=202609301924"></script>
-<script src="assets/js/products.js?v=202609301924"></script>
+<script src="assets/js/config.js?v=202609301941"></script>
+<script src="assets/js/occasions.js?v=202609301941"></script>
+<script src="assets/js/legal.js?v=202609301941"></script>
+<script src="assets/js/customise.js?v=202609301941"></script>
+<script src="assets/js/cloud.js?v=202609301941"></script>
+<script src="assets/js/products.js?v=202609301941"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/icons.js?v=202609301924"></script>
-<script src="assets/js/skin.js?v=202609301924"></script>
-<script src="assets/js/admin-content.js?v=202609301924"></script>
-<script src="assets/js/admin-catalogue.js?v=202609301924"></script>
-<script src="assets/js/admin.js?v=202609301924"></script>
+<script src="assets/js/icons.js?v=202609301941"></script>
+<script src="assets/js/skin.js?v=202609301941"></script>
+<script src="assets/js/admin-content.js?v=202609301941"></script>
+<script src="assets/js/admin-catalogue.js?v=202609301941"></script>
+<script src="assets/js/admin.js?v=202609301941"></script>
 </body>
 </html>

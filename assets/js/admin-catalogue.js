@@ -782,29 +782,65 @@ async function paintVisits() {
   const box = $('#visitsCard');
   if (!box) return;
   if (!inn()) { box.innerHTML = '<h3>Visitors</h3><p class="ad-empty">Sign in to see visitor numbers.</p>'; return; }
+  box.innerHTML = '<h3>Visitors</h3><p class="ad-empty">Counting…</p>';
+
   const since = new Date(Date.now() - 29 * 864e5).toISOString().slice(0, 10);
-  const rows = await CLOUD.rows(`visits?select=day&day=gte.${since}`) || [];
-  const byDay = {};
-  rows.forEach(r => { byDay[r.day] = (byDay[r.day] || 0) + 1; });
+  const rows = await CLOUD.rows(`visits?select=day,path,ref&day=gte.${since}&limit=5000`) || [];
+
+  const byDay = {}, byPath = {}, byRef = {};
+  for (const r of rows) {
+    byDay[r.day] = (byDay[r.day] || 0) + 1;
+    const p = (r.path || '/').replace(/^#\//, '') || 'home';
+    byPath[p] = (byPath[p] || 0) + 1;
+    let ref = (r.ref || '').trim();
+    if (!ref) ref = 'typed the address or a bookmark';
+    else { try { ref = new URL(ref).hostname.replace(/^www\./, ''); } catch {} }
+    byRef[ref] = (byRef[ref] || 0) + 1;
+  }
   const days = Object.keys(byDay).sort();
   const top = Math.max(1, ...Object.values(byDay));
   const today = new Date().toISOString().slice(0, 10);
-  const week = days.filter(d => d > new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10))
-                   .reduce((n, d) => n + byDay[d], 0);
+  const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  const weekFrom = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  const week = days.filter(d => d > weekFrom).reduce((n, d) => n + byDay[d], 0);
+  const prevWeek = days.filter(d => d > new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10) && d <= weekFrom)
+                       .reduce((n, d) => n + byDay[d], 0);
+  const trend = prevWeek ? Math.round((week - prevWeek) / prevWeek * 100) : null;
+
+  const rank = obj => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const ga = (window.JOYSHINE.analytics || {});
 
   box.innerHTML = `
     <h3>Visitors</h3>
-    <p class="ad-p">Counted once per browser per day. No cookies, no names, nothing personal —
-      just enough to see whether the shop is getting busier.</p>
-    <div class="ad-list">
-      <div><b>Today</b><span>${byDay[today] || 0}</span></div>
-      <div><b>Last 7 days</b><span>${week}</span></div>
-      <div><b>Last 30 days</b><span>${rows.length}</span></div>
+    <p class="ad-p">Counted once per browser per day, by the shop itself. No cookies, no names, nothing personal.
+      ${ga.on && ga.ga4 ? `Google Analytics (<code>${esc(ga.ga4)}</code>) records rather more, and lives at
+      <a href="https://analytics.google.com/" target="_blank" rel="noopener">analytics.google.com</a>.`
+      : 'Google Analytics is switched off above, so this is the only count you have.'}</p>
+
+    <div class="ad-stats">
+      <div><b>${byDay[today] || 0}</b><span>today</span></div>
+      <div><b>${byDay[yday] || 0}</b><span>yesterday</span></div>
+      <div><b>${week}</b><span>last 7 days${trend === null ? '' :
+        ` <i class="${trend >= 0 ? 'up' : 'down'}">${trend >= 0 ? '+' : ''}${trend}%</i>`}</span></div>
+      <div><b>${rows.length}</b><span>last 30 days</span></div>
     </div>
-    ${days.length ? `<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-top:1rem">
-      ${days.map(d => `<div title="${d}: ${byDay[d]}" style="flex:1;min-width:3px;border-radius:3px 3px 0 0;
-        background:var(--c-primary);opacity:.75;height:${Math.round(byDay[d] / top * 100)}%"></div>`).join('')}
-    </div>` : '<p class="ad-empty" style="margin-top:.8rem">Nothing recorded yet.</p>'}`;
+
+    ${days.length ? `<div class="ad-spark">
+      ${days.map(d => `<i title="${d}: ${byDay[d]}" style="height:${Math.round(byDay[d] / top * 100)}%"></i>`).join('')}
+    </div>` : '<p class="ad-empty" style="margin-top:.8rem">Nothing recorded yet.</p>'}
+
+    ${rows.length ? `<div class="ad-grid2" style="margin-top:var(--space-5)">
+      <div>
+        <h4 class="ad-sub">Where they landed</h4>
+        <div class="ad-list">${rank(byPath).map(([k, n]) =>
+          `<div><b>${esc(k)}</b><span>${n}</span></div>`).join('')}</div>
+      </div>
+      <div>
+        <h4 class="ad-sub">How they got here</h4>
+        <div class="ad-list">${rank(byRef).map(([k, n]) =>
+          `<div><b>${esc(k)}</b><span>${n}</span></div>`).join('')}</div>
+      </div>
+    </div>` : ''}`;
 }
 
 /* ---------- the product photograph ------------------------ */
@@ -1017,7 +1053,8 @@ function wireFile() {
 
 async function paint(tab) {
   wireFile();
-  if (tab === 'marketing') { paintOffers(); paintVisits(); }
+  if (tab === 'marketing') paintOffers();
+  if (tab === 'traffic') paintVisits();
   if (tab === 'products') {
     if (inn() && !PRODUCTS.length) await pull();
     paintProducts($('#prodFilter')?.value || '');

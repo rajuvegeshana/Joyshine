@@ -497,3 +497,40 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-icon b { font-size: .8rem; font-weight: 500; color: var(--c-text-2); }
 .ad-err-edit { padding-top: var(--space-3); }
 .ad-err-edit + .ad-err-edit { border-top: 1px solid var(--c-line); margin-top: var(--space-4); }
+
+/* ---- undo, redo, and the confirmation when a tab cannot open --- */
+.ad-undo { display: flex; gap: 4px; margin-left: auto; }
+.ad-btn--icon { padding: 0; width: 38px; min-height: 38px; display: grid; place-items: center; }
+.ad-btn--icon svg { width: 17px; height: 17px; }
+.ad-btn--icon[disabled] { opacity: .35; pointer-events: none; }
+.topbar #btnDiscard { margin-left: 0; }
+
+.ad-modal {
+  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  background: color-mix(in oklab, var(--c-text) 45%, transparent);
+  padding: 16px; overflow: auto;
+}
+.ad-modal__card {
+  background: var(--c-surface); border-radius: var(--r-lg);
+  border: 1px solid var(--c-line); box-shadow: 0 30px 70px -30px rgba(0,0,0,.5);
+  padding: var(--space-6); width: min(560px, 100%); max-height: 86vh; overflow: auto;
+}
+.ad-modal__list { list-style: none; margin: var(--space-4) 0; padding: 0; display: grid; gap: 6px; }
+.ad-modal__list li {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 8px 10px; border-radius: var(--r-base); background: var(--c-bg); font-size: .88rem;
+}
+.ad-modal__list i { font-style: normal; color: var(--c-text-3); text-decoration: line-through; }
+.ad-modal__list em { font-style: normal; font-weight: 600; }
+
+/* ---- traffic ---------------------------------------------- */
+.ad-stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); margin-bottom: var(--space-4); }
+.ad-stats > div { padding: 12px 14px; border-radius: var(--r-base); background: var(--c-bg); border: 1px solid var(--c-line); }
+.ad-stats b { display: block; font-family: var(--f-display, inherit); font-size: 1.5rem; line-height: 1.1; }
+.ad-stats span { font-size: .78rem; color: var(--c-text-3); }
+.ad-stats i { font-style: normal; font-size: .72rem; }
+.ad-stats i.up { color: #2f8a5a; }
+.ad-stats i.down { color: var(--c-danger, #c4453f); }
+.ad-spark { display: flex; align-items: flex-end; gap: 3px; height: 84px; margin-top: var(--space-4); }
+.ad-spark i { flex: 1; min-width: 3px; border-radius: 3px 3px 0 0; background: var(--c-primary); opacity: .75; }
+.ad-grid2 { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
