@@ -545,3 +545,177 @@
   --search-bg: #170c3a;
   --rig-line: rgba(255,196,61,.3); --rig-ink: rgba(236,228,255,.3); --rig-ink-2: #ffc43d;
 }
+
+/* ===========================================================
+   9. GANESH — a daytime pandal. Saffron and vermillion, turmeric
+   gold, a leaf green. Bright rather than dark, because the
+   processions are.
+   =========================================================== */
+:root[data-theme="ganesh"] {
+  --bg: #fff6e6;
+  --texture:
+    radial-gradient(680px 460px at 86% -4%, rgba(232,58,46,.16), transparent 66%),
+    radial-gradient(620px 440px at 3% 14%, rgba(255,168,28,.24), transparent 68%),
+    radial-gradient(560px 400px at 58% 104%, rgba(58,150,82,.14), transparent 70%);
+
+  --ink: #4a2312; --ink-strong: #2c1208; --ink-soft: #6f4630; --ink-quiet: #a07a62;
+  --surface: #fffcf4; --surface-2: #fdefd6;
+  --line: rgba(74,35,18,.18); --line-strong: #2c1208;
+  --border-w: 2px;
+
+  --brand: #e83a2e;  --brand-ink: #fffcf4; --brand-edge: #2c1208;
+  --accent: #ffa81c; --accent-ink: #2c1208;
+  --hot: #d81f2a;
+  --wa: #3a9652; --wa-edge: #2c1208; --wa-ink: #2c7a42;
+
+  --stage: linear-gradient(165deg, #ffe9c2 0%, #ffd9c0 52%, #ffe7cf 100%);
+  --stage-border: 2px solid #2c1208;
+  --grid: rgba(44,18,8,.14);
+  --sheen: rgba(255,255,255,.62);
+  --scrim: rgba(44,18,8,.5);
+
+  --art-1: #e83a2e; --art-2: #ffa81c; --art-3: #3a9652; --art-4: #2c1208;
+  --art-glow: #ffcf7a;
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 20px; --r-xl: 28px;
+
+  --shadow-1: 5px 5px 0 #2c1208;
+  --shadow-2: 9px 9px 0 #2c1208;
+  --shadow-3: -14px 0 44px rgba(44,18,8,.32);
+  --btn-border: 2px solid #2c1208;
+  --btn-shadow: 4px 4px 0 #2c1208;
+  --btn-shadow-hover: 7px 7px 0 #2c1208;
+  --btn-shadow-press: 1px 1px 0 #2c1208;
+  --card-border: 2px solid #2c1208;
+  --tag-shadow: 3px 3px 0 #2c1208;
+
+  --font-display: 'Bagel Fat One', 'Fraunces', serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --display-weight: 400; --display-tracking: -.005em; --display-case: none;
+  --body-weight: 400; --btn-case: uppercase; --btn-tracking: .07em;
+
+  --header-bg: rgba(255,246,230,.9); --header-blur: blur(10px);
+  --strip-bg: #e83a2e; --strip-ink: #fffcf4;
+  --save-bg: #ffe0b0; --save-ink: #8a3a00;
+  --code-bg: #2c1208; --code-ink: #ffcf7a;
+  --ring: rgba(232,58,46,.28); --focus: #e83a2e;
+  --layer-line: rgba(44,18,8,.2);
+  --search-bg: #fdf0da;
+  --rig-line: rgba(44,18,8,.26); --rig-ink: rgba(74,35,18,.4); --rig-ink-2: #e83a2e;
+}
+
+/* ===========================================================
+   10. KRISHNA — Janmashtami. Peacock blue and feather teal with
+   butter-gold, the colours of the feather rather than the idol.
+   =========================================================== */
+:root[data-theme="krishna"] {
+  --bg: #0b1f3a;
+  --texture:
+    radial-gradient(780px 500px at 84% -6%, rgba(255,199,64,.18), transparent 68%),
+    radial-gradient(700px 470px at 5% 14%, rgba(0,156,168,.24), transparent 70%),
+    radial-gradient(820px 480px at 50% 106%, rgba(92,62,168,.18), transparent 70%);
+
+  --ink: #dfeaf5; --ink-strong: #f6fbff; --ink-soft: #a7bdd2; --ink-quiet: #7791ab;
+  --surface: #122c4d; --surface-2: #18375e;
+  --line: rgba(223,234,245,.16); --line-strong: rgba(255,199,64,.32);
+  --border-w: 2px;
+
+  --brand: #ffc740;  --brand-ink: #1c1403; --brand-edge: #ffdb85;
+  --accent: #00c2ce; --accent-ink: #032426;
+  --hot: #ff6b7f;
+  --wa: #46d69c; --wa-edge: #79efc0; --wa-ink: #46d69c;
+
+  --stage: radial-gradient(125% 100% at 50% 0%, #1b4d7a 0%, #123058 58%, #0b1f3a 100%);
+  --stage-border: 2px solid rgba(0,194,206,.34);
+  --grid: rgba(0,194,206,.16);
+  --sheen: rgba(200,240,255,.18);
+  --scrim: rgba(4,14,28,.74);
+
+  --art-1: #00a7b8; --art-2: #ffc740; --art-3: #7ae7de; --art-4: #0b1f3a;
+  --art-glow: rgba(0,194,206,.55);
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 20px; --r-xl: 28px;
+
+  --shadow-1: 0 1px 0 rgba(200,240,255,.12) inset, 0 18px 40px -22px rgba(0,0,0,.9);
+  --shadow-2: 0 1px 0 rgba(200,240,255,.18) inset, 0 30px 64px -28px rgba(0,194,206,.5);
+  --shadow-3: -20px 0 62px rgba(0,0,0,.7);
+  --btn-border: 2px solid rgba(255,199,64,.4);
+  --btn-shadow: 0 0 0 0 rgba(255,199,64,0);
+  --btn-shadow-hover: 0 0 0 1px var(--brand), 0 16px 34px -14px rgba(255,199,64,.7);
+  --btn-shadow-press: 0 0 0 1px var(--brand);
+  --card-border: 2px solid rgba(0,194,206,.22);
+  --tag-shadow: 0 8px 22px -10px rgba(0,194,206,.9);
+
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 800; --display-tracking: -.018em; --display-case: none;
+  --body-weight: 500; --btn-case: none; --btn-tracking: .02em;
+
+  --header-bg: rgba(11,31,58,.84); --header-blur: blur(14px);
+  --strip-bg: #ffc740; --strip-ink: #1c1403;
+  --save-bg: rgba(0,194,206,.2); --save-ink: #7ae7de;
+  --code-bg: #07172c; --code-ink: #ffdb85;
+  --ring: rgba(0,194,206,.32); --focus: #ffc740;
+  --layer-line: rgba(200,240,255,.2);
+  --search-bg: #0e253f;
+  --rig-line: rgba(0,194,206,.28); --rig-ink: rgba(223,234,245,.3); --rig-ink-2: #ffc740;
+}
+
+/* ===========================================================
+   11. TIRANGA — Independence Day and Republic Day share one
+   look, because they share one identity. Deliberately restrained:
+   saffron and green as accents on white, navy for the text. The
+   flag is not used as decoration.
+   =========================================================== */
+:root[data-theme="tiranga"] {
+  --bg: #fbfbf9;
+  --texture:
+    linear-gradient(180deg, rgba(255,153,51,.10) 0%, transparent 22%),
+    linear-gradient(0deg, rgba(19,136,8,.09) 0%, transparent 22%),
+    radial-gradient(620px 420px at 50% 50%, rgba(0,0,128,.05), transparent 70%);
+
+  --ink: #1d2b45; --ink-strong: #0b1a33; --ink-soft: #4a5a75; --ink-quiet: #8291a6;
+  --surface: #ffffff; --surface-2: #f4f6f9;
+  --line: rgba(29,43,69,.13); --line-strong: rgba(29,43,69,.24);
+  --border-w: 1px;
+
+  --brand: #000080;  --brand-ink: #ffffff; --brand-edge: transparent;
+  --accent: #ff9933; --accent-ink: #3d1f00;
+  --hot: #c62828;
+  --wa: #138808; --wa-edge: transparent; --wa-ink: #0f6b06;
+
+  --stage: linear-gradient(165deg, #fff3e4 0%, #ffffff 50%, #eaf5e8 100%);
+  --stage-border: 1px solid rgba(29,43,69,.14);
+  --grid: rgba(29,43,69,.1);
+  --sheen: rgba(255,255,255,.8);
+  --scrim: rgba(11,26,51,.42);
+
+  --art-1: #ff9933; --art-2: #138808; --art-3: #000080; --art-4: #0b1a33;
+  --art-glow: #ffe0bd;
+
+  --r-s: 8px; --r-btn: 999px; --r-l: 18px; --r-xl: 24px;
+
+  --shadow-1: 0 10px 24px -14px rgba(11,26,51,.4), 0 1px 0 rgba(255,255,255,.9) inset;
+  --shadow-2: 0 24px 48px -22px rgba(11,26,51,.4), 0 1px 0 rgba(255,255,255,.95) inset;
+  --shadow-3: -18px 0 50px rgba(11,26,51,.26);
+  --btn-border: 1px solid rgba(29,43,69,.18);
+  --btn-shadow: 0 8px 18px -10px rgba(11,26,51,.45);
+  --btn-shadow-hover: 0 16px 28px -12px rgba(11,26,51,.45);
+  --btn-shadow-press: 0 3px 8px -4px rgba(11,26,51,.5);
+  --card-border: 1px solid rgba(29,43,69,.12);
+  --tag-shadow: 0 8px 16px -9px rgba(255,153,51,.8);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --display-weight: 700; --display-tracking: -.022em; --display-case: none;
+  --body-weight: 450; --btn-case: none; --btn-tracking: .01em;
+
+  --header-bg: rgba(251,251,249,.9); --header-blur: blur(12px);
+  --strip-bg: #000080; --strip-ink: #ffffff;
+  --save-bg: #ffe8cc; --save-ink: #9a4f00;
+  --code-bg: #0b1a33; --code-ink: #ffd9a8;
+  --ring: rgba(0,0,128,.24); --focus: #000080;
+  --layer-line: rgba(29,43,69,.15);
+  --search-bg: #f3f4f1;
+  --rig-line: rgba(29,43,69,.2); --rig-ink: rgba(29,43,69,.3); --rig-ink-2: #ff9933;
+}

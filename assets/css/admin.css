@@ -236,6 +236,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-pill--holi      { background: #ffe3f0; color: #c4006f; }
 .ad-pill--christmas { background: #e3efe6; color: #12563a; }
 .ad-pill--navratri  { background: #2a1856; color: #ff79b4; }
+.ad-pill--ganesh    { background: #ffe6cc; color: #b52a1f; }
+.ad-pill--krishna   { background: #0f2c4d; color: #6fe0e8; }
+.ad-pill--tiranga   { background: #fff0dd; color: #000080; }
 
 /* ===== fields ============================================ */
 .ad-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }

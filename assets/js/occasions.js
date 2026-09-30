@@ -27,7 +27,7 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Sankranti', title: 'Kites, sugar and sunshine.',
       note: 'Festival decor and puja pieces, printed and ready.' } },
 
-  { id: 'republic-day', name: 'Republic Day', on: false, theme: 'clay',
+  { id: 'republic-day', name: 'Republic Day', on: true, theme: 'tiranga',
     when: { type: 'fixed', md: '01-26' }, lead: 5, trail: 1, tag: 'madeinindia',
     banner: { eyebrow: 'Republic Day', title: 'Made in India, every layer.',
       note: 'Designed, sliced and printed here.' } },
@@ -42,7 +42,7 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Baisakhi', title: 'Harvest bright.',
       note: 'Festival decor for the season.' } },
 
-  { id: 'independence-day', name: 'Independence Day', on: false, theme: 'clay',
+  { id: 'independence-day', name: 'Independence Day', on: true, theme: 'tiranga',
     when: { type: 'fixed', md: '08-15' }, lead: 7, trail: 1, tag: 'madeinindia',
     banner: { eyebrow: 'Independence Day', title: 'Made in India, every layer.',
       note: 'Small things, printed close to home.' } },
@@ -146,12 +146,12 @@ window.OCCASIONS = [
     banner: { eyebrow: 'Raksha Bandhan', title: 'Put their name on it.',
       note: 'Name keychains and plaques, printed to order.' } },
 
-  { id: 'janmashtami', name: 'Janmashtami', on: false, theme: 'clay',
+  { id: 'janmashtami', name: 'Janmashtami', on: false, theme: 'krishna',
     when: { type: 'set', dates: {} }, lead: 10, trail: 1, tag: 'puja',
     banner: { eyebrow: 'Janmashtami', title: 'For the puja shelf.',
       note: 'Decor and puja pieces, printed here.' } },
 
-  { id: 'ganesh-chaturthi', name: 'Ganesh Chaturthi', on: true, theme: 'navratri',
+  { id: 'ganesh-chaturthi', name: 'Ganesh Chaturthi', on: true, theme: 'ganesh',
     when: { type: 'set', dates: {} }, lead: 14, trail: 3, tag: 'puja',
     banner: { eyebrow: 'Ganesh Chaturthi', title: 'Decor for the mandap.',
       note: 'Toran, diya stands and puja accessories.' } },
@@ -165,6 +165,11 @@ window.OCCASIONS = [
     when: { type: 'set', dates: {} }, lead: 10, trail: 9, tag: 'festival',
     banner: { eyebrow: 'Navratri', title: 'Nine nights of decor.',
       note: 'Toran, lamps and puja pieces in every colour.' } },
+
+  { id: 'durga-ashtami', name: 'Durga Ashtami', on: false, theme: 'navratri',
+    when: { type: 'set', dates: {} }, lead: 4, trail: 1, tag: 'puja',
+    banner: { eyebrow: 'Ashtami', title: 'For the eighth night.',
+      note: 'Puja pieces, lamps and decor for the mandap.' } },
 
   { id: 'dussehra', name: 'Dussehra', on: true, theme: 'navratri',
     when: { type: 'set', dates: {} }, lead: 7, trail: 1, tag: 'festival',

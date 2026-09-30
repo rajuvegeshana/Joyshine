@@ -15,6 +15,7 @@ const THEMES = {
   clay: 'Clay', retro: 'Retro', future: 'Futuristic',
   halloween: 'Halloween', diwali: 'Diwali', holi: 'Holi',
   christmas: 'Christmas', navratri: 'Navratri',
+  ganesh: 'Ganesh', krishna: 'Krishna', tiranga: 'Tiranga',
 };
 
 /* a visitor picking a swatch: remembered, and tied to whichever

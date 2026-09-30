@@ -15,7 +15,8 @@ const OCCS = window.OCCASIONS;
 const YEAR = new Date().getFullYear();
 const THEME_LIST = [['clay','Clay'],['retro','Retro'],['future','Futuristic'],
   ['halloween','Halloween'],['diwali','Diwali'],['holi','Holi'],
-  ['christmas','Christmas'],['navratri','Navratri']];
+  ['christmas','Christmas'],['navratri','Navratri'],
+  ['ganesh','Ganesh'],['krishna','Krishna'],['tiranga','Tiranga']];
 const PREVIEW = 'joyshine.preview';
 const DRAFT = 'joyshine.admin.draft';
 
