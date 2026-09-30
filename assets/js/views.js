@@ -76,8 +76,11 @@ function card(p, i = 0) {
   const b = badgeOf(p);
   return `<article class="card r" style="--d:${(i % 6) * 55}ms" data-id="${p.id}">
     ${b ? `<span class="card__tag">${esc(b)}</span>` : ''}
-    <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}"
-      aria-label="${S.inWish(p.id) ? 'Remove from' : 'Save to'} wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
+    <div class="card__acts">
+      <button class="heart" data-share="${p.id}" aria-label="Share ${esc(p.name)}">${I.share}</button>
+      <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}"
+        aria-label="${S.inWish(p.id) ? 'Remove from' : 'Save to'} wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
+    </div>
     <div class="card__art">${art(p)}</div>
     <div class="card__body">
       <span class="card__cat">${esc(S.catName(p.cat))}</span>
@@ -125,6 +128,12 @@ const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="#/
 
 const empty = (title, line, cta) => `<div class="empty"><span data-spark>${I.horn}</span>
   <h4>${esc(title)}</h4><p>${esc(line)}</p>${cta || ''}</div>`;
+
+/* the first moment, before the settings and catalogue land */
+const booting = () => `<div class="booting" aria-busy="true" aria-live="polite">
+  <div class="booting__art">${I.horn}</div>
+  <p class="quiet">Warming the print bed…</p>
+</div>`;
 
 /* ---------- HOME ----------------------------------------- */
 function home() {
@@ -394,23 +403,30 @@ function product(id, sel) {
              <button class="btn btn--ghost btn--block" id="pdpAdd">Add to cart</button>`}
       </div>
 
-      ${p.bulk ? `<div class="bulk">
-        <b>Need ${CFG.bulk.askAbove}+ pieces?</b>
+      ${p.bulk ? `<details class="bulk">
+        <summary><b>Need ${CFG.bulk.askAbove}+ pieces?</b></summary>
         <table><tbody>${CFG.bulk.tiers.map(t => `<tr><td>${t.min}${t.max ? `–${t.max}` : '+'}</td>
           <td class="num">${t.off ? `${t.off}% off` : 'list price'}</td></tr>`).join('')}</tbody></table>
-        <button class="linky" id="pdpBulk2">Ask for bulk pricing on WhatsApp</button>
-      </div>` : ''}
+        <button class="btn btn--wa btn--block" id="pdpBulk2">${I.wa}Request quote</button>
+      </details>` : ''}
 
       <div class="acc">
-        ${[['Description', p.blurb + (p.story ? ' ' + p.story : '')],
-           ['Materials', p.details.materials],
-           ['Dimensions', p.details.dimensions],
-           ['Care', p.details.care],
-           ['Production', p.details.production],
-           ['Shipping & returns', p.details.shipping + ' Unused shelf items can be returned within 7 days. Personalised and custom pieces cannot be returned once printed.'],
-           p.personalise ? ['Customisation', `We print exactly what you type. ${p.personalise.max} characters max. Check spelling — a reprint is a new order.`] : null,
-          ].filter(Boolean).map(([t, b], i) => `<details${i === 0 ? ' open' : ''}>
-            <summary>${esc(t)}</summary><div>${esc(b)}</div></details>`).join('')}
+        ${(() => {
+          /* a heading with nothing under it is worse than no heading */
+          const d = p.details || {};
+          const ship = (d.shipping || '').trim();
+          const rows = [
+            ['Description', [p.blurb, p.story].filter(Boolean).join(' ')],
+            ['Materials', d.materials],
+            ['Dimensions', d.dimensions],
+            ['Care', d.care],
+            ['Production', d.production],
+            ['Shipping & returns', ship && ship + ' Unused shelf items can be returned within 7 days. Personalised and custom pieces cannot be returned once printed.'],
+            p.personalise ? ['Customisation', `We print exactly what you type. ${p.personalise.max} characters max. Check spelling — a reprint is a new order.`] : null,
+          ].filter(r => r && String(r[1] || '').trim());
+          return rows.map(([t, b], i) => `<details${i === 0 ? ' open' : ''}>
+            <summary>${esc(t)}</summary><div>${esc(b)}</div></details>`).join('');
+        })()}
       </div>
 
       <div class="pdp__share">
@@ -663,7 +679,7 @@ function notFound() {
     '<a class="btn btn--pay btn--sm" href="#/">Back to the shop</a>')}</section>`;
 }
 
-return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow,
+return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow, booting,
          home, shop, product, custom, wishlist, faq, about, engineering,
          searchPage, noResults, notFound };
 })();

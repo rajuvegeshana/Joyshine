@@ -91,7 +91,7 @@ section { position: relative; }
 .topbar.stuck { box-shadow: var(--shadow-1); }
 .topbar__in {
   display: flex; align-items: center; flex-wrap: wrap; gap: .75rem 1rem;
-  min-height: 68px; padding-block: .6rem;
+  min-height: 60px; padding-block: .45rem;
 }
 
 .logo { display: flex; align-items: center; gap: .6rem; margin-right: auto; }
@@ -126,13 +126,14 @@ section { position: relative; }
    bar carries Home / Shop / Search / Custom / Saved, the shop page has
    its own sticky category bar, and the footer holds the rest. */
 @media (max-width: 899px) {
-  .topbar__in { gap: .45rem .5rem; min-height: 0; padding-block: .3rem; flex-wrap: nowrap; }
+  .topbar__in { gap: .4rem .45rem; min-height: 0; padding-block: .22rem; flex-wrap: nowrap; }
   .nav { display: none; }
-  .logo { margin-right: auto; }
-  .logo__word { font-size: 1.1rem; }
-  .logo__mark { width: 27px; height: 27px; }
+  .logo { margin-right: auto; gap: .45rem; }
+  .logo__word { font-size: 1.02rem; }
+  .logo__mark { width: 24px; height: 24px; }
   .cartbtn__t { display: none; }
-  .cartbtn { padding-inline: .65rem; }
+  .cartbtn { padding-inline: .6rem; }
+  .topbar .iconbtn, .topbar .cartbtn { min-height: 38px; }
 }
 .nav a {
   padding: .5rem .8rem; border-radius: var(--r-s);
@@ -298,3 +299,46 @@ section { position: relative; }
   .printer__art .build { clip-path: none; }
   .printer__nozzle { top: 8%; }
 }
+
+/* ---- the first moment ------------------------------------- */
+.booting {
+  min-height: 62vh;
+  display: grid; place-content: center; justify-items: center; gap: .9rem;
+  text-align: center;
+}
+.booting__art svg { width: 84px; height: 84px; opacity: .75; animation: bootPulse 1.6s var(--ease) infinite; }
+@keyframes bootPulse { 50% { transform: translateY(-8px) scale(1.04); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .booting__art svg { animation: none; } }
+
+/* ---- the footer, folded up on a phone ---------------------- */
+.foot__col > summary { list-style: none; }
+.foot__col > summary::-webkit-details-marker { display: none; }
+/* on a wide screen the columns are simply columns: the heading is not
+   a control, and nothing can be folded away by accident */
+@media (min-width: 721px) {
+  .foot__col > summary { pointer-events: none; }
+}
+@media (max-width: 720px) {
+  .foot { padding-block: 1.6rem 1.2rem; }
+  .foot__grid { gap: 0; grid-template-columns: 1fr; }
+  .foot__col {
+    border-top: var(--border-w) solid var(--line);
+  }
+  .foot__col > summary {
+    margin: 0; padding: .95rem 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+  }
+  .foot__col > summary h4 { margin: 0; }
+  .foot__col > summary::after {
+    content: ''; width: 8px; height: 8px; flex: none;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform .25s var(--ease);
+  }
+    .foot__col[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+  .foot__col > a { padding: .34rem 0 .34rem .2rem; }
+  .foot__col > *:last-child { margin-bottom: .8rem; }
+  .foot__base { flex-direction: column; align-items: flex-start; gap: .4rem; font-size: .78rem; }
+}
+.foot__call { color: var(--brand); font-weight: 600; white-space: nowrap; }

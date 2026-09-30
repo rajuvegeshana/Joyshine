@@ -72,6 +72,12 @@
    or they lose their positioning and stretch the full card width. */
 .card__buys, .dots { position: relative; z-index: 2; }
 .card__tag, .heart { z-index: 3; }
+/* share and wishlist sit together in the corner of a card */
+.card__acts {
+  position: absolute; top: .7rem; right: .7rem; z-index: 3;
+  display: flex; flex-direction: column; gap: .4rem;
+}
+.card__acts .heart { position: static; }
 .heart {
   position: absolute; top: .7rem; right: .7rem; z-index: 3;
   width: 34px; height: 34px; display: grid; place-items: center;

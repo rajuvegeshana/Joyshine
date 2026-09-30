@@ -179,6 +179,7 @@ function fillBrand(root = document) {
   $$('[data-email]', root).forEach(el => { el.href = 'mailto:' + CFG.brand.email; el.textContent = CFG.brand.email; });
   const pretty = '+' + CFG.whatsapp.number.replace(/^(\d{2})(\d{5})(\d+)$/, '$1 $2 $3');
   ['#waNumber', '#waNumber2', '#waNumber3'].forEach(s => { const e = $(s, root) || $(s); if (e) e.textContent = pretty; });
+  const call = $('#waCall'); if (call) call.href = 'tel:+' + CFG.whatsapp.number;
 }
 
 function markNav() {
@@ -645,6 +646,15 @@ async function share(id) {
 
 /* ===== BOOT =============================================== */
 async function boot() {
+  /* The browser restores the old scroll position on reload, and at that
+     moment the page is only a header and a footer — so it lands at the
+     bottom. Take the wheel, and give the empty page something its own
+     height while the settings and the catalogue arrive. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  scrollTo({ top: 0, behavior: 'instant' });
+  const view = $('#view');
+  if (view && !view.innerHTML.trim()) view.innerHTML = V.booting();
+
   await window.SETTINGS.load();
   await window.CATALOGUE.load();       /* database first, files as the net */
   window.OCC_NOW = window.SETTINGS.current();
@@ -660,6 +670,11 @@ async function boot() {
   window.PROMO.start();
   window.GA.start();
   window.CUSTOM.wire();
+
+  /* a phone should not scroll past four open columns to reach the bottom */
+  if (matchMedia('(max-width: 720px)').matches) {
+    $$('.foot__col').forEach((d, i) => { d.open = false; });
+  }
 
   const bar = $('#topbar');
   const measure = () => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px');
