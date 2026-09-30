@@ -72,6 +72,43 @@ In the spreadsheet these are two columns. `sizes` holds
 L x B x H. `materials` holds `PLA|0|  ; ABS|220|3` — name, extra charge, stock
 (blank for made to order). Semicolons separate the rows.
 
+### Content & art
+
+A tab of its own. Four ways for the hero unicorn to behave — printing,
+floating, turning on a stand, assembling itself — or replace it altogether
+with your own SVG or PNG. Twelve icons can be swapped one at a time. Each look
+can have its own headings and body face, including a font file you upload
+(.woff2 is the one to use). And the wording on every "this is missing" page is
+yours to write.
+
+Anything you upload that is markup has its scripts and event handlers stripped
+before it is saved, and again before the shop draws it. That is not optional:
+an icon that could run code would be running it on the page where customers
+type their address.
+
+### Publishing: look first, then confirm
+
+Press **Publish** and the shop opens in a new tab wearing your changes, with a
+bar along the bottom. Walk the whole site. When you are happy, **Confirm and
+publish** lists every change in plain words — what it was, what it becomes —
+and only then writes to the live shop. **Discard** throws the lot away and the
+live shop never knew.
+
+Two things to remember: publish from the browser you have been editing in (the
+panel keeps your work in that browser), and the list compares against what is
+live right now, so it only ever shows what has actually moved since your last
+publish.
+
+### Reviews
+
+Customers write them under any product. They cannot publish their own — the
+database itself refuses it — so everything lands in **Reviews** under "waiting
+for you". Publish the ones you want, and pin the best to the homepage.
+
+**"12 people have bought this"** is counted from your real orders. It needs
+`schema-5-reviews-sales.sql` run once, and it shows nothing at all until
+something has genuinely sold. There is no way to type a number in, on purpose.
+
 ### The line-up: what shows, and in what order
 
 In Products, the **Line-up** card decides which products the shop leads with.

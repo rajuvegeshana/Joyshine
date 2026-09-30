@@ -33,6 +33,12 @@ joyshine/
   supabase/schema.sql        settings table (migration 1)
   supabase/schema-2-catalogue.sql   products, orders, requests, reviews, posts
   supabase/schema-3-media-reviews.sql  image bucket, customer reviews, offers, visits
+  supabase/schema-4-uploads.sql     bucket for files customers attach to an enquiry
+  supabase/schema-5-reviews-sales.sql  pinned reviews, and the real "how many sold"
+  assets/js/skin.js          hero art, icon overrides, per-theme type
+  assets/js/review.js        the confirm-before-publishing bar
+  assets/js/icons.js         the icon set, shared by shop and panel
+  assets/js/admin-content.js the Content & art tab
   assets/js/catalogue.js     loads the catalogue from Supabase, files as fallback
   assets/js/promo.js         ribbon, welcome popup, discount codes, visits
   assets/js/admin-catalogue.js  products, orders, requests, reviews, offers, xlsx
