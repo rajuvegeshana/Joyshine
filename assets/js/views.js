@@ -165,19 +165,41 @@ function home() {
         <div class="printer__glow"></div><div class="printer__bed"></div>
         <div class="sparkles" id="sparkles"></div>
         <div class="printer__art"><svg viewBox="0 0 200 200"><g class="build">
-          <ellipse cx="100" cy="178" rx="58" ry="8" fill="var(--art-4)" opacity=".2"/>
-          <rect x="60" y="150" width="80" height="26" rx="8" fill="var(--art-4)" opacity=".85"/>
-          <path d="M74 150q-12-52 14-74t48 6q14 18 4 40l-8 28z" fill="var(--art-1)"/>
-          <path d="M74 150q-12-52 14-74t24-2v76z" fill="var(--art-2)" opacity=".35"/>
-          <path d="M118 78 138 14l6 62z" fill="var(--art-3)"/>
-          <path d="M126 60h14M126 44h13M129 30h9" stroke="var(--art-4)" stroke-width="2.6" stroke-linecap="round" opacity=".4"/>
-          <path d="M94 80q-17-17-7-34 16 5 21 28z" fill="var(--art-2)"/>
-          <path d="M140 92q20 6 17 28t-26 24" stroke="var(--art-2)" stroke-width="12" fill="none" stroke-linecap="round"/>
-          <path d="M146 76q16-2 22 12" stroke="var(--art-3)" stroke-width="8" fill="none" stroke-linecap="round"/>
-          <circle cx="104" cy="100" r="5.5" fill="var(--art-4)"/>
-          <path d="M80 120q11 9 20 2" stroke="var(--art-4)" stroke-width="3.6" fill="none" stroke-linecap="round"/>
-          <rect x="66" y="70" width="80" height="80" rx="20" fill="url(#layerlines)" opacity=".55"/>
-          <rect x="60" y="150" width="80" height="26" rx="8" fill="url(#layerlines)" opacity=".4"/>
+          <ellipse cx="100" cy="182" rx="54" ry="7" fill="var(--art-4)" opacity=".18"/>
+          <rect x="62" y="156" width="76" height="24" rx="8" fill="var(--art-4)" opacity=".85"/>
+          <rect x="68" y="150" width="64" height="8" rx="4" fill="var(--art-4)" opacity=".55"/>
+
+          <!-- the mane, behind the neck -->
+          <path d="M132 52c14 6 20 20 16 32 10 8 10 24 1 32 8 10 4 26-6 32-4 3-9 4-13 4l-4-14c8-2 12-10 8-16-3-5-9-6-13-4l-3-13c9-2 13-10 10-16-3-5-9-7-14-5l-2-13c8-2 12-9 10-15-2-5-7-8-13-7z"
+                fill="var(--art-2)" opacity=".92"/>
+
+          <!-- head and neck: one silhouette, facing left -->
+          <path d="M118 152c0-22 2-36-4-48-7-15-24-20-39-13-9 4-17 0-19-8-2-9 4-17 13-19 8-2 13-7 16-14 6-15 20-24 36-21 18 3 29 17 31 35 2 21-5 38-9 53-4 14-5 24-4 35z"
+                fill="var(--art-1)"/>
+          <!-- the lit side -->
+          <path d="M118 152c0-22 2-36-4-48-5-11-16-17-28-16l-4-36c6-9 16-15 28-13 18 3 29 17 31 35 2 21-5 38-9 53-4 14-5 24-4 35z"
+                fill="var(--art-3)" opacity=".28"/>
+
+          <!-- ear -->
+          <path d="M124 40l6-20 12 17z" fill="var(--art-1)"/>
+          <path d="M127 38l3-11 6 9z" fill="var(--art-4)" opacity=".25"/>
+
+          <!-- horn -->
+          <path d="M100 42 112 2l14 42z" fill="var(--art-3)"/>
+          <path d="M106 34h15M109 26h13M112 18h10M114 11h7" stroke="var(--art-4)" stroke-width="2.4"
+                stroke-linecap="round" opacity=".35" fill="none"/>
+
+          <!-- face -->
+          <circle cx="104" cy="62" r="4" fill="var(--art-4)"/>
+          <circle cx="105.6" cy="60.6" r="1.3" fill="#fff" opacity=".85"/>
+          <ellipse cx="88" cy="78" rx="9" ry="6" fill="var(--art-2)" opacity=".45"/>
+          <circle cx="66" cy="72" r="2.6" fill="var(--art-4)" opacity=".7"/>
+          <path d="M60 80q8 5 15 1" stroke="var(--art-4)" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/>
+
+          <!-- printed layers over the whole build -->
+          <path d="M118 152c0-22 2-36-4-48-7-15-24-20-39-13-9 4-17 0-19-8-2-9 4-17 13-19 8-2 13-7 16-14 6-15 20-24 36-21 18 3 29 17 31 35 2 21-5 38-9 53-4 14-5 24-4 35z"
+                fill="url(#layerlines)" opacity=".5"/>
+          <rect x="62" y="156" width="76" height="24" rx="8" fill="url(#layerlines)" opacity=".4"/>
         </g></svg></div>
         <div class="printer__nozzle"></div>
         <div class="printer__hud"><span>Now printing · <b data-hud>Nova bust</b></span><span>Bed <b>60°C</b></span></div>
