@@ -43,9 +43,16 @@ h1, h2, h3, h4, .display {
   line-height: .96;
   color: var(--ink-strong);
 }
-h1 { font-size: clamp(2.7rem, 1.6rem + 6.2vw, 7rem); }
-h2 { font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.4rem); line-height: 1; }
-h3 { font-size: clamp(1.1rem, 1rem + .5vw, 1.35rem); line-height: 1.15; }
+h1 { font-size: clamp(2.7rem, 1.6rem + 6.2vw, 7rem); font-weight: var(--w-h1, var(--display-weight)); }
+h2 { font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.4rem); line-height: 1; font-weight: var(--w-h2, var(--display-weight)); }
+h3 { font-size: clamp(1.1rem, 1rem + .5vw, 1.35rem); line-height: 1.15; font-weight: var(--w-h3, var(--display-weight)); }
+h4 { font-weight: var(--w-h4, var(--display-weight)); }
+
+/* the small print: captions, hints, breadcrumbs, the quiet lines */
+.quiet, .hint, .eyebrow, small, .card__cat, .ad-hint, figcaption, cite {
+  font-weight: var(--w-small, var(--body-weight, 400));
+}
+.lede { font-weight: var(--w-lede, var(--body-weight, 400)); }
 
 .eyebrow {
   font-family: var(--font-display);

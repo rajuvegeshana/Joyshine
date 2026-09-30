@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/admin.css?v=202609301958">
+<link rel="stylesheet" href="assets/css/admin.css?v=202609302001">
 </head>
 <body>
 
@@ -398,18 +398,26 @@
             like everything else.</p>
         </div>
 
-        <div class="ad-card">
-          <h3>Search engines</h3>
-          <label class="ad-field"><span>Page title</span><input id="seoTitle"></label>
+        <details class="ad-card ad-fold" open>
+          <summary><h3>What Google shows</h3><span class="ad-fold__n">title, description, keywords</span></summary>
+          <label class="ad-field"><span>Page title</span><input id="seoTitle">
+            <i class="ad-hint">Around 60 characters. The blue line in a search result, and the browser tab.</i></label>
           <label class="ad-field"><span>Description</span><textarea id="seoDesc" rows="2"></textarea>
-            <i class="ad-hint">Around 150 characters. This is what shows under the title in Google.</i></label>
-          <label class="ad-field"><span>Keywords</span><input id="seoKeys"></label>
-          <label class="ad-field" style="margin-bottom:0"><span>Share image URL</span><input id="seoOg" placeholder="https://joyshine.in/assets/img/share.jpg">
-            <i class="ad-hint">Shown when the link is shared on WhatsApp. 1200x630 works best.</i></label>
-        </div>
+            <i class="ad-hint">Around 150 characters. The grey lines under the title.</i></label>
+          <label class="ad-field" style="margin-bottom:0"><span>Keywords</span><input id="seoKeys">
+            <i class="ad-hint">Comma separated. Google ignores these, but some other engines still read them.</i></label>
+        </details>
 
-        <div class="ad-card">
-          <h3>Google Analytics</h3>
+        <details class="ad-card ad-fold">
+          <summary><h3>What WhatsApp and Facebook show</h3><span class="ad-fold__n">the shared link</span></summary>
+          <p class="ad-p">When somebody sends your link, this is the card they see. The title and
+            description above are reused; only the picture is set here.</p>
+          <label class="ad-field" style="margin-bottom:0"><span>Share picture</span><input id="seoOg" placeholder="https://joyshine.in/assets/img/share.jpg">
+            <i class="ad-hint">1200×630 works best. You can also upload one in Content &amp; art.</i></label>
+        </details>
+
+        <details class="ad-card ad-fold">
+          <summary><h3>Google Analytics</h3><span class="ad-fold__n">the outside measurement</span></summary>
           <p class="ad-p">Nothing is sent to Google until a visitor agrees to the notice. Declining
             means no Google cookies at all. Your own visitor count below is separate and always on.</p>
           <label class="ad-row--switch"><input type="checkbox" id="gaOn">
@@ -417,7 +425,10 @@
           <label class="ad-field" style="margin-bottom:0"><span>Measurement ID</span>
             <input id="gaId" placeholder="G-XXXXXXXXXX">
             <i class="ad-hint">Google Analytics → Admin → Data Streams → your web stream.</i></label>
-        </div>
+          <p class="ad-hint" style="margin-top:var(--space-3)">The reports themselves live at
+            <a href="https://analytics.google.com/" target="_blank" rel="noopener">analytics.google.com</a> —
+            this panel only switches it on and off.</p>
+        </details>
 
         <div class="ad-card" id="visitsCard"></div>
       </section>
@@ -505,17 +516,17 @@
 
 <div class="ad-toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609301958"></script>
-<script src="assets/js/occasions.js?v=202609301958"></script>
-<script src="assets/js/legal.js?v=202609301958"></script>
-<script src="assets/js/customise.js?v=202609301958"></script>
-<script src="assets/js/cloud.js?v=202609301958"></script>
-<script src="assets/js/products.js?v=202609301958"></script>
+<script src="assets/js/config.js?v=202609302001"></script>
+<script src="assets/js/occasions.js?v=202609302001"></script>
+<script src="assets/js/legal.js?v=202609302001"></script>
+<script src="assets/js/customise.js?v=202609302001"></script>
+<script src="assets/js/cloud.js?v=202609302001"></script>
+<script src="assets/js/products.js?v=202609302001"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/icons.js?v=202609301958"></script>
-<script src="assets/js/skin.js?v=202609301958"></script>
-<script src="assets/js/admin-content.js?v=202609301958"></script>
-<script src="assets/js/admin-catalogue.js?v=202609301958"></script>
-<script src="assets/js/admin.js?v=202609301958"></script>
+<script src="assets/js/icons.js?v=202609302001"></script>
+<script src="assets/js/skin.js?v=202609302001"></script>
+<script src="assets/js/admin-content.js?v=202609302001"></script>
+<script src="assets/js/admin-catalogue.js?v=202609302001"></script>
+<script src="assets/js/admin.js?v=202609302001"></script>
 </body>
 </html>

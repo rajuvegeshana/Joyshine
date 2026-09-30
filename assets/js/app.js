@@ -831,6 +831,8 @@ async function boot() {
   window.CATALOGUE.arrange(window.OCC_NOW);
   applyTheme(null);
   window.SKIN?.fonts();
+  window.SKIN?.cursors();
+  window.SKIN?.brand();
   applySeo();
   showLegalLinks();
   fillBrand();

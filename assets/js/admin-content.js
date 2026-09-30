@@ -97,16 +97,57 @@ function paint() {
       <input type="file" id="iconFile" accept=".svg,image/svg+xml,image/png" hidden>
     </div>
 
-    <div class="ad-card">
-      <h3>Type, theme by theme</h3>
-      <p class="ad-p">Each look can have its own faces. Name any font already on the page, or upload a file —
-        a .woff2 is a tenth the weight of a .ttf and every browser made since 2014 reads it.</p>
-      <label class="ad-field" style="max-width:22rem"><span>Which look</span>
-        <select id="fontTheme">${themes.map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('')}</select>
+    <details class="ad-card ad-fold" open>
+      <summary><h3>Typography</h3><span class="ad-fold__n">faces and weights</span></summary>
+
+      <p class="ad-p">Two faces do the whole site: one for headings, one for everything else.
+        Set them once here and every look uses them, or give a single look its own pair.
+        The weights below are separate from the faces — they apply everywhere.</p>
+
+      <label class="ad-field" style="max-width:24rem"><span>Setting type for</span>
+        <select id="fontTheme">
+          <option value="all">Every look — the site-wide pair</option>
+          ${themes.map(([k, n]) => `<option value="${k}">Only the ${esc(n)} look</option>`).join('')}
+        </select>
       </label>
       <div id="fontBox"></div>
       <input type="file" id="fontFile" accept=".woff2,.woff,.ttf,.otf" hidden>
-    </div>
+    </details>
+
+    <details class="ad-card ad-fold">
+      <summary><h3>Logo, tab icon and share picture</h3><span class="ad-fold__n">how the shop is recognised</span></summary>
+      <div class="ad-grid3">
+        ${[['logo', 'Logo', 'brand.logo', 'Sits beside the word joyshine, in the header and the footer. A square SVG or PNG.'],
+           ['favicon', 'Tab icon', 'brand.favicon', 'The little picture in the browser tab. 32×32 or an SVG.'],
+           ['ogImage', 'Share picture', 'seo.ogImage', 'What WhatsApp and Facebook show when the link is shared. 1200×630.']]
+          .map(([k, label, path, note]) => {
+          const v = path.split('.').reduce((o, s2) => (o || {})[s2], CFG()) || '';
+          return `<div class="ad-brandbit">
+            <b>${label}</b>
+            <div class="ad-brandbit__art">${v ? `<img src="${esc(v)}" alt="">` : '<span class="ad-empty">none yet</span>'}</div>
+            <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandpick" data-k="${k}" data-path="${path}">Upload</button>
+            ${v ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandclear" data-path="${path}">Remove</button>` : ''}
+            <input class="ad-inline" data-cf="${path}" value="${esc(v)}" placeholder="or paste a link">
+            <i class="ad-hint">${note}</i>
+          </div>`;
+        }).join('')}
+      </div>
+      <input type="file" id="brandFile" accept=".svg,image/svg+xml,image/png,image/webp,image/jpeg" hidden>
+    </details>
+
+    <details class="ad-card ad-fold">
+      <summary><h3>The mouse pointer</h3><span class="ad-fold__n">per look, if you want</span></summary>
+      <p class="ad-p">Most of the time the ordinary arrow is the right answer — people know what it means.
+        If a look calls for something else, set it here.</p>
+      <label class="ad-field" style="max-width:24rem"><span>Setting the pointer for</span>
+        <select id="curTheme">
+          <option value="all">Every look</option>
+          ${themes.map(([k, n]) => `<option value="${k}">Only the ${esc(n)} look</option>`).join('')}
+        </select>
+      </label>
+      <div id="curBox"></div>
+      <input type="file" id="curFile" accept=".png,.svg,image/png,image/svg+xml" hidden>
+    </details>
 
     <div class="ad-card">
       <h3>When something is missing</h3>
@@ -125,33 +166,92 @@ function paint() {
     </div>`;
 
   paintFonts();
+  paintCursor();
   wireFiles();
 }
 
 function paintFonts() {
   const box = $('#fontBox'); if (!box) return;
   const t = $('#fontTheme').value;
-  const f = (CFG().fonts || {})[t] || {};
+  const all = CFG().fonts || {};
+  const f = all[t] || {};
+  const base = t === 'all' ? {} : (all.all || {});
+  const w = f.weights || {};
+  const bw = base.weights || {};
+  const row = (k, label, note) => `
+    <label class="ad-field"><span>${label}</span>
+      <input type="number" min="100" max="900" step="50" data-fw="${k}" value="${esc(w[k] ?? '')}"
+             placeholder="${bw[k] ? bw[k] + ' (from every look)' : 'as the theme has it'}">
+      <i class="ad-hint">${note}</i></label>`;
+
   box.innerHTML = `
-    <div class="ad-grid3">
-      <label class="ad-field"><span>Headings</span><input data-ff="display" value="${esc(f.display || '')}" placeholder="Fraunces"></label>
-      <label class="ad-field"><span>Body</span><input data-ff="body" value="${esc(f.body || '')}" placeholder="Nunito"></label>
-      <label class="ad-field"><span>Heading weight</span><input data-ff="weight" type="number" min="100" max="900" step="50" value="${esc(f.weight || '')}" placeholder="700"></label>
+    <div class="ad-grid2">
+      <label class="ad-field"><span>Headings face</span>
+        <input data-ff="display" value="${esc(f.display || '')}" placeholder="${esc(base.display || 'e.g. Fraunces')}">
+        <i class="ad-hint">Used by every heading, the logo and the buttons.</i></label>
+      <label class="ad-field"><span>Body face</span>
+        <input data-ff="body" value="${esc(f.body || '')}" placeholder="${esc(base.body || 'e.g. Nunito')}">
+        <i class="ad-hint">Everything else: paragraphs, labels, prices, small print.</i></label>
     </div>
+
     <div class="ad-up" data-drop="font">
       <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="fontpick">Upload a font file</button>
-      <span class="ad-hint" id="fontMsg">${f.url ? 'Using an uploaded file' : '.woff2, .woff, .ttf or .otf'}</span>
+      <span class="ad-hint" id="fontMsg">${f.url ? 'Using an uploaded file' : '.woff2 is the one to use — a tenth the weight of a .ttf'}</span>
     </div>
-    ${f.url ? `<div class="ad-row--switch" style="margin-top:.6rem">
+    ${f.url ? `<div class="ad-brandbit__row">
       <label class="ad-chk"><input type="checkbox" data-ff="useForBody"${f.useForBody ? ' checked' : ''}>
-        <i>Use the uploaded font for body text too</i></label>
-      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="fontclear">Remove it</button>
+        <i>Use the uploaded file for body text too</i></label>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="fontclear">Remove the file</button>
+    </div>` : ''}
+
+    <details class="ad-sub-fold" open>
+      <summary>Weights</summary>
+      <p class="ad-p">Leave any of these empty and it follows the one above it. 400 is normal,
+        500 is a little firmer, 700 is bold, 800 and 900 are heavy.</p>
+      <div class="ad-grid3">
+        ${row('h1', 'Page heading', 'The big line at the top of a page.')}
+        ${row('h2', 'Section heading', 'Above each band of the page.')}
+        ${row('h3', 'Card heading', 'Product names, FAQ questions.')}
+        ${row('h4', 'Small heading', 'Inside cards and panels.')}
+        ${row('lede', 'Opening line', 'The larger sentence under a heading.')}
+        ${row('body', 'Body text', 'Paragraphs and labels.')}
+        ${row('small', 'Small print', 'Hints, captions, breadcrumbs.')}
+        ${row('btn', 'Buttons', 'Buy now, WhatsApp, Add to cart.')}
+      </div>
+    </details>
+
+    <div class="ad-typeprev" style="${f.url ? `font-family:'joyshine-${esc(t)}'` : ''}">
+      <b style="font-weight:${w.h1 || bw.h1 || 700}">Small things. Big joy.</b>
+      <p style="font-weight:${w.body || bw.body || 400}">Made to order in India, printed one at a time.</p>
+      <span style="font-weight:${w.small || bw.small || 400}">Free shipping over ₹999 · 2–4 days to dispatch</span>
+    </div>`;
+}
+
+function paintCursor() {
+  const box = $('#curBox'); if (!box) return;
+  const t = $('#curTheme').value;
+  const c = (CFG().cursors || {})[t] || {};
+  const kinds = [['default', 'The ordinary arrow', 'What every visitor expects.'],
+                 ['pointer', 'Always the hand', 'Playful, but people may think everything is clickable.'],
+                 ['crosshair', 'Crosshair', 'Technical. Suits the futuristic look.'],
+                 ['grab', 'Open hand', 'Suits something soft and toylike.'],
+                 ['image', 'Your own picture', 'A small PNG or SVG, 32px is plenty. Never larger than 128px.']];
+  box.innerHTML = `
+    <div class="ad-picks">
+      ${kinds.map(([k, name, note]) => `
+        <button class="ad-pick${(c.kind || 'default') === k ? ' on' : ''}" data-c="cur" data-v="${k}">
+          <b>${name}</b><span>${note}</span></button>`).join('')}
     </div>
-    <p class="ad-hint" style="margin-top:.5rem">Preview: <span style="font-family:'joyshine-${esc(t)}'">Small things. Big joy.</span></p>` : ''}`;
+    ${c.kind === 'image' ? `<div class="ad-up" data-drop="cur" style="margin-top:.8rem">
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="curpick">Upload a pointer</button>
+      <span class="ad-hint" id="curMsg">${c.url ? 'In use' : 'PNG or SVG, up to 128px'}</span>
+      ${c.url ? `<img src="${esc(c.url)}" alt="" style="width:28px;height:28px;object-fit:contain">` : ''}
+    </div>` : ''}`;
 }
 
 /* ---- uploads ---------------------------------------------- */
 let pendingIcon = '';
+let pendingPath = '';
 
 function wireFiles() {
   const once = (el, fn) => { if (el && !el.dataset.wired) { el.dataset.wired = '1'; el.addEventListener('change', fn); } };
@@ -173,6 +273,24 @@ function wireFiles() {
       A().setS('icons.' + pendingIcon, url);
     }
     paint(); toast('Icon replaced');
+  });
+  once($('#brandFile'), async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f || !pendingPath) return;
+    const url = await put(f);
+    if (!url) return;
+    A().setS(pendingPath, url);
+    if (pendingPath === 'brand.favicon' || pendingPath === 'brand.logo') window.SKIN.brand();
+    paint(); toast('Uploaded');
+  });
+  once($('#curFile'), async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    const url = await put(f, $('#curMsg'));
+    if (!url) return;
+    const t = $('#curTheme').value;
+    A().setS('cursors.' + t + '.kind', 'image');
+    A().setS('cursors.' + t + '.url', url);
+    paint(); $('#curTheme').value = t; paintCursor(); window.SKIN.cursors();
+    toast('Pointer set');
   });
   once($('#fontFile'), async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -228,6 +346,18 @@ function wire(t) {
   if (act === 'iconpick')  { pendingIcon = el.dataset.k; $('#iconFile').click(); return true; }
   if (act === 'iconclear') { A().setS('icons.' + el.dataset.k, ''); paint(); toast('Icon reset'); return true; }
   if (act === 'fontpick')  { $('#fontFile').click(); return true; }
+  if (act === 'brandpick') { pendingPath = el.dataset.path; $('#brandFile').click(); return true; }
+  if (act === 'brandclear') {
+    A().setS(el.dataset.path, '');
+    paint(); toast('Removed'); return true;
+  }
+  if (act === 'cur') {
+    const t = $('#curTheme').value;
+    A().setS('cursors.' + t + '.kind', el.dataset.v);
+    paint(); $('#curTheme').value = t; paintCursor(); window.SKIN.cursors();
+    return true;
+  }
+  if (act === 'curpick') { $('#curFile').click(); return true; }
   if (act === 'fontclear') {
     const th = $('#fontTheme').value;
     A().setS('fonts.' + th + '.url', '');
@@ -239,6 +369,13 @@ function wire(t) {
 
 function wireChange(t) {
   if (t.id === 'fontTheme') { paintFonts(); return true; }
+  if (t.id === 'curTheme') { paintCursor(); return true; }
+  if (t.dataset.fw) {
+    const th = $('#fontTheme').value;
+    A().setS('fonts.' + th + '.weights.' + t.dataset.fw, t.value ? +t.value : '');
+    window.SKIN.fonts(); paintFonts();
+    return true;
+  }
   if (t.id === 'heroArt')   { A().setS('hero.art', t.value.trim()); return true; }
   if (t.dataset.ff) {
     const th = $('#fontTheme').value;
