@@ -289,11 +289,47 @@ function paintAll() { paintToday(); paintOccasions($('#occFilter').value); paint
 /* ---- Supabase ------------------------------------------- */
 const cloudOn = () => window.CLOUD && window.CLOUD.ready();
 
+/* What "publishing" means right now depends on whether the database
+   is connected and whether you are signed in. Say the true one. */
+function paintHow(cloud, signedIn) {
+  const note = $('#unsaved');
+  if (note) {
+    note.innerHTML = cloud && signedIn
+      ? 'You have unsaved changes. Press <b>Publish</b> and they are live on joyshine.in within seconds.'
+      : cloud
+        ? 'You have unsaved changes. <b>Sign in above</b> to publish them straight to the live shop.'
+        : 'You have unsaved changes. <b>Save changes</b> downloads <code>site.json</code> \u2014 put it in ' +
+          '<code>assets/data/</code> in your repository and the live site picks it up.';
+  }
+
+  const how = $('#publishHow');
+  if (!how) return;
+  how.innerHTML = cloud && signedIn
+    ? `<ol class="ad-steps">
+         <li><b>Preview on site</b> shows your changes in this browser only. Nobody else sees them.</li>
+         <li><b>Publish</b> writes them to the live shop. No file, no upload, no waiting.</li>
+         <li>Refresh joyshine.in to see them. Customers get them on their next visit.</li>
+       </ol>
+       <p class="ad-p" style="margin:.9rem 0 0">Downloading <code>site.json</code> below is optional now.
+         It is worth doing occasionally so your settings have a version history in GitHub, and a working
+         copy if you ever lose the database.</p>`
+    : cloud
+      ? `<p class="ad-p">Sign in at the top and <b>Publish</b> sends changes straight to the live shop.
+           Until then you can still download <code>site.json</code> and commit it by hand.</p>`
+      : `<ol class="ad-steps">
+           <li><b>Preview on site</b> shows your changes in this browser only.</li>
+           <li><b>Save changes</b> downloads <code>site.json</code>.</li>
+           <li>Drop that file into <code>assets/data/</code> in your GitHub repository
+               (Add file \u2192 Upload files \u2192 Commit). GitHub Pages redeploys in about a minute.</li>
+         </ol>`;
+}
+
 function paintCloud() {
   const badge = $('#cloudBadge'), wrap = $('#signinWrap'), state = $('#cloudState');
   const pub = $('#btnPublish'), out = $('#btnSignout'), main = $('#btnSave');
 
   if (!cloudOn()) {
+    paintHow(false, false);
     badge.hidden = true; wrap.hidden = true; pub.hidden = true; out.hidden = true;
     main.textContent = 'Save changes';
     state.textContent = 'Supabase is not set up, so changes are published by downloading site.json and committing it. Fill in the supabase block in config.js to save straight to the live shop instead.';
@@ -301,6 +337,7 @@ function paintCloud() {
   }
 
   const inn = window.CLOUD.signedIn();
+  paintHow(true, inn);
   badge.hidden = false;
   badge.innerHTML = inn ? `Signed in as <b>${esc(window.CLOUD.user()?.email || '')}</b>` : 'Not signed in';
   wrap.hidden = inn;

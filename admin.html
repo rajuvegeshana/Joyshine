@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/admin.css?v=202609301513">
+<link rel="stylesheet" href="assets/css/admin.css?v=202609301531">
 </head>
 <body>
 
@@ -87,10 +87,7 @@
 
     <main class="content">
 
-      <div class="ad-note" id="unsaved" hidden>
-        You have unsaved changes. <b>Save changes</b> downloads <code>site.json</code> — put it in
-        <code>assets/data/</code> in your repository and the live site picks it up.
-      </div>
+      <div class="ad-note" id="unsaved" hidden></div>
 
       <!-- sign in -->
       <div id="signinWrap" hidden>
@@ -376,12 +373,7 @@
       <section class="ad-pane" data-pane="publish">
         <div class="ad-card">
           <h3>Publishing your changes</h3>
-          <ol class="ad-steps">
-            <li><b>Preview on site</b> shows your changes in this browser only. Nobody else sees them.</li>
-            <li><b>Save changes</b> downloads <code>site.json</code>.</li>
-            <li>Drop that file into <code>assets/data/</code> in your GitHub repository
-                (Add file → Upload files → Commit). GitHub Pages redeploys in about a minute.</li>
-          </ol>
+          <div id="publishHow"></div>
           <div class="ad-btns">
             <button class="ad-btn ad-btn--primary" id="btnPublish" hidden>Publish to the live shop</button>
             <button class="ad-btn ad-btn--ghost" id="btnSave2">Download site.json</button>
@@ -451,14 +443,14 @@
 
 <div class="ad-toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609301513"></script>
-<script src="assets/js/occasions.js?v=202609301513"></script>
-<script src="assets/js/legal.js?v=202609301513"></script>
-<script src="assets/js/customise.js?v=202609301513"></script>
-<script src="assets/js/cloud.js?v=202609301513"></script>
-<script src="assets/js/products.js?v=202609301513"></script>
+<script src="assets/js/config.js?v=202609301531"></script>
+<script src="assets/js/occasions.js?v=202609301531"></script>
+<script src="assets/js/legal.js?v=202609301531"></script>
+<script src="assets/js/customise.js?v=202609301531"></script>
+<script src="assets/js/cloud.js?v=202609301531"></script>
+<script src="assets/js/products.js?v=202609301531"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/admin-catalogue.js?v=202609301513"></script>
-<script src="assets/js/admin.js?v=202609301513"></script>
+<script src="assets/js/admin-catalogue.js?v=202609301531"></script>
+<script src="assets/js/admin.js?v=202609301531"></script>
 </body>
 </html>
