@@ -148,7 +148,7 @@
 /* ---- spacing so nothing hides under the bed -------------- */
 body { padding-bottom: var(--rig-h); }
 @media (max-width: 899px) {
-  :root { --rig-h: 32px; --tab-h: 68px; }
+  :root { --rig-h: 26px; --tab-h: 68px; }
   body { padding-bottom: calc(var(--tab-h) + var(--rig-h)); }
   .rig-read { font-size: .54rem; letter-spacing: .1em; }
   .rig-read--r { display: none; }
