@@ -617,9 +617,8 @@ async function runPublish(box) {
   /* 4. is it the same thing? */
   step('match', 'busy');
   try {
-    const mine = JSON.stringify(data.settings || {});
-    const theirs = JSON.stringify(back.data.settings || {});
-    if (mine !== theirs) throw new Error('What came back does not match what was sent. Try publishing again.');
+    if (!same(data.settings || {}, back.data.settings || {}))
+      throw new Error('What came back does not match what was sent. Try publishing again.');
     step('match', 'ok', 'every change is live');
   } catch (e) { return fail('match', 'The shop does not agree yet', e.message); }
   await wait(120);
@@ -752,7 +751,7 @@ function changeList() {
     if (Object.keys(o).length < 2) continue;
     /* unchanged since the last publish? then it is not waiting */
     const before = liveOcc.find(x => x.id === o.id);
-    if (before && JSON.stringify(before) === JSON.stringify(o)) continue;
+    if (before && same(before, o)) continue;
     const occ = OCCS.find(x => x.id === o.id);
     const bits = [];
     if (o.on !== undefined) bits.push(o.on ? 'switched on' : 'switched off');
@@ -785,6 +784,19 @@ async function publish() {
    means waiting since the last publish — not since the code was written */
 let live = null;
 
+/* Postgres stores jsonb with its own key order, so two identical
+   settings objects do not stringify the same way. Sort before comparing. */
+function stable(v) {
+  if (Array.isArray(v)) return v.map(stable);
+  if (v && typeof v === 'object') {
+    const out = {};
+    for (const k of Object.keys(v).sort()) out[k] = stable(v[k]);
+    return out;
+  }
+  return v;
+}
+const same = (a, b) => JSON.stringify(stable(a)) === JSON.stringify(stable(b));
+
 async function pullCloud() {
   if (!cloudOn()) return;
   try {
@@ -794,10 +806,9 @@ async function pullCloud() {
       /* the panel loads the published settings into its own buffer, which
          used to look like a pile of unsaved changes for ever. If nothing
          differs from the live shop, nothing is waiting. */
-      const same = JSON.stringify(patch.settings || {}) === JSON.stringify(live.settings || {})
-        && JSON.stringify((patch.occasions || []).filter(o => Object.keys(o).length > 1))
-           === JSON.stringify(live.occasions || []);
-      if (same) {
+      const unchanged = same(patch.settings || {}, live.settings || {})
+        && same((patch.occasions || []).filter(o => Object.keys(o).length > 1), live.occasions || []);
+      if (unchanged) {
         dirty = false; saved = false;
         $('#unsaved').hidden = true;
         past.length = 0; past.push(JSON.stringify(patch)); at = 0;
