@@ -79,6 +79,26 @@ window.JOYSHINE = {
     forceOccasion: null,   // an id from occasions.js, or null
   },
 
+  /* ---- when something is missing ------------------------------
+     Every one of these is editable in the panel under Content.     */
+  errors: {
+    notFound: {
+      title: 'This page has wandered off',
+      body: 'The link may be old, or we may have renamed something. Nothing is lost — start from one of these.',
+      art: '',        /* leave empty for the drawn unicorn, or paste an image URL */
+    },
+    noProduct: {
+      title: 'That product is not on the shelf',
+      body: 'It may have sold out, or been retired. Here is what is on the shelf instead.',
+      art: '',
+    },
+    offline: {
+      title: 'The shop cannot reach us',
+      body: 'Your connection dropped, or we are having a moment. The page will work again when it comes back — or message us and we will take it from there.',
+      art: '',
+    },
+  },
+
   /* ---- Engineering & prototyping service line ----------------
      Same studio, different customer. Wears the futuristic look.  */
   engineering: {

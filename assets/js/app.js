@@ -111,7 +111,7 @@ function render() {
       const p = S.byId(seg[1]);
       if (p) { pdp = { p, v: S.defaults(p), qty: 1, note: '' }; S.sawProduct(p.id);
                window.CUSTOM.reset(); title = p.name + ' · ' + title; }
-      html = V.product(seg[1], pdp?.v); break;
+      html = p ? V.product(seg[1], pdp?.v) : V.missingProduct(); break;
     }
     case 'search':   html = V.searchPage(q.q || ''); title = 'Search · ' + title; break;
     case 'custom':   html = V.custom(q); title = 'Custom print · ' + title; break;
@@ -903,6 +903,8 @@ async function boot() {
     }
 
     const sh = t.closest('[data-share]'); if (sh) return share(sh.dataset.share);
+    if (t.closest('[data-waask]')) return openWhatsApp(
+      `Hi ${CFG.brand.name}! I was looking for something on your website and could not find it.`);
 
     /* card buttons */
     const add = t.closest('[data-add]');

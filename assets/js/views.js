@@ -132,6 +132,8 @@ const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="#/
     <span class="catcard__t"><b>${esc(c.name)}</b><span>${esc(c.note)}</span></span>
   </a>`;
 
+const W = (k, fallback) => (window.KIT ? window.KIT.word(k, fallback) : fallback);
+
 const empty = (title, line, cta) => `<div class="empty"><span data-spark>${I.horn}</span>
   <h4>${esc(title)}</h4><p>${esc(line)}</p>${cta || ''}</div>`;
 
@@ -207,10 +209,10 @@ function home() {
     </div>
   </section>
 
-  <div class="strip" aria-hidden="true"><div class="strip__track" id="stripTrack"><span>Hand finished</span><span>Made to order</span><span>Free shipping over <i data-freeabove></i></span><span>UPI, card, netbanking</span><span>Or just WhatsApp us</span><span>Your design printed too</span></div></div>
+  <div class="strip" aria-hidden="true"><div class="strip__track" id="stripTrack"><span>${esc(W('strip', 'Hand finished'))}</span><span>Hand finished</span><span>Made to order</span><span>Free shipping over <i data-freeabove></i></span><span>UPI, card, netbanking</span><span>Or just WhatsApp us</span><span>Your design printed too</span></div></div>
 
   <section class="band band--tight wrap" id="cats">
-    <div class="headrow"><div><p class="eyebrow r">Browse</p><h2 class="r" style="--d:60ms">Eight shelves, one little studio.</h2></div></div>
+    <div class="headrow"><div><p class="eyebrow r">Browse</p><h2 class="r" style="--d:60ms">${esc(W('browse', 'Eight shelves, one little studio.'))}</h2></div></div>
     <div class="cats">${window.CATEGORIES.map(catCard).join('')}</div>
   </section>
 
@@ -791,14 +793,62 @@ function noResults(q) {
   </div>`;
 }
 
-function notFound() {
-  return `<section class="band wrap">${empty('That page has wandered off',
-    'The link may be old, or we may have renamed something.',
-    '<a class="btn btn--pay btn--sm" href="#/">Back to the shop</a>')}</section>`;
+/* ---------- when something is missing --------------------
+   A dead end should still be a way out: say what happened, in
+   the shop's own voice, and offer the doors that do work.     */
+function errorPage(kind = 'notFound', extra = '') {
+  const e = (CFG.errors || {})[kind] || {};
+  const art = e.art
+    ? `<img src="${esc(e.art)}" alt="" class="oops__art">`
+    : `<div class="oops__art">${lostUnicorn()}</div>`;
+  const cats = (window.CATEGORIES || []).slice(0, 4);
+  return `<section class="band wrap oops">
+    ${art}
+    <h2 class="r">${esc(e.title || 'Something is missing')}</h2>
+    <p class="lede r" style="--d:60ms">${esc(e.body || '')}</p>
+    ${extra}
+    <div class="hero__cta r" style="--d:120ms">
+      <a class="btn btn--pay" href="#/">${I.bolt}Back to the shop</a>
+      <a class="btn btn--ghost" href="#/custom"><span data-spark>${I.spark}</span>Ask for a custom print</a>
+      <a class="btn btn--ghost" href="#/faq">${I.chat}Help &amp; FAQ</a>
+    </div>
+    ${cats.length ? `<div class="oops__links">
+      <span class="quiet">Or go straight to</span>
+      ${cats.map(c => `<a class="chip" href="#/c/${esc(c.id)}">${esc(c.name)}</a>`).join('')}
+      <a class="chip" href="#/shop">Everything</a>
+      <a class="chip" href="#/wishlist">Your wishlist</a>
+    </div>` : ''}
+    <p class="quiet oops__ask">Still stuck? <a href="#/faq">Read the FAQ</a>, or
+      <button class="linky" data-waask>message us on WhatsApp</button> and we will find it for you.</p>
+  </section>`;
+}
+
+/* a unicorn that has clearly wandered off: same body, one raised hoof,
+   a question mark where the path used to be */
+const lostUnicorn = () => `<svg viewBox="0 0 200 200" role="img" aria-label="A unicorn looking for the way back">
+  <ellipse cx="100" cy="182" rx="50" ry="6" fill="var(--art-4)" opacity=".15"/>
+  <path d="M132 52c14 6 20 20 16 32 10 8 10 24 1 32 8 10 4 26-6 32l-4-14c8-2 12-10 8-16l-3-13c9-2 13-10 10-16l-2-13c8-2 12-9 10-15z" fill="var(--art-2)" opacity=".9"/>
+  <path d="M118 158c0-22 2-36-4-48-7-15-24-20-39-13-9 4-17 0-19-8-2-9 4-17 13-19 8-2 13-7 16-14 6-15 20-24 36-21 18 3 29 17 31 35 2 21-5 38-9 53-4 14-5 24-4 35z" fill="var(--art-1)"/>
+  <path d="M124 40l6-20 12 17z" fill="var(--art-1)"/>
+  <path d="M100 42 112 2l14 42z" fill="var(--art-3)"/>
+  <path d="M106 34h15M109 26h13M112 18h10" stroke="var(--art-4)" stroke-width="2.4" stroke-linecap="round" opacity=".35" fill="none"/>
+  <circle cx="104" cy="62" r="4" fill="var(--art-4)"/>
+  <path d="M60 80q8 5 15 1" stroke="var(--art-4)" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+  <g opacity=".75">
+    <path d="M160 96c0-9 14-9 14-1 0 6-7 6-7 13" stroke="var(--art-4)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="167" cy="120" r="3.2" fill="var(--art-4)"/>
+  </g>
+</svg>`;
+
+function notFound() { return errorPage('notFound'); }
+
+function missingProduct() {
+  const picks = window.PRODUCTS.filter(p => !p.hidden).slice(0, 4);
+  return errorPage('noProduct', picks.length ? `<div class="oops__grid">${picks.map(card).join('')}</div>` : '');
 }
 
 return { I, esc, art, card, grid, railBlock, empty, badgeOf, occasionBanner, selNow, booting,
          reviewBlock, reviewsFor, reviewOne, stars, socialLine, soldCount, pinnedReviews,
          home, shop, product, custom, wishlist, faq, about, engineering,
-         searchPage, noResults, notFound };
+         searchPage, noResults, notFound, errorPage, missingProduct, lostUnicorn };
 })();
