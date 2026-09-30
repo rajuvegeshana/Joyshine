@@ -40,21 +40,67 @@ function cleanSvg(markup) {
 }
 
 const isUrl = s => typeof s === 'string' && /^(https?:\/\/|assets\/|\/)/i.test(s.trim());
+const isJson = s => isUrl(s) && /\.json($|\?)/i.test(s.trim());
+
+/* ---- moving pictures ---------------------------------------
+   A .json here is a Lottie animation, the format After Effects
+   and LottieFiles export. The player is 250 KB, so it is only
+   fetched if something on the page actually uses one — a shop
+   with no animations downloads nothing.                        */
+const LOTTIE = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie_light.min.js';
+let lottieReady = null;
+
+function lottie() {
+  if (lottieReady) return lottieReady;
+  lottieReady = new Promise((ok, no) => {
+    if (window.lottie) return ok(window.lottie);
+    const s2 = document.createElement('script');
+    s2.src = LOTTIE; s2.async = true;
+    s2.onload = () => ok(window.lottie);
+    s2.onerror = () => no(new Error('the animation player did not load'));
+    document.head.appendChild(s2);
+  });
+  return lottieReady;
+}
+
+/* a box that plays the animation, or shows nothing if it will not load */
+function playJson(box, url, loop = true) {
+  if (!box || box.dataset.lottie === url) return;
+  box.dataset.lottie = url;
+  box.innerHTML = '';
+  lottie().then(L => {
+    if (box.dataset.lottie !== url) return;
+    L.loadAnimation({
+      container: box, renderer: 'svg', loop, autoplay: true, path: url,
+      rendererSettings: { progressiveLoad: true },
+    });
+  }).catch(() => { box.dataset.lottie = ''; });
+}
+
+/* one picture setting, drawn however it needs to be drawn */
+function pictureHtml(v, cls) {
+  if (!v) return '';
+  if (isJson(v)) return `<span class="lot ${cls}" data-lot="${v.replace(/"/g, '&quot;')}"></span>`;
+  if (isUrl(v)) return `<img src="${v.replace(/"/g, '&quot;')}" alt="" class="${cls}">`;
+  return cleanSvg(v);
+}
+
+/* start any animation that has been dropped into the page */
+function playAll(root = document) {
+  (root.querySelectorAll ? root : document).querySelectorAll('[data-lot]').forEach(el => {
+    playJson(el, el.dataset.lot, el.dataset.loop !== 'no');
+  });
+}
 
 /* an icon the owner has replaced, or nothing */
 function icon(name) {
-  const v = (CFG().icons || {})[name];
-  if (!v) return '';
-  if (isUrl(v)) return `<img src="${v.replace(/"/g, '&quot;')}" alt="" class="ico-img">`;
-  return cleanSvg(v);
+  if (name === 'micro') return '';
+  return pictureHtml((CFG().icons || {})[name], 'ico-img');
 }
 
 /* the hero's artwork, if one was uploaded */
 function heroArt() {
-  const a = (CFG().hero || {}).art;
-  if (!a) return '';
-  if (isUrl(a)) return `<img src="${a.replace(/"/g, '&quot;')}" alt="" class="printer__img">`;
-  return cleanSvg(a);
+  return pictureHtml((CFG().hero || {}).art, 'printer__img');
 }
 
 /* ---- typefaces ---------------------------------------------
@@ -149,12 +195,13 @@ function cursors() {
 /* ---- the logo and the tab icon ----------------------------- */
 function brand() {
   const b = CFG().brand || {};
-  if (b.logo && isUrl(b.logo)) {
+  if (b.logo) {
     document.querySelectorAll('.logo__mark').forEach(el => {
       if (el.dataset.own) return;
-      const img = document.createElement('img');
-      img.src = b.logo; img.alt = ''; img.className = 'logo__mark'; img.dataset.own = '1';
-      el.replaceWith(img);
+      const box = document.createElement('span');
+      box.className = 'logo__mark'; box.dataset.own = '1';
+      box.innerHTML = pictureHtml(b.logo, 'logo__img');
+      if (box.innerHTML) { el.replaceWith(box); playAll(box); }
     });
   }
   if (b.favicon && isUrl(b.favicon)) {
@@ -166,6 +213,8 @@ function brand() {
 
 /* ---- put it all in place ---------------------------------- */
 function apply(root = document) {
+  /* the owner can switch the small icon movements off entirely */
+  document.documentElement.dataset.micro = (CFG().icons || {}).micro === false ? 'off' : 'on';
   const printer = root.querySelector ? root.querySelector('.printer') : null;
   if (printer) {
     printer.dataset.anim = (CFG().hero || {}).animation || 'print';
@@ -178,12 +227,14 @@ function apply(root = document) {
   /* any icon the owner replaced */
   const over = CFG().icons || {};
   for (const name of Object.keys(over)) {
+    if (name === 'micro') continue;      /* a switch, not an icon */
     const html = icon(name);
     if (!html) continue;
     (root.querySelectorAll ? root : document).querySelectorAll(`[data-ico="${name}"]`)
       .forEach(el => { el.innerHTML = html; });
   }
+  playAll(root);
 }
 
-return { apply, fonts, cursors, brand, icon, heroArt, cleanSvg };
+return { apply, fonts, cursors, brand, icon, heroArt, cleanSvg, pictureHtml, playAll, isJson };
 })();

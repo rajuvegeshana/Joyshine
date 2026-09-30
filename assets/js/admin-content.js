@@ -79,25 +79,35 @@ function paint() {
 
       <h4 class="ad-sub">Its artwork</h4>
       <p class="ad-p">Leave this empty for the drawn unicorn, which recolours itself with every theme.
-        Upload your own and it is used as it is — an SVG keeps its edges at any size.</p>
+        Upload your own and it is used as it is: <b>SVG</b> keeps its edges at any size, <b>PNG</b> and
+        <b>GIF</b> are used as they come, and a <b>.json</b> from After Effects or LottieFiles plays as an
+        animation. The player for those is only fetched when something actually uses one.</p>
       <div class="ad-up" data-drop="hero">
-        <input type="file" id="heroFile" accept=".svg,image/svg+xml,image/png,image/webp" hidden>
+        <input type="file" id="heroFile" accept=".svg,.png,.gif,.webp,.json,image/svg+xml,image/png,image/gif,image/webp,application/json" hidden>
         <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="heropick">Upload SVG or PNG</button>
         <span class="ad-hint" id="heroMsg">or drop one here, or paste a link below</span>
       </div>
       <input class="ad-inline" id="heroArt" value="${esc(hero.art || '')}" placeholder="https://… (empty = the drawn unicorn)">
-      ${hero.art ? `<div class="ad-prev">${/^</.test(hero.art) ? hero.art : `<img src="${esc(hero.art)}" alt="">`}
+      ${hero.art ? `<div class="ad-prev">${window.SKIN.pictureHtml(hero.art, '')}
         <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="heroclear">Use the drawn one again</button></div>` : ''}
     </div>
 
     <div class="ad-card">
       <h3>Icon library</h3>
-      <p class="ad-p">Replace any of these with your own. SVG is best: it takes the colour of whatever it sits in.
-        Scripts inside an uploaded file are stripped before it is saved.</p>
+      <p class="ad-p">Replace any of these with your own — SVG, PNG, GIF, or a .json animation. SVG is best:
+        it takes the colour of whatever it sits in. Scripts inside an uploaded file are stripped before it is
+        saved. Every icon already answers a touch or a hover on its own; see below.</p>
+
+      <label class="ad-row--switch" style="margin-bottom:var(--space-4)">
+        <input type="checkbox" id="icoMicro"${(CFG().icons || {}).micro !== false ? ' checked' : ''}>
+        <span><b>Small movements on the icons</b><i>A cart that tips, a heart that beats, a share that
+          lifts, a bolt that flickers — only on hover or a press, and never for anyone who has asked
+          their device for less motion.</i></span>
+      </label>
       <div class="ad-icons">
         ${ICONS.map(([k, label]) => {
           const own = icons[k];
-          const shown = own ? (/^</.test(own) ? own : `<img src="${esc(own)}" alt="">`) : ((window.ICONS || {})[k] || '');
+          const shown = own ? window.SKIN.pictureHtml(own, '') : ((window.ICONS || {})[k] || '');
           return `<div class="ad-icon${own ? ' on' : ''}" data-ik="${k}">
             <span class="ad-icon__art">${shown || ''}</span>
             <b>${esc(label)}</b>
@@ -106,7 +116,7 @@ function paint() {
           </div>`;
         }).join('')}
       </div>
-      <input type="file" id="iconFile" accept=".svg,image/svg+xml,image/png" hidden>
+      <input type="file" id="iconFile" accept=".svg,.png,.gif,.json,image/svg+xml,image/png,image/gif,application/json" hidden>
     </div>
 
     <details class="ad-card ad-fold" open>
@@ -136,7 +146,7 @@ function paint() {
           const v = path.split('.').reduce((o, s2) => (o || {})[s2], CFG()) || '';
           return `<div class="ad-brandbit">
             <b>${label}</b>
-            <div class="ad-brandbit__art">${v ? `<img src="${esc(v)}" alt="">` : '<span class="ad-empty">none yet</span>'}</div>
+            <div class="ad-brandbit__art">${v ? window.SKIN.pictureHtml(v, '') : '<span class="ad-empty">none yet</span>'}</div>
             <button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandpick" data-k="${k}" data-path="${path}">Upload</button>
             ${v ? `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-c="brandclear" data-path="${path}">Remove</button>` : ''}
             <input class="ad-inline" data-cf="${path}" value="${esc(v)}" placeholder="or paste a link">
@@ -144,7 +154,7 @@ function paint() {
           </div>`;
         }).join('')}
       </div>
-      <input type="file" id="brandFile" accept=".svg,image/svg+xml,image/png,image/webp,image/jpeg" hidden>
+      <input type="file" id="brandFile" accept=".svg,.png,.gif,.webp,.jpg,.jpeg,.json,image/svg+xml,image/png,image/gif,image/webp,image/jpeg,application/json" hidden>
     </details>
 
     <details class="ad-card ad-fold">
@@ -186,6 +196,7 @@ function paint() {
   paintFonts();
   paintCursor();
   wireFiles();
+  window.SKIN.playAll(box);
 }
 
 function paintFonts() {
@@ -386,6 +397,7 @@ function wire(t) {
 }
 
 function wireChange(t) {
+  if (t.id === 'icoMicro') { A().setS('icons.micro', t.checked); return true; }
   if (t.id === 'fontTheme') { paintFonts(); return true; }
   if (t.id === 'curTheme') { paintCursor(); return true; }
   if (t.dataset.fw) {
