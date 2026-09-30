@@ -737,9 +737,27 @@ const LABELS = {
 };
 
 const pretty = v => v === true ? 'on' : v === false ? 'off'
-  : v === null || v === '' ? 'not set'
+  : v === null || v === undefined || v === '' ? 'not set'
   : Array.isArray(v) ? `${v.length} item${v.length === 1 ? '' : 's'}`
+  : typeof v === 'string' && v.length > 60 ? v.slice(0, 57) + '…'
   : String(v);
+
+/* The settings that repeat per theme or per icon cannot be listed one by
+   one, so turn the path itself into something readable. */
+const WORD = {
+  hero: 'Hero', icons: 'Icon', cursors: 'Pointer', fonts: 'Type', weights: 'weight',
+  animation: 'animation', art: 'artwork', kind: 'style', url: 'picture', size: 'size',
+  micro: 'small movements', display: 'headings face', body: 'body face',
+  hotX: 'tip across', hotY: 'tip down', useForBody: 'used for body text',
+  all: 'every look', logo: 'Logo', favicon: 'Tab icon', ogImage: 'Share picture',
+  picks: 'line-up', only: 'only those products',
+};
+function humanPath(p) {
+  const parts = p.split('.');
+  const named = parts.map(x => WORD[x] || (window.THEME_LIST || []).reduce((a, t) => t[0] === x ? t[1] : a, x));
+  const head = named.shift();
+  return named.length ? `${head} · ${named.join(' · ')}` : head;
+}
 
 function changeList() {
   const out = [];
@@ -757,7 +775,7 @@ function changeList() {
         for (const seg of p.split('.')) { if (base == null) break; base = base[seg]; }
         if (was === undefined) was = base;
       }
-      const label = LABELS[p] || p;
+      const label = LABELS[p] || humanPath(p);
       out.push({ label, from: pretty(was), to: pretty(v), same: pretty(was) === pretty(v) });
     }
   };
