@@ -90,6 +90,21 @@ WhatsApp shows when somebody sends your link.
 **The mouse pointer.** The ordinary arrow, the hand, a crosshair, an open hand,
 or your own small picture — for every look or for one.
 
+**Error pages.** This shop is a set of files on a CDN. There is no server to
+fall over, so there is no 500, 502 or 503 to write. Four things can actually go
+wrong, and each has its own wording, its own optional picture, and a *See it*
+link that opens the real page:
+
+- **404 — a page that does not exist.** An old link or a mistyped address.
+  `joyshine.in/404.html` catches these and hands them to the shop, which names
+  the address that was tried.
+- **A product that has gone.** Retired or sold out. Four in stock are shown.
+- **A search that found nothing.** The four ways to ask for a custom print are
+  shown underneath.
+- **The database cannot be reached.** Rare, and not fatal: the shop keeps
+  working from the files it was built with, so this only warns that prices and
+  stock may be a few minutes behind.
+
 Four ways for the hero unicorn to behave — printing,
 floating, turning on a stand, assembling itself — or replace it altogether
 with your own SVG or PNG. Twelve icons can be swapped one at a time. Each look
