@@ -132,7 +132,7 @@ function home() {
   <section class="hero wrap">
     <div class="hero__grid">
       <div class="hero__copy">
-        <p class="eyebrow r" data-origin>${esc(CFG.brand.origin)}<span class="chip chip--theme" data-themenote></span></p>
+        <p class="eyebrow r"><span data-origin>${esc(CFG.brand.origin)}</span><span class="chip chip--theme" data-themenote></span></p>
         <h1 class="r" style="--d:70ms">Creative things<br>for a brighter<em>everyday.</em></h1>
         <p class="lede r" style="--d:140ms">${esc(CFG.brand.blurb)}</p>
         <div class="hero__cta r" style="--d:210ms">
