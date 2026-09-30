@@ -212,6 +212,7 @@ function paintToday() {
         ${themePill(forceT || getS('defaultTheme', 'clay'))}${auto ? '' : ' (occasions are switched off)'}.</p>`;
 
   const next = window.OCC.upcoming(new Date(), 6, list.filter(o => o.on));
+  window.ADMINW?.dash();
   $('#nextBox').innerHTML = next.length
     ? `<div class="ad-list">${next.map(n => `<div>
         <b>${n.occ.name}</b><span>${fmt(n.on)} · opens ${fmt(n.from)} ${themePill(n.occ.theme)}</span></div>`).join('')}</div>`
@@ -863,6 +864,7 @@ document.addEventListener('click', e => {
      their own buttons; if one of them took the click we are done */
   if (window.ADMINX?.wire(e.target)) return;
   if (window.ADMINC?.wire(e.target)) return;
+  if (window.ADMINW?.wire(e.target)) return;
 
   const tab = e.target.closest('.ad-tab');
   if (tab) {
@@ -871,7 +873,8 @@ document.addEventListener('click', e => {
        the name rather than the element and both stay in step */
     $$('.ad-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === want));
     $$('.ad-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === want));
-    const titles = { today: 'Today', occasions: 'Occasions', look: 'Look', content: 'Content & art', products: 'Products',
+    const titles = { today: 'Dashboard', occasions: 'Occasions', look: 'Look', content: 'Content & art', products: 'Products',
+                     inventory: 'Filament', billing: 'Billing', expenses: 'Money out',
                      orders: 'Orders', requests: 'Customer requests', reviews: 'Reviews',
                      marketing: 'Marketing', traffic: 'Traffic & SEO', legal: 'Policies',
                      shop: 'Shop & contact', publish: 'Publish' };
@@ -880,6 +883,7 @@ document.addEventListener('click', e => {
     paintAll();
     window.ADMINX?.paint(want);
     if (want === 'content') window.ADMINC?.paint();
+    window.ADMINW?.paint(want);
     return;
   }
   const more = e.target.closest('[data-more]');
@@ -1061,6 +1065,7 @@ document.addEventListener('change', e => {
   }
 
   if (window.ADMINC?.wireChange(t)) return;
+  if (window.ADMINW?.wireChange(t)) return;
 
   const mm = (window.__MARKETING_MAP || []).find(([id]) => id === t.id);
   if (mm) {
@@ -1170,6 +1175,7 @@ window.ADMIN = {
 
 window.ADMINX?.setToast(toast);
 window.ADMINC?.setToast(toast);
+window.ADMINW?.setToast(toast);
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
 paintHistory();

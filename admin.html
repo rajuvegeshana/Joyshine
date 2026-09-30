@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/admin.css?v=202609302054">
+<link rel="stylesheet" href="assets/css/admin.css?v=202609302103">
 </head>
 <body>
 
@@ -26,7 +26,7 @@
       <span class="nav-label">Shop</span>
       <button class="nav-link ad-tab on" data-tab="today">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        Today <span class="dot" id="dotToday" hidden></span>
+        Dashboard <span class="dot" id="dotToday" hidden></span>
       </button>
       <button class="nav-link ad-tab" data-tab="occasions">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/></svg>
@@ -73,6 +73,20 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
         Policies <span class="dot" id="dotLegal" hidden></span>
       </button>
+      <span class="nav-label">Workshop &middot; private</span>
+      <button class="nav-link ad-tab" data-tab="inventory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>
+        Filament
+      </button>
+      <button class="nav-link ad-tab" data-tab="billing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+        Billing
+      </button>
+      <button class="nav-link ad-tab" data-tab="expenses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/><path d="M7 15h4"/></svg>
+        Money out
+      </button>
+
       <button class="nav-link ad-tab" data-tab="publish">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M12 5l-6 6M12 5l6 6"/></svg>
         Publish
@@ -155,11 +169,13 @@
 
       <!-- ============ TODAY ============ -->
       <section class="ad-pane on" data-pane="today">
+        <div id="dashTop"></div>
         <div class="ad-cards">
           <div class="ad-card"><h3>Running right now</h3><div id="nowBox"></div></div>
           <div class="ad-card"><h3>Coming up</h3><div id="nextBox"></div></div>
         </div>
         <div class="ad-card ad-card--warn" id="missingBox"></div>
+        <div id="dashRest"></div>
       </section>
 
       <!-- ============ OCCASIONS ============ -->
@@ -433,6 +449,11 @@
         <div class="ad-card" id="visitsCard"></div>
       </section>
 
+      <!-- ============ WORKSHOP ============ -->
+      <section class="ad-pane" data-pane="inventory" id="pane-inventory"></section>
+      <section class="ad-pane" data-pane="billing" id="pane-billing"></section>
+      <section class="ad-pane" data-pane="expenses" id="pane-expenses"></section>
+
       <!-- ============ PUBLISH ============ -->
       <section class="ad-pane" data-pane="publish">
         <div class="ad-card">
@@ -516,17 +537,18 @@
 
 <div class="ad-toasts" id="toasts" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=202609302054"></script>
-<script src="assets/js/occasions.js?v=202609302054"></script>
-<script src="assets/js/legal.js?v=202609302054"></script>
-<script src="assets/js/customise.js?v=202609302054"></script>
-<script src="assets/js/cloud.js?v=202609302054"></script>
-<script src="assets/js/products.js?v=202609302054"></script>
+<script src="assets/js/config.js?v=202609302103"></script>
+<script src="assets/js/occasions.js?v=202609302103"></script>
+<script src="assets/js/legal.js?v=202609302103"></script>
+<script src="assets/js/customise.js?v=202609302103"></script>
+<script src="assets/js/cloud.js?v=202609302103"></script>
+<script src="assets/js/products.js?v=202609302103"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/icons.js?v=202609302054"></script>
-<script src="assets/js/skin.js?v=202609302054"></script>
-<script src="assets/js/admin-content.js?v=202609302054"></script>
-<script src="assets/js/admin-catalogue.js?v=202609302054"></script>
-<script src="assets/js/admin.js?v=202609302054"></script>
+<script src="assets/js/icons.js?v=202609302103"></script>
+<script src="assets/js/skin.js?v=202609302103"></script>
+<script src="assets/js/admin-content.js?v=202609302103"></script>
+<script src="assets/js/admin-shop.js?v=202609302103"></script>
+<script src="assets/js/admin-catalogue.js?v=202609302103"></script>
+<script src="assets/js/admin.js?v=202609302103"></script>
 </body>
 </html>

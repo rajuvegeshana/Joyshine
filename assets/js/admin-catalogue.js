@@ -1065,5 +1065,7 @@ async function paint(tab) {
   if (tab === 'reviews') { if (inn() && !PRODUCTS.length) await pull(); paintReviews(); }
 }
 
-return { paint, wire, wireChange, setToast: fn => { toast = fn; }, pull };
+return { paint, wire, wireChange, setToast: fn => { toast = fn; }, pull,
+         list: () => everyProduct().map(p => ({ ...p, price: (PRODUCTS.find(r => r.id === p.id)?.data.price)
+           ?? (window.PRODUCTS.find(x => x.id === p.id)?.price) ?? 0 })) };
 })();
