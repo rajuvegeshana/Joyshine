@@ -74,6 +74,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-signin__f { display: grid; gap: .6rem; grid-template-columns: 1fr 1fr auto; align-items: end; }
 @media (max-width: 640px) { .ad-signin__f { grid-template-columns: 1fr; } }
 .ad-err { color: var(--ad-bad); font-size: .85rem; }
+.ad-ok { color: var(--ad-good); font-size: .85rem; }
+.ad-pw { position: relative; }
+.ad-pw input { padding-right: 4rem; }
+.ad-eye {
+  position: absolute; right: .45rem; bottom: .38rem;
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--ad-ink-2); font-size: .76rem; font-weight: 700;
+  padding: .25rem .4rem; border-radius: 6px;
+}
+.ad-eye:hover { color: var(--ad-brand); background: var(--ad-surface); }
+.ad-link {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  color: var(--ad-brand); font-weight: 700; font-size: inherit;
+  text-decoration: underline; text-underline-offset: 2px;
+}
 
 /* ---- unsaved strip ---- */
 .ad-note {

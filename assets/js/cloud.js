@@ -65,6 +65,44 @@ function signOut() {
 const user = () => session?.user || null;
 const signedIn = () => !!session?.access_token;
 
+/* ---- forgot password ------------------------------------- */
+async function sendRecovery(email, redirectTo) {
+  const r = await fetch(`${base()}/auth/v1/recover`, {
+    method: 'POST', headers: headers(),
+    body: JSON.stringify(redirectTo ? { email, redirect_to: redirectTo } : { email }),
+  });
+  if (!r.ok) {
+    const d = await r.json().catch(() => ({}));
+    throw new Error(d.msg || d.error_description || d.message || 'Could not send the email');
+  }
+  return true;
+}
+
+/* Supabase sends you back with the token in the URL fragment.
+   Catch it, hold it as a session, and tidy the address bar. */
+function recoveryInUrl() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const err = h.get('error_description');
+  if (err) { history.replaceState(null, '', location.pathname); return { error: err }; }
+  if (h.get('type') === 'recovery' && h.get('access_token')) {
+    keep({ access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), user: null });
+    history.replaceState(null, '', location.pathname);
+    return { ok: true };
+  }
+  return null;
+}
+
+async function setPassword(password) {
+  if (!signedIn()) throw new Error('That reset link has expired. Send yourself a new one.');
+  const r = await fetch(`${base()}/auth/v1/user`, {
+    method: 'PUT', headers: headers(true), body: JSON.stringify({ password }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.msg || d.message || 'Could not change the password');
+  if (session) { session.user = d; keep(session); }
+  return d;
+}
+
 /* ---- read (anyone) ---------------------------------------- */
 async function read() {
   if (!ready()) return null;
@@ -183,5 +221,6 @@ async function diagnose() {
   return out;
 }
 
-return { ready, signIn, signOut, refresh, user, signedIn, read, write, diagnose };
+return { ready, signIn, signOut, refresh, user, signedIn, read, write, diagnose,
+         sendRecovery, recoveryInUrl, setPassword };
 })();

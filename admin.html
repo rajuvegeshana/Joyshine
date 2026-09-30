@@ -34,11 +34,39 @@
     <div class="ad-signin__f">
       <label class="ad-field" style="margin:0"><span>Email</span>
         <input type="email" id="suEmail" autocomplete="username" required></label>
-      <label class="ad-field" style="margin:0"><span>Password</span>
-        <input type="password" id="suPass" autocomplete="current-password" required></label>
+      <label class="ad-field ad-pw" style="margin:0"><span>Password</span>
+        <input type="password" id="suPass" autocomplete="current-password" required>
+        <button type="button" class="ad-eye" data-eye="suPass" aria-label="Show password">Show</button>
+      </label>
       <button class="ad-btn" type="submit">Sign in</button>
     </div>
     <p class="ad-err" id="suErr" hidden></p>
+    <p class="ad-p" style="margin:0">
+      <button type="button" class="ad-link" id="btnForgot">Forgot your password?</button>
+      We will email you a link to set a new one.
+    </p>
+  </form>
+</div>
+
+<!-- shown after clicking the emailed reset link -->
+<div class="ad-wrap" id="resetWrap" hidden>
+  <form class="ad-card ad-signin" id="resetForm">
+    <div>
+      <h3>Set a new password</h3>
+      <p class="ad-p">At least 8 characters. You will be signed in straight after.</p>
+    </div>
+    <div class="ad-signin__f">
+      <label class="ad-field ad-pw" style="margin:0"><span>New password</span>
+        <input type="password" id="rsPass" autocomplete="new-password" minlength="8" required>
+        <button type="button" class="ad-eye" data-eye="rsPass" aria-label="Show password">Show</button>
+      </label>
+      <label class="ad-field ad-pw" style="margin:0"><span>Again</span>
+        <input type="password" id="rsPass2" autocomplete="new-password" minlength="8" required>
+        <button type="button" class="ad-eye" data-eye="rsPass2" aria-label="Show password">Show</button>
+      </label>
+      <button class="ad-btn" type="submit">Save password</button>
+    </div>
+    <p class="ad-err" id="rsErr" hidden></p>
   </form>
 </div>
 

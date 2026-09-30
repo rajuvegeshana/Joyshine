@@ -313,6 +313,38 @@ document.addEventListener('click', e => {
     return (cloudOn() && window.CLOUD.signedIn()) ? publish() : download();
   }
   if (e.target.closest('#btnSave2')) return download();
+  const eye = e.target.closest('[data-eye]');
+  if (eye) {
+    const f = $('#' + eye.dataset.eye);
+    const show = f.type === 'password';
+    f.type = show ? 'text' : 'password';
+    eye.textContent = show ? 'Hide' : 'Show';
+    eye.setAttribute('aria-label', (show ? 'Hide' : 'Show') + ' password');
+    f.focus();
+    return;
+  }
+
+  if (e.target.closest('#btnForgot')) {
+    const email = $('#suEmail').value.trim();
+    const err = $('#suErr');
+    if (!email) {
+      err.textContent = 'Type your email above first, then press this.';
+      err.hidden = false; $('#suEmail').focus(); return;
+    }
+    err.hidden = true;
+    window.CLOUD.sendRecovery(email, location.href.split('#')[0])
+      .then(() => {
+        err.className = 'ad-ok'; err.hidden = false;
+        err.textContent = 'Sent. Open the link in that email on this device. Check spam — it comes from Supabase.';
+      })
+      .catch(ex => {
+        err.className = 'ad-err'; err.hidden = false;
+        err.textContent = ex.message + (/rate|limit/i.test(ex.message)
+          ? ' Supabase only allows a couple of these an hour on the free plan.' : '');
+      });
+    return;
+  }
+
   if (e.target.closest('#btnCheck')) {
     const box = $('#checkOut');
     box.innerHTML = '<p class="ad-p">Checking…</p>';
@@ -413,6 +445,21 @@ document.addEventListener('change', e => {
 
 $('#occFilter').addEventListener('input', e => paintOccasions(e.target.value));
 
+$('#resetForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#rsErr'); err.className = 'ad-err'; err.hidden = true;
+  const a = $('#rsPass').value, b = $('#rsPass2').value;
+  if (a.length < 8)  { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
+  if (a !== b)       { err.textContent = 'Those two do not match.'; err.hidden = false; return; }
+  try {
+    await window.CLOUD.setPassword(a);
+    $('#resetWrap').hidden = true;
+    $('#rsPass').value = $('#rsPass2').value = '';
+    paintCloud(); await pullCloud(); paintAll();
+    toast('Password changed, and you are signed in');
+  } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+});
+
 $('#signinForm').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#suErr'); err.hidden = true;
@@ -437,6 +484,20 @@ $('#fileIn').addEventListener('change', async e => {
 });
 
 addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+/* arriving from a password reset email? */
+if (cloudOn()) {
+  const rec = window.CLOUD.recoveryInUrl();
+  if (rec?.ok) {
+    $('#resetWrap').hidden = false;
+    $('#signinWrap').hidden = true;
+    setTimeout(() => $('#rsPass').focus(), 200);
+  } else if (rec?.error) {
+    const err = $('#suErr');
+    err.className = 'ad-err'; err.hidden = false;
+    err.textContent = rec.error + ' — send yourself a fresh link.';
+  }
+}
 
 paintAll();
 if (Object.keys(patch.settings).length || patch.occasions.length) { $('#unsaved').hidden = false; dirty = true; }
