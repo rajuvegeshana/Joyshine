@@ -851,6 +851,8 @@ async function boot() {
   const onScroll = () => bar.classList.toggle('stuck', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
   addEventListener('hashchange', render);
+  /* some browsers hold a restore until the page is tall enough for it */
+  addEventListener('load', () => { if (!location.hash.includes('#/')) scrollTo({ top: 0, behavior: 'instant' }); }, { once: true });
 
   /* reviews and sale counts land a moment after the catalogue: put them
      in place without redrawing the page under the customer's finger */
