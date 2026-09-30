@@ -789,7 +789,21 @@ async function pullCloud() {
   if (!cloudOn()) return;
   try {
     const row = await window.CLOUD.read();
-    if (row?.data) live = row.data;
+    if (row?.data) {
+      live = row.data;
+      /* the panel loads the published settings into its own buffer, which
+         used to look like a pile of unsaved changes for ever. If nothing
+         differs from the live shop, nothing is waiting. */
+      const same = JSON.stringify(patch.settings || {}) === JSON.stringify(live.settings || {})
+        && JSON.stringify((patch.occasions || []).filter(o => Object.keys(o).length > 1))
+           === JSON.stringify(live.occasions || []);
+      if (same) {
+        dirty = false; saved = false;
+        $('#unsaved').hidden = true;
+        past.length = 0; past.push(JSON.stringify(patch)); at = 0;
+        paintHistory();
+      }
+    }
     const hasLocal = Object.keys(patch.settings).length || patch.occasions.length;
     if (row?.data && !hasLocal) {
       patch = { settings: row.data.settings || {}, occasions: row.data.occasions || [] };
