@@ -83,9 +83,21 @@ heading, section heading, card heading, small heading, opening line, body,
 small print and buttons. Leave any empty and it follows the one above it. A
 live preview sits underneath.
 
-**Logo, tab icon and share picture.** Upload the mark that sits beside the
-word joyshine, the little picture in the browser tab, and the 1200×630 card
-WhatsApp shows when somebody sends your link.
+**Logo, tab icon and share picture.** Upload the mark that sits beside the word
+joyshine, the little picture in the browser tab, and the 1200×630 card WhatsApp
+shows when somebody sends your link.
+
+**What you can upload anywhere a picture is asked for:** an **SVG** (keeps its
+edges at any size and takes the colour around it), a **PNG** or **GIF** (used
+as it comes, so a GIF animates), or a **.json** exported from After Effects or
+LottieFiles, which plays as a proper animation. The player for those is fetched
+only when a page actually uses one, so a shop with no animations downloads
+nothing extra.
+
+**Icons move a little when touched.** The cart tips, the bolt strikes, WhatsApp
+leans in, share lifts, the wishlist beats, upload arrows go up, search sweeps.
+One switch turns the lot off, and they hold still anyway for anyone whose device
+asks for less motion.
 
 **The mouse pointer.** The ordinary arrow, the hand, a crosshair, an open hand,
 or your own small picture — for every look or for one.
