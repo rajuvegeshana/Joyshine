@@ -122,6 +122,9 @@ function render() {
   if (seg[0] === 'custom') setupCustom(q);
   if (pdp) syncPdp();
   markNav();
+  GA.page(parse().path, title);
+  if (pdp) GA.event('view_item', { currency: CFG.currency, value: S.unitPrice(pdp.p, pdp.v),
+                                   items: [GA.item(pdp.p, 1, S.variantText(pdp.p, pdp.v))] });
   scrollTo({ top: 0, behavior: 'instant' });
 }
 
@@ -336,6 +339,7 @@ function paintSearch(q) {
 function goSearch(q) {
   if (!q.trim()) return;
   S.sawSearch(q);
+  GA.event('search', { search_term: q.trim() });
   closePanels();
   location.hash = '#/search?q=' + encodeURIComponent(q.trim());
 }
@@ -413,8 +417,12 @@ const buildOrderPreview = () => { $('#waPreview').textContent = orderMessage(); 
 function sendOrder() {
   if (!validateOrder(true)) { $('[aria-invalid="true"]')?.focus(); toast('A few fields still need you', I.info); return; }
   S.write(S.K.buyer, F());
-  recordOrder('whatsapp', waItems, S.totals(waItems), null, F());
+  const wt = S.totals(waItems);
+  recordOrder('whatsapp', waItems, wt, null, F());
   window.PROMO.claim();
+  GA.event('purchase', { transaction_id: 'WA-' + Date.now().toString(36), currency: CFG.currency,
+    value: wt.grand, shipping: wt.ship, coupon: wt.code || undefined, affiliation: 'whatsapp',
+    items: waItems.map(it => GA.item(S.byId(it.id), it.qty, S.variantText(S.byId(it.id), it.v))) });
   openWhatsApp(orderMessage());
   closePanels(); confetti();
   toast('WhatsApp is open — press send there to confirm', I.wa, 6000);
@@ -502,6 +510,7 @@ function sendCustom() {
               colour: g('c_col'), by: g('c_by'), notes: g('c_notes') },
     customer: { name, phone, email: g('c_email') },
   });
+  GA.event('generate_lead', { currency: CFG.currency, value: 0, method: cpath });
   openWhatsApp(customMessage());
   confetti();
   $('#customForm').innerHTML = `<div class="done">${I.check}
@@ -622,6 +631,7 @@ async function boot() {
   render();
 
   window.PROMO.start();
+  window.GA.start();
 
   const bar = $('#topbar');
   const measure = () => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px');
@@ -661,6 +671,7 @@ async function boot() {
     if (add) { const p = S.byId(add.dataset.add);
       if (p.personalise) { toast('Pick your text on the product page', I.info); location.hash = '#/p/' + p.id; return; }
       S.add(p.id, S.defaults(p));
+      GA.event('add_to_cart', { currency: CFG.currency, value: p.price, items: [GA.item(p, 1)] });
       paintCart(false);
       window.FLY.toCart(add.closest('.card')?.querySelector('.card__art'), () => {
         badge(true); toast(`${p.name} added`);
@@ -684,6 +695,8 @@ async function boot() {
     if (t.closest('#pdpAdd') && pdp) { if (pdpNeedsNote()) return;
       const it = pdpItem(); const name = pdp.p.name;
       S.add(it.id, it.v, it.note, it.qty);
+      GA.event('add_to_cart', { currency: CFG.currency, value: S.unitPrice(pdp.p, it.v) * it.qty,
+                                items: [GA.item(pdp.p, it.qty, S.variantText(pdp.p, it.v))] });
       paintCart(false);
       window.FLY.toCart($('#pdpStage'), () => { badge(true); toast(`${name} added`); });
       return; }

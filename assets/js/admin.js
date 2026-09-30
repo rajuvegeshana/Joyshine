@@ -219,6 +219,7 @@ function paintSettings() {
              ['wcTitle','marketing.welcome.title'],['wcBody','marketing.welcome.body'],
              ['wcCode','marketing.welcome.code'],['wcCta','marketing.welcome.cta'],
              ['wcHref','marketing.welcome.href'],['wcSmall','marketing.welcome.small'],
+             ['gaOn','analytics.on',1],['gaId','analytics.ga4'],
              ['seoTitle','seo.title'],['seoDesc','seo.description'],
              ['seoKeys','seo.keywords'],['seoOg','seo.ogImage']];
   const art = $('#wcArt');

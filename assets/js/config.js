@@ -139,6 +139,15 @@ window.JOYSHINE = {
     },
   },
 
+  /* ---- Analytics ----------------------------------------------
+     Google Analytics 4. Nothing loads until the visitor agrees,
+     so declining means no Google cookies at all. The shop's own
+     visit counter is separate and always on.                     */
+  analytics: {
+    on: true,
+    ga4: 'G-66TDCC1TTN',
+  },
+
   /* ---- SEO ---------------------------------------------------- */
   seo: {
     title: 'Joyshine \u2014 Creative things for a brighter everyday',

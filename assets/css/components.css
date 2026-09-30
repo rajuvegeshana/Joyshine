@@ -399,3 +399,25 @@
 }
 .codeon b { font-family: var(--font-display); }
 .codeon button { margin-left: auto; background: none; border: 0; cursor: pointer; color: inherit; text-decoration: underline; font-size: .78rem; }
+
+/* ===== consent notice ==================================== */
+.consent {
+  position: fixed; left: 50%; bottom: 1rem; translate: -50% 0; z-index: 160;
+  width: min(560px, calc(100% - 2rem));
+  opacity: 0; transform: translateY(14px);
+  transition: opacity .3s var(--ease), transform .3s var(--ease);
+}
+.consent.on { opacity: 1; transform: none; }
+.consent__in {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 1rem 1.15rem;
+  background: var(--surface); border: var(--card-border);
+  border-radius: var(--r-l); box-shadow: var(--shadow-3);
+}
+.consent p { flex: 1; min-width: 220px; font-size: .84rem; color: var(--ink-soft); margin: 0; }
+.consent__btns { display: flex; gap: .5rem; }
+@media (max-width: 560px) {
+  .consent { bottom: calc(var(--tab-h, 68px) + var(--rig-h, 32px) + .6rem); }
+  .consent__btns { width: 100%; }
+  .consent__btns .btn { flex: 1; }
+}
