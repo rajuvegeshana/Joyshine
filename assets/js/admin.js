@@ -415,6 +415,26 @@ const LABELS = {
   'marketing.welcome.on': 'Welcome popup',
   'lineup.picks': 'Everyday product line-up',
   'lineup.only': 'Show only the chosen products',
+  'legal.entity': 'Registered name',
+  'legal.address': 'Business address',
+  'legal.jurisdiction': 'Jurisdiction',
+  'legal.published': 'Policy pages live',
+  'legal.refundDays': 'Return window (days)',
+  'marketing.welcome.on': 'Welcome popup',
+  'marketing.welcome.title': 'Welcome popup headline',
+  'marketing.welcome.body': 'Welcome popup wording',
+  'marketing.welcome.code': 'Welcome popup code',
+  'marketing.welcome.art': 'Welcome popup picture',
+  'marketing.ribbon.link': 'Ribbon link',
+  'seo.title': 'Page title',
+  'seo.description': 'Search description',
+  'seo.keywords': 'Search keywords',
+  'analytics.on': 'Analytics',
+  'errors.notFound.title': 'Missing page headline',
+  'errors.notFound.body': 'Missing page wording',
+  'errors.noProduct.title': 'Missing product headline',
+  'errors.noProduct.body': 'Missing product wording',
+  'hero.animation': 'Hero animation',
 };
 
 const pretty = v => v === true ? 'on' : v === false ? 'off'
@@ -429,16 +449,27 @@ function changeList() {
       const p = path ? path + '.' + k : k;
       const v = node[k];
       if (v && typeof v === 'object' && !Array.isArray(v)) { walk(v, p); continue; }
-      let was = CFG;
-      for (const seg of p.split('.')) { if (was == null) break; was = was[seg]; }
+      /* compare against the live shop when we know it, the built-in
+         defaults when we do not */
+      let was = live && live.settings ? live.settings : undefined;
+      if (was !== undefined) { for (const seg of p.split('.')) { if (was == null) break; was = was[seg]; } }
+      if (was === undefined || was === null) {
+        let base = CFG;
+        for (const seg of p.split('.')) { if (base == null) break; base = base[seg]; }
+        if (was === undefined) was = base;
+      }
       const label = LABELS[p] || p;
       out.push({ label, from: pretty(was), to: pretty(v), same: pretty(was) === pretty(v) });
     }
   };
   walk(patch.settings, '');
 
+  const liveOcc = (live && live.occasions) || [];
   for (const o of patch.occasions || []) {
     if (Object.keys(o).length < 2) continue;
+    /* unchanged since the last publish? then it is not waiting */
+    const before = liveOcc.find(x => x.id === o.id);
+    if (before && JSON.stringify(before) === JSON.stringify(o)) continue;
     const occ = OCCS.find(x => x.id === o.id);
     const bits = [];
     if (o.on !== undefined) bits.push(o.on ? 'switched on' : 'switched off');
@@ -467,10 +498,15 @@ async function publish() {
 }
 
 /* pull whatever is live so you are editing the real thing */
+/* what the live shop is wearing right now, so "what is waiting"
+   means waiting since the last publish — not since the code was written */
+let live = null;
+
 async function pullCloud() {
   if (!cloudOn()) return;
   try {
     const row = await window.CLOUD.read();
+    if (row?.data) live = row.data;
     const hasLocal = Object.keys(patch.settings).length || patch.occasions.length;
     if (row?.data && !hasLocal) {
       patch = { settings: row.data.settings || {}, occasions: row.data.occasions || [] };
