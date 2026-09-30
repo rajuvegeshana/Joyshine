@@ -122,8 +122,8 @@ window.JOYSHINE = {
      your shop safe is Row Level Security, set up by running
      supabase/schema.sql. Never paste the service_role key here. */
   supabase: {
-    url: '',        // https://xxxxxxxx.supabase.co
-    anonKey: '',    // Project Settings - API - anon public
+    url: 'https://fofjkevcrzxlaqbetqhq.supabase.co',
+    anonKey: 'sb_publishable_wXgPdGGVAfiwttCqaEY2tw_mOfYLYep',
     table: 'settings',
     row: 'site',
   },

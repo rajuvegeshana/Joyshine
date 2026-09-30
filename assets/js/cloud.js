@@ -103,6 +103,10 @@ async function write(data, retried = false) {
    The important one is "a stranger cannot write": if that ever
    passes, anyone on the internet can rewrite your shop.        */
 function keyRole(key) {
+  /* Supabase's current keys are prefixed strings; older projects still
+     hand out JWTs. Both shapes have a browser-safe and a secret form. */
+  if (/^sb_publishable_/.test(key)) return 'anon';
+  if (/^sb_secret_/.test(key))      return 'service_role';
   try {
     const p = JSON.parse(atob(key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     return p.role || null;
@@ -123,16 +127,17 @@ async function diagnose() {
   const role = keyRole(c.anonKey);
   if (role === 'service_role') {
     add('Correct key used', false,
-        'That is the service_role key. It ignores every security rule and must never be in a website. Replace it with the anon public key and rotate it in Supabase now.', true);
+        'That is a secret key. It ignores every security rule and must never sit in a website. Replace it with the publishable (anon) key and rotate the secret one in Supabase now.', true);
     return out;
   }
   add('Correct key used', role === 'anon', role === 'anon'
-    ? 'anon public key'
-    : 'Could not read the key. Copy the anon public key from Project Settings - API.');
+    ? (/^sb_publishable_/.test(c.anonKey) ? 'publishable key' : 'anon public key')
+    : 'Could not read the key. Copy the publishable key from Project Settings - API Keys.');
 
   try {
     const r = await fetch(`${base()}/rest/v1/`, { headers: headers() });
-    add('Project reachable', r.status < 500, `HTTP ${r.status}`);
+    add('Project reachable', r.status < 500,
+        r.status < 500 ? 'Answering normally' : `The project returned HTTP ${r.status}`);
   } catch (e) {
     add('Project reachable', false, 'No response. Check the URL.');
     return out;
