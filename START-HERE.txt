@@ -1,0 +1,49 @@
+JOYSHINE — everything, in one folder
+====================================
+
+The live shop:   https://joyshine.in
+The panel:       https://joyshine.in/admin.html
+The repository:  https://github.com/rajuvegeshana/Joyshine
+
+WHAT TO DO ON THE OTHER COMPUTER
+--------------------------------
+1. Unzip this anywhere.
+2. Open a terminal in the unzipped folder.
+3. Start Claude Code there:   claude
+
+That is all. Claude reads CLAUDE.md by itself the moment it opens this
+folder, so it will already know what the project is, how it is deployed,
+and which rules it must not break. Ask it to read HANDOFF.md as well and
+it will have the whole picture — every file, every database table, every
+feature, what is finished and what is still waiting on you.
+
+You do not need to explain the project again.
+
+The git history came with it, so `git log`, `git diff` and `git push`
+all work from here. Pushing needs your GitHub sign-in on that machine:
+
+    gh auth login          (once, choose rajuvegeshana)
+
+WHAT IS NOT IN THIS ZIP, ON PURPOSE
+-----------------------------------
+No passwords and no secret keys. Specifically:
+
+  - your Supabase sign-in password
+  - the Supabase service_role key   (never needed by this site)
+  - the Razorpay Key Secret         (never leaves Razorpay)
+
+The Supabase *publishable* key is in assets/js/config.js and belongs
+there — it is public by design and opens nothing on its own. Every rule
+about who may read or write what lives in the database itself.
+
+Your Supabase sign-in is under jaoyshine.3d@gmail.com — note the extra
+'a'. It is not the shop's address, and that has caused confusion before.
+
+READ IN THIS ORDER
+------------------
+  CLAUDE.md      the rules — read automatically by Claude
+  HANDOFF.md     the whole picture
+  MANUAL.md      your guide to the control panel
+  README.md      setup, hosting, domain, Supabase
+  CHEATSHEET.md  one page: where things are, what they cost, what to avoid
+  BRIEF.md       the original brief this was built from
