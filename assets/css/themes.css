@@ -78,8 +78,8 @@
   --focus: #ff3d8b;
   --layer-line: rgba(44,20,47,.2);
   --search-bg: #f1e7d6;
-  --rig-line: rgba(44,20,47,.28);
-  --rig-ink: rgba(74,43,77,.42);
+  --rig-line: rgba(44,20,47,0.14);
+  --rig-ink: rgba(74,43,77,0.21);
   --rig-ink-2: #2c142f;
 }
 :root[data-theme="retro"] .card__art { background-image:
@@ -154,8 +154,8 @@
   --focus: #7cf8ff;
   --layer-line: rgba(255,255,255,.22);
   --search-bg: #100c1e;
-  --rig-line: rgba(190,175,255,.2);
-  --rig-ink: rgba(190,175,255,.34);
+  --rig-line: rgba(190,175,255,0.1);
+  --rig-ink: rgba(190,175,255,0.17);
   --rig-ink-2: #7cf8ff;
 }
 /* wide caps need air */
@@ -244,8 +244,8 @@
   --focus: #9b7bff;
   --layer-line: rgba(255,255,255,.5);
   --search-bg: #edeaf2;
-  --rig-line: rgba(87,74,114,.2);
-  --rig-ink: rgba(87,74,114,.3);
+  --rig-line: rgba(87,74,114,0.1);
+  --rig-ink: rgba(87,74,114,0.15);
   --rig-ink-2: #9b7bff;
 }
 :root[data-theme="clay"] .card { border: 0; }
@@ -308,7 +308,7 @@
   --ring: rgba(255,122,24,.32); --focus: #9ae658;
   --layer-line: rgba(255,214,170,.2);
   --search-bg: #1a1322;
-  --rig-line: rgba(255,122,24,.26); --rig-ink: rgba(230,220,240,.3); --rig-ink-2: #ff7a18;
+  --rig-line: rgba(255,122,24,0.13); --rig-ink: rgba(230,220,240,0.15); --rig-ink-2: #ff7a18;
 }
 :root[data-theme="halloween"] .card__art::before {
   content: ''; position: absolute; inset: 0;
@@ -369,7 +369,7 @@
   --ring: rgba(255,184,46,.34); --focus: #ffb82e;
   --layer-line: rgba(255,226,160,.22);
   --search-bg: #150e33;
-  --rig-line: rgba(255,184,46,.3); --rig-ink: rgba(239,230,212,.3); --rig-ink-2: #ffb82e;
+  --rig-line: rgba(255,184,46,0.15); --rig-ink: rgba(239,230,212,0.15); --rig-ink-2: #ffb82e;
 }
 :root[data-theme="diwali"] .printer__glow,
 :root[data-theme="diwali"] .card__art { filter: saturate(1.08); }
@@ -429,7 +429,7 @@
   --ring: rgba(255,62,146,.3); --focus: #ff3e92;
   --layer-line: rgba(23,18,43,.18);
   --search-bg: #fdf4ef;
-  --rig-line: rgba(23,18,43,.26); --rig-ink: rgba(42,36,64,.4); --rig-ink-2: #ff3e92;
+  --rig-line: rgba(23,18,43,0.13); --rig-ink: rgba(42,36,64,0.2); --rig-ink-2: #ff3e92;
 }
 
 /* ===========================================================
@@ -486,7 +486,7 @@
   --ring: rgba(22,86,60,.28); --focus: #16563c;
   --layer-line: rgba(20,35,28,.16);
   --search-bg: #f1ece2;
-  --rig-line: rgba(20,35,28,.2); --rig-ink: rgba(45,58,51,.32); --rig-ink-2: #16563c;
+  --rig-line: rgba(20,35,28,0.1); --rig-ink: rgba(45,58,51,0.16); --rig-ink-2: #16563c;
 }
 
 /* ===========================================================
@@ -543,7 +543,7 @@
   --ring: rgba(255,61,143,.32); --focus: #ffc43d;
   --layer-line: rgba(255,232,180,.22);
   --search-bg: #170c3a;
-  --rig-line: rgba(255,196,61,.3); --rig-ink: rgba(236,228,255,.3); --rig-ink-2: #ffc43d;
+  --rig-line: rgba(255,196,61,0.15); --rig-ink: rgba(236,228,255,0.15); --rig-ink-2: #ffc43d;
 }
 
 /* ===========================================================
@@ -601,7 +601,7 @@
   --ring: rgba(232,58,46,.28); --focus: #e83a2e;
   --layer-line: rgba(44,18,8,.2);
   --search-bg: #fdf0da;
-  --rig-line: rgba(44,18,8,.26); --rig-ink: rgba(74,35,18,.4); --rig-ink-2: #e83a2e;
+  --rig-line: rgba(44,18,8,0.13); --rig-ink: rgba(74,35,18,0.2); --rig-ink-2: #e83a2e;
 }
 
 /* ===========================================================
@@ -658,7 +658,7 @@
   --ring: rgba(0,194,206,.32); --focus: #ffc740;
   --layer-line: rgba(200,240,255,.2);
   --search-bg: #0e253f;
-  --rig-line: rgba(0,194,206,.28); --rig-ink: rgba(223,234,245,.3); --rig-ink-2: #ffc740;
+  --rig-line: rgba(0,194,206,0.14); --rig-ink: rgba(223,234,245,0.15); --rig-ink-2: #ffc740;
 }
 
 /* ===========================================================
@@ -717,7 +717,7 @@
   --ring: rgba(0,0,128,.24); --focus: #000080;
   --layer-line: rgba(29,43,69,.15);
   --search-bg: #f3f4f1;
-  --rig-line: rgba(29,43,69,.2); --rig-ink: rgba(29,43,69,.3); --rig-ink-2: #ff9933;
+  --rig-line: rgba(29,43,69,0.1); --rig-ink: rgba(29,43,69,0.15); --rig-ink-2: #ff9933;
 }
 
 /* ===========================================================
@@ -772,7 +772,7 @@
   --ring: rgba(214,51,84,.28); --focus: #d63354;
   --layer-line: rgba(92,35,51,.16);
   --search-bg: #ffeaee;
-  --rig-line: rgba(214,51,84,.24); --rig-ink: rgba(92,35,51,.4); --rig-ink-2: #d63354;
+  --rig-line: rgba(214,51,84,0.12); --rig-ink: rgba(92,35,51,0.2); --rig-ink-2: #d63354;
 }
 
 /* ===========================================================
@@ -827,7 +827,7 @@
   --ring: rgba(176,132,48,.3); --focus: #b08430;
   --layer-line: rgba(63,58,51,.14);
   --search-bg: #f6efe1;
-  --rig-line: rgba(176,132,48,.28); --rig-ink: rgba(63,58,51,.38); --rig-ink-2: #b08430;
+  --rig-line: rgba(176,132,48,0.14); --rig-ink: rgba(63,58,51,0.19); --rig-ink-2: #b08430;
 }
 
 /* ===========================================================
@@ -882,7 +882,7 @@
   --ring: rgba(217,144,63,.32); --focus: #f2d6a8;
   --layer-line: rgba(242,214,168,.18);
   --search-bg: #3a251a;
-  --rig-line: rgba(217,144,63,.26); --rig-ink: rgba(236,217,198,.32); --rig-ink-2: #d9903f;
+  --rig-line: rgba(217,144,63,0.13); --rig-ink: rgba(236,217,198,0.16); --rig-ink-2: #d9903f;
 }
 
 /* ===========================================================
@@ -937,7 +937,7 @@
   --ring: rgba(201,123,69,.3); --focus: #c97b45;
   --layer-line: rgba(90,66,48,.14);
   --search-bg: #f8ecdd;
-  --rig-line: rgba(201,123,69,.24); --rig-ink: rgba(90,66,48,.38); --rig-ink-2: #c97b45;
+  --rig-line: rgba(201,123,69,0.12); --rig-ink: rgba(90,66,48,0.19); --rig-ink-2: #c97b45;
 }
 
 /* ===========================================================
@@ -992,7 +992,7 @@
   --ring: rgba(46,74,140,.28); --focus: #2e4a8c;
   --layer-line: rgba(47,58,84,.14);
   --search-bg: #e9eef8;
-  --rig-line: rgba(46,74,140,.24); --rig-ink: rgba(47,58,84,.38); --rig-ink-2: #2e4a8c;
+  --rig-line: rgba(46,74,140,0.12); --rig-ink: rgba(47,58,84,0.19); --rig-ink-2: #2e4a8c;
 }
 
 /* ===========================================================
@@ -1047,7 +1047,7 @@
   --ring: rgba(192,106,76,.28); --focus: #c06a4c;
   --layer-line: rgba(91,64,56,.14);
   --search-bg: #f6e9e1;
-  --rig-line: rgba(192,106,76,.22); --rig-ink: rgba(91,64,56,.36); --rig-ink-2: #c06a4c;
+  --rig-line: rgba(192,106,76,0.11); --rig-ink: rgba(91,64,56,0.18); --rig-ink-2: #c06a4c;
 }
 
 /* ===========================================================
@@ -1102,7 +1102,7 @@
   --ring: rgba(226,44,72,.3); --focus: #e22c48;
   --layer-line: rgba(90,31,42,.18);
   --search-bg: #ffe9e2;
-  --rig-line: rgba(60,13,24,.26); --rig-ink: rgba(90,31,42,.4); --rig-ink-2: #e22c48;
+  --rig-line: rgba(60,13,24,0.13); --rig-ink: rgba(90,31,42,0.2); --rig-ink-2: #e22c48;
 }
 
 /* ===========================================================
@@ -1157,5 +1157,5 @@
   --ring: rgba(198,28,62,.3); --focus: #c61c3e;
   --layer-line: rgba(89,32,47,.16);
   --search-bg: #ffecf0;
-  --rig-line: rgba(198,28,62,.26); --rig-ink: rgba(89,32,47,.4); --rig-ink-2: #c61c3e;
+  --rig-line: rgba(198,28,62,0.13); --rig-ink: rgba(89,32,47,0.2); --rig-ink-2: #c61c3e;
 }
