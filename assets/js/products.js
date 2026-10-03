@@ -627,6 +627,24 @@ window.PRODUCTS = [
     bulk: true, personalise: { label: 'Name to print', max: 14, placeholder: 'e.g. HARIKRISHNA' },
     reviews: [],
   },
+  {
+    id: 'tractor-tyre-keychain', name: 'Tractor Tyre Keychain', cat: 'keys',
+    photo: 'product-photos/tyre-keychain-hero.jpg',
+    price: 249,
+    tags: ['bestseller', 'gift', 'quirky', 'personalised'],
+    blurb: 'A miniature tractor tyre on a split ring. Printed with your business name or any text — front and back.',
+    story: 'Tyre shops, farm equipment dealers and automobile enthusiasts order these by the box. The deep tread pattern is printed at 0.16 mm layers so every lug is sharp. Your name wraps the sidewall in raised dual-colour lettering — readable from across the room.',
+    specs: { Material: 'Dual PLA', Layer: '0.16 mm', Print: '55 m', Size: '58 mm diameter' },
+    variants: { colour: COLOURS },
+    details: D(
+      'Dual-colour PLA with a steel split ring and chain.',
+      '58 mm outer diameter, 22 mm wide. Fits standard key rings.',
+      CARE_STD, PROD_STD, SHIP_STD
+    ),
+    bulk: true,
+    personalise: { label: 'Text for the sidewall', max: 30, placeholder: 'e.g. PRASANTHI TYRES · 9980463999' },
+    reviews: [],
+  },
 
   /* ===== CUSTOM ============================================ */
   {
