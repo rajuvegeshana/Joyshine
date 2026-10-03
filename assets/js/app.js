@@ -150,6 +150,71 @@ function render() {
   if (pdp) GA.event('view_item', { currency: CFG.currency, value: S.unitPrice(pdp.p, pdp.v),
                                    items: [GA.item(pdp.p, 1, S.variantText(pdp.p, pdp.v))] });
   scrollTo({ top: 0, behavior: 'instant' });
+  startRailAutoScroll(view);
+}
+
+/* auto-scroll product rails on the home page.
+   Pauses while the user hovers or focuses a card, resumes after.
+   Uses requestAnimationFrame with a visibility fallback so it
+   never fires wastefully in a background tab. */
+function startRailAutoScroll(view) {
+  const SPEED = 0.6;           // px per animation frame (~36px/s at 60fps)
+  const PAUSE_AFTER_USER = 4000; // ms before resuming after user swipe
+
+  const rails = [...view.querySelectorAll('.rail')];
+  if (!rails.length) return;
+
+  const timers = new Map();
+
+  rails.forEach(rail => {
+    const track = rail.querySelector('.rail__track');
+    if (!track) return;
+
+    let paused = false, rafId = null;
+
+    function step() {
+      if (!paused && document.visibilityState !== 'hidden') {
+        const max = track.scrollWidth - rail.clientWidth;
+        if (max > 0) {
+          rail.scrollLeft += SPEED;
+          if (rail.scrollLeft >= max) rail.scrollLeft = 0;
+        }
+      }
+      rafId = requestAnimationFrame(step);
+    }
+
+    function pause() {
+      paused = true;
+      clearTimeout(timers.get(rail));
+    }
+    function resume() {
+      clearTimeout(timers.get(rail));
+      timers.set(rail, setTimeout(() => { paused = false; }, PAUSE_AFTER_USER));
+    }
+
+    rail.addEventListener('mouseenter', pause);
+    rail.addEventListener('mouseleave', resume);
+    rail.addEventListener('focusin', pause);
+    rail.addEventListener('focusout', resume);
+    rail.addEventListener('touchstart', pause, { passive: true });
+    rail.addEventListener('touchend', resume, { passive: true });
+    /* if the user scrolls the rail manually, give them time before resuming */
+    rail.addEventListener('scroll', () => {
+      clearTimeout(timers.get(rail));
+      timers.set(rail, setTimeout(() => { paused = false; }, PAUSE_AFTER_USER));
+    }, { passive: true });
+
+    /* stop on reduced-motion preference */
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    rafId = requestAnimationFrame(step);
+
+    /* clean up when the view is replaced (next hashchange) */
+    addEventListener('hashchange', () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timers.get(rail));
+    }, { once: true });
+  });
 }
 
 /* the policy links only appear once the pages are actually complete */

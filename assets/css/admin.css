@@ -684,4 +684,84 @@ li[data-state="bad"] .ad-steps__dot::after {
 .ad-catbars { display: grid; gap: 10px; }
 .ad-catbar { display: grid; grid-template-columns: 9rem minmax(0, 1fr) 5.5rem; gap: 12px; align-items: center; font-size: .86rem; }
 .ad-catbar b { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ===== MODAL POPUP ===================================== */
+.ad-modal-scrim {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgb(0 0 0 / .45); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem; animation: adScrimIn .18s ease;
+}
+@keyframes adScrimIn { from { opacity: 0 } to { opacity: 1 } }
+.ad-modal {
+  background: var(--c-surface); border-radius: var(--r-card);
+  box-shadow: var(--shadow-2); width: 100%; max-width: 640px;
+  max-height: 90dvh; display: flex; flex-direction: column;
+  animation: adModalIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes adModalIn { from { transform: scale(.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+.ad-modal__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 20px 24px 0; flex-shrink: 0;
+}
+.ad-modal__head h3 { margin: 0; font-size: 1.1rem; }
+.ad-modal__body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.ad-modal__foot {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--c-line); flex-shrink: 0;
+}
+
+/* ===== CATALOGUE TABLE ================================ */
+.ad-cattable { display: flex; flex-direction: column; gap: 0; }
+.ad-catrow {
+  border: 1px solid var(--c-line); border-radius: var(--r-base);
+  margin-bottom: 8px; overflow: hidden;
+  background: var(--c-surface);
+}
+.ad-catrow__head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer;
+  background: var(--c-surface-2);
+  transition: background .15s;
+}
+.ad-catrow__head:hover { background: var(--c-primary-soft); }
+.ad-catrow__icon {
+  width: 36px; height: 36px; flex: none;
+  border-radius: 8px; background: var(--c-bg);
+  display: grid; place-items: center; overflow: hidden;
+}
+.ad-catrow__icon svg, .ad-catrow__icon img { width: 22px; height: 22px; }
+.ad-catrow__name { font-weight: 600; font-size: .95rem; flex: 1; }
+.ad-catrow__count { font-size: .78rem; color: var(--c-text-3); margin-right: 4px; }
+.ad-catrow__btns { display: flex; gap: 6px; }
+.ad-catrow__body { padding: 0 0 8px; }
+.ad-catrow__body[hidden] { display: none; }
+
+.ad-prodtable { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.ad-prodtable th {
+  text-align: left; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--c-text-3); padding: 8px 14px; border-bottom: 1px solid var(--c-line);
+}
+.ad-prodtable td { padding: 9px 14px; border-bottom: 1px solid var(--c-line); vertical-align: middle; }
+.ad-prodtable tr:last-child td { border-bottom: none; }
+.ad-prodtable tr:hover td { background: var(--c-surface-2); }
+.ad-prodthumb { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; background: var(--c-bg); flex: none; }
+.ad-prodthumb-wrap { width: 36px; height: 36px; border-radius: 6px; background: var(--c-bg); display: grid; place-items: center; overflow: hidden; }
+.ad-prodthumb-wrap svg { width: 26px; height: 26px; }
+.ad-drag-handle { cursor: grab; color: var(--c-text-3); padding: 4px; user-select: none; }
+.ad-drag-handle:active { cursor: grabbing; }
+.ad-prodtable .dragging { opacity: .4; }
+.ad-prodtable .drag-over td { border-top: 2px solid var(--c-primary); }
+
+/* icon upload area */
+.ad-iconup {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.ad-iconup__preview {
+  width: 54px; height: 54px; border-radius: 10px;
+  border: 2px dashed var(--c-line); display: grid; place-items: center;
+  background: var(--c-bg); overflow: hidden;
+}
+.ad-iconup__preview svg, .ad-iconup__preview img { width: 34px; height: 34px; }
+.ad-iconup__preview.has-icon { border-style: solid; border-color: var(--c-primary); }
 @media (max-width: 620px) { .ad-catbar { grid-template-columns: 1fr auto; } .ad-catbar .ad-bar { grid-column: 1 / -1; } }

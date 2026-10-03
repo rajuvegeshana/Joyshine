@@ -41,25 +41,149 @@ async function seed() {
   await pull(); paintProducts();
 }
 
+/* ---------- modal helpers -------------------------------- */
+function openModal(html, onSave) {
+  closeModal();
+  const scrim = document.createElement('div');
+  scrim.className = 'ad-modal-scrim';
+  scrim.innerHTML = `<div class="ad-modal" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(scrim);
+  /* close on scrim click, not on modal click */
+  scrim.addEventListener('click', e => { if (e.target === scrim) closeModal(); });
+  scrim.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  if (onSave) scrim._onSave = onSave;
+  /* wire the footer buttons */
+  scrim.addEventListener('click', e => {
+    const act = e.target.closest('[data-x]')?.dataset.x;
+    if (act === 'modal-save') { if (scrim._onSave) scrim._onSave(); }
+    if (act === 'modal-cancel') closeModal();
+  });
+}
+
+function closeModal() {
+  const s = document.querySelector('.ad-modal-scrim');
+  if (s) s.remove();
+}
+
 /* ---------- products list -------------------------------- */
 function paintProducts(filter = '') {
   const box = $('#pane-products');
   if (!box) return;
   if (!inn()) { box.innerHTML = gate('manage the catalogue'); return; }
 
-  if (editing) { box.innerHTML = productForm(editing); return; }
-
   const f = filter.trim().toLowerCase();
-  const list = PRODUCTS.filter(r => !f || (r.data.name || '').toLowerCase().includes(f) || r.id.includes(f));
+
+  /* build category -> products map */
+  const catMap = {};
+  const allCats = CATS.length ? CATS : (window.CATEGORIES || []);
+  allCats.forEach(c => { catMap[c.id] = []; });
+  PRODUCTS.forEach(r => {
+    const cid = r.data.cat || '';
+    if (!catMap[cid]) catMap[cid] = [];
+    catMap[cid].push(r);
+  });
+
+  const thumbHtml = r => {
+    const p = r.data;
+    if (p.photo) return `<img src="${esc(p.photo)}" alt="">`;
+    const art = p.artKey && window.ART && window.ART[p.artKey];
+    if (art) return art;
+    return '<span style="opacity:.3">—</span>';
+  };
+
+  const prodRows = catId => {
+    let rows = catMap[catId] || [];
+    if (f) rows = rows.filter(r => (r.data.name || '').toLowerCase().includes(f) || r.id.includes(f));
+    if (!rows.length) return '<tr><td colspan="5" class="ad-empty" style="padding:.6rem .8rem">No products in this category.</td></tr>';
+    return rows.map(r => {
+      const p = r.data;
+      return `<tr draggable="true" data-pid="${esc(r.id)}" data-cat="${esc(catId)}">
+        <td class="ad-drag-handle" title="Drag to reorder">⠇</td>
+        <td><div class="ad-prodthumb-wrap"><div class="ad-prodthumb">${thumbHtml(r)}</div></div></td>
+        <td>${esc(p.name || r.id)}</td>
+        <td>${p.quote ? '<span class="ad-pill ad-pill--clay">quoted</span>' : esc(p.price ? '₹' + p.price : '—')}</td>
+        <td style="white-space:nowrap">
+          ${r.hidden ? '<span class="ad-pill ad-pill--need" style="margin-right:.3rem">hidden</span>' : ''}
+          <button class="ad-o__more" data-x="prodedit" data-pid="${esc(r.id)}">Edit</button>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  const catRows = allCats.map((c, ci) => {
+    const icon = A() ? A().getS('catIcons.' + c.id, '') : '';
+    const count = (catMap[c.id] || []).length;
+    return `<div class="ad-catrow" data-cid="${esc(c.id)}">
+      <div class="ad-catrow__head">
+        <span class="ad-catrow__icon" aria-hidden="true">${icon || '<span style="opacity:.25">□</span>'}</span>
+        <span class="ad-catrow__name">${esc(c.name)}</span>
+        <span class="ad-catrow__count">${count} product${count === 1 ? '' : 's'}</span>
+        <span class="ad-catrow__btns">
+          <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="catup" data-cid="${esc(c.id)}"${ci === 0 ? ' disabled' : ''}>↑</button>
+          <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="catdown" data-cid="${esc(c.id)}"${ci === allCats.length - 1 ? ' disabled' : ''}>↓</button>
+          <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="catedit" data-cid="${esc(c.id)}">Edit</button>
+          <button class="ad-btn ad-btn--primary ad-btn--sm" data-x="prodnew" data-cat="${esc(c.id)}">+ Product</button>
+        </span>
+      </div>
+      <div class="ad-catrow__body">
+        <table class="ad-prodtable">
+          <thead><tr>
+            <th style="width:2rem"></th>
+            <th style="width:4rem">Photo</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th></th>
+          </tr></thead>
+          <tbody data-cattbody="${esc(c.id)}">${prodRows(c.id)}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* products without a matching category */
+  const orphanCids = Object.keys(catMap).filter(cid => !allCats.find(c => c.id === cid) && (catMap[cid] || []).length);
+  const orphanRows = orphanCids.flatMap(cid => catMap[cid]).filter(r => !f ||
+    (r.data.name || '').toLowerCase().includes(f) || r.id.includes(f));
+  const orphanSection = orphanRows.length ? `
+    <div class="ad-catrow" data-cid="__orphan__">
+      <div class="ad-catrow__head">
+        <span class="ad-catrow__icon" aria-hidden="true"><span style="opacity:.25">?</span></span>
+        <span class="ad-catrow__name">Uncategorised</span>
+        <span class="ad-catrow__count">${orphanRows.length}</span>
+        <span class="ad-catrow__btns"></span>
+      </div>
+      <div class="ad-catrow__body">
+        <table class="ad-prodtable"><thead><tr>
+          <th style="width:2rem"></th><th style="width:4rem">Photo</th>
+          <th>Name</th><th>Price</th><th></th>
+        </tr></thead>
+        <tbody>${orphanRows.map(r => {
+          const p = r.data;
+          return `<tr data-pid="${esc(r.id)}" data-cat="">
+            <td class="ad-drag-handle">⠇</td>
+            <td><div class="ad-prodthumb-wrap"><div class="ad-prodthumb">${thumbHtml(r)}</div></div></td>
+            <td>${esc(p.name || r.id)}</td>
+            <td>${p.quote ? '<span class="ad-pill ad-pill--clay">quoted</span>' : esc(p.price ? '₹' + p.price : '—')}</td>
+            <td><button class="ad-o__more" data-x="prodedit" data-pid="${esc(r.id)}">Edit</button></td>
+          </tr>`;
+        }).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : '';
 
   box.innerHTML = `
     <div class="ad-head">
       <div><h2>Products</h2><p>${PRODUCTS.length} in the database. The shop reads these; the files are the fallback.</p></div>
       <div class="ad-btns" style="margin:0">
         <label class="ad-search"><input type="search" id="prodFilter" value="${esc(filter)}" placeholder="Filter…"></label>
-        <button class="ad-btn ad-btn--primary" data-x="new">Add a product</button>
+        <button class="ad-btn ad-btn--ghost" data-x="catadd">+ Category</button>
+        <button class="ad-btn ad-btn--ghost" data-x="xlsxout">↓ Export</button>
+        <button class="ad-btn ad-btn--ghost" data-x="xlsxinprod">↑ Import</button>
+        <input type="file" id="xlsxFileProd" accept=".xlsx,.xls,.csv" hidden>
+        <button class="ad-btn ad-btn--primary" data-x="prodnew" data-cat="">+ Product</button>
       </div>
     </div>
+
     <div class="ad-card">
       <h3>Line-up</h3>
       <p class="ad-p">The order the shop leads with. Chosen products come first, in this order,
@@ -71,28 +195,81 @@ function paintProducts(filter = '') {
 
     ${!PRODUCTS.length ? `<div class="ad-card">
       <h3>Start from what you already have</h3>
-      <p class="ad-p">The database is empty, so the shop is showing the ${window.PRODUCTS.length} placeholder
+      <p class="ad-p">The database is empty, so the shop is showing the ${(window.PRODUCTS || []).length} placeholder
         products from the files. Copy them in, then edit them into your real catalogue — it is far quicker
         than typing thirty products from scratch.</p>
       <button class="ad-btn ad-btn--primary" data-x="seed">Copy the file catalogue in</button>
     </div>` : ''}
-    <div class="ad-occ">
-      ${list.map(r => {
-        const p = r.data;
-        return `<div class="ad-o${r.hidden ? '' : ' on'}" data-pid="${esc(r.id)}">
-          <div class="ad-o__bar">
-            <span class="ad-o__name">${esc(p.name || r.id)}</span>
-            ${r.hidden ? '<span class="ad-pill ad-pill--need">hidden</span>' : ''}
-            <span class="ad-pill ad-pill--clay">${esc(catName(p.cat))}</span>
-            <span class="ad-o__when">${p.quote ? 'quoted' : money(p.price)}</span>
-            <button class="ad-o__more" data-x="edit">Edit</button>
-          </div>
-        </div>`;
-      }).join('') || '<p class="ad-empty">Nothing matches that.</p>'}
+
+    <div id="catRowsWrap">
+      ${catRows}
+      ${orphanSection}
+      ${!allCats.length && !orphanRows.length ? '<div class="ad-card"><p class="ad-empty">No categories yet. Add one to organise your products.</p></div>' : ''}
     </div>`;
+
+  wireProducts();
 }
 
-const catName = id => (CATS.find(c => c.id === id) || window.CATEGORIES.find(c => c.id === id) || {}).name || id || '—';
+/* wire drag-to-reorder on product rows */
+function wireProducts() {
+  let dragSrc = null;
+
+  $$('[data-cattbody]').forEach(tbody => {
+    tbody.addEventListener('dragstart', e => {
+      const row = e.target.closest('tr[data-pid]');
+      if (!row) return;
+      dragSrc = row;
+      row.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    tbody.addEventListener('dragend', e => {
+      const row = e.target.closest('tr[data-pid]');
+      if (row) row.style.opacity = '';
+      dragSrc = null;
+    });
+    tbody.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const row = e.target.closest('tr[data-pid]');
+      if (row && dragSrc && row !== dragSrc) {
+        const rect = row.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (e.clientY < mid) tbody.insertBefore(dragSrc, row);
+        else tbody.insertBefore(dragSrc, row.nextSibling);
+      }
+    });
+    tbody.addEventListener('drop', async e => {
+      e.preventDefault();
+      if (!dragSrc) return;
+      const rows = [...tbody.querySelectorAll('tr[data-pid]')];
+      const updates = rows.map((tr, i) => ({ id: tr.dataset.pid, sort: i }));
+      updates.forEach(u => {
+        const r = PRODUCTS.find(p => p.id === u.id);
+        if (r) r.sort = u.sort;
+      });
+      try {
+        await CLOUD.upsert('products', updates.map(u => ({ id: u.id, sort: u.sort })));
+        toast('Order saved');
+      } catch (err) {
+        toast('Could not save order: ' + err.message);
+      }
+      dragSrc.style.opacity = '';
+      dragSrc = null;
+    });
+  });
+
+  /* wire the in-pane xlsx file input */
+  const fp = $('#xlsxFileProd');
+  if (fp && !fp.dataset.wired) {
+    fp.dataset.wired = '1';
+    fp.addEventListener('change', e => {
+      const f = e.target.files[0]; e.target.value = '';
+      if (f) importSheet(f);
+    });
+  }
+}
+
+const catName = id => (CATS.find(c => c.id === id) || (window.CATEGORIES || []).find(c => c.id === id) || {}).name || id || '—';
 
 /* ---------- the line-up ----------------------------------
    Which products lead the shop, and in what order — for every
@@ -179,15 +356,6 @@ function productForm(r) {
   const has = t => (p.tags || []).includes(t);
 
   return `
-  <div class="ad-head">
-    <div><h2>${r.isNew ? 'New product' : esc(p.name || r.id)}</h2>
-      <p>${r.isNew ? 'It goes live as soon as you save.' : 'Changes reach the shop the moment you save.'}</p></div>
-    <div class="ad-btns" style="margin:0">
-      <button class="ad-btn ad-btn--ghost" data-x="cancel">Back</button>
-      <button class="ad-btn ad-btn--primary" data-x="save">Save</button>
-    </div>
-  </div>
-
   <div class="ad-cards">
     <div class="ad-card">
       <h3>The basics</h3>
@@ -286,12 +454,6 @@ function productForm(r) {
     <label class="ad-field"><span>Care</span><textarea id="d_care" rows="2">${esc(d.care)}</textarea></label>
     <label class="ad-field"><span>Production</span><textarea id="d_production" rows="2">${esc(d.production)}</textarea></label>
     <label class="ad-field" style="margin-bottom:0"><span>Shipping</span><textarea id="d_shipping" rows="2">${esc(d.shipping)}</textarea></label>
-  </div>
-
-  <div class="ad-card">
-    <h3>Remove it</h3>
-    <p class="ad-p">Hiding keeps the product and takes it off the shop. Deleting cannot be undone.</p>
-    <button class="ad-btn ad-btn--warn" data-x="delete"${r.isNew ? ' disabled' : ''}>Delete this product</button>
   </div>`;
 }
 
@@ -448,6 +610,25 @@ function readForm(r) {
   return { id: r.id || slug(name), data, sort: n('f_sort') ?? 0, hidden: on('f_hidden') };
 }
 
+/* open the product add/edit form in a modal overlay */
+function openProductModal() {
+  if (!editing) return;
+  openModal(`
+    <div class="ad-modal__head">
+      <h3>${editing.isNew ? 'New product' : esc((editing.data || {}).name || editing.id)}</h3>
+    </div>
+    <div class="ad-modal__body">
+      ${productForm(editing)}
+    </div>
+    <div class="ad-modal__foot">
+      <button class="ad-btn ad-btn--ghost" data-x="cancel">Cancel</button>
+      ${!editing.isNew ? `<button class="ad-btn ad-btn--warn" data-x="delete">Delete</button>` : ''}
+      <button class="ad-btn ad-btn--primary" data-x="save">Save</button>
+    </div>`, saveProduct);
+  /* after the modal DOM is in place, wire the sub-editors */
+  setTimeout(() => { paintCustom(); paintSizes(); paintMats(); paintImage(); }, 0);
+}
+
 async function saveProduct() {
   const row = readForm(editing);
   if (!row.data.name) { toast('Give it a name first'); return; }
@@ -455,7 +636,8 @@ async function saveProduct() {
   await CLOUD.upsert('products', row);
   toast(`${row.data.name} saved`);
   editing = null;
-  await pull(); paintProducts();
+  closeModal();
+  await pull(); paintProducts(); paintLineup();
 }
 
 async function deleteProduct(id) {
@@ -463,6 +645,7 @@ async function deleteProduct(id) {
   await CLOUD.remove('products', 'id=eq.' + encodeURIComponent(id));
   toast('Deleted');
   editing = null;
+  closeModal();
   await pull(); paintProducts();
 }
 
@@ -918,20 +1101,162 @@ function wire(t) {
     if (confirm('Delete the code ' + code + '?')) CLOUD.remove('offers', 'code=eq.' + encodeURIComponent(code)).then(paintOffers);
     return true;
   }
+  /* --- category management --- */
+  if (act === 'catadd') {
+    openModal(`
+      <div class="ad-modal__head"><h3>Add a category</h3></div>
+      <div class="ad-modal__body">
+        <label class="ad-field"><span>Name</span><input id="mc_name" placeholder="e.g. Keychains"></label>
+        <label class="ad-field"><span>Note (shown in the shop, optional)</span><textarea id="mc_note" rows="2"></textarea></label>
+        <div class="ad-field">
+          <span>Icon (SVG or Lottie JSON)</span>
+          <div class="ad-iconup" id="mc_iconup">
+            <input type="file" id="mc_iconfile" accept=".svg,.json" hidden>
+            <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="caticon">Upload icon</button>
+            <div class="ad-iconup__preview" id="mc_iconprev"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ad-modal__foot">
+        <button class="ad-btn ad-btn--ghost" data-x="modal-cancel">Cancel</button>
+        <button class="ad-btn ad-btn--primary" data-x="modal-save">Add category</button>
+      </div>`, async () => {
+      const name = document.querySelector('#mc_name')?.value.trim();
+      if (!name) { toast('Give the category a name'); return; }
+      const note = document.querySelector('#mc_note')?.value.trim() || '';
+      const id = slug(name);
+      const sort = (CATS.length ? Math.max(...CATS.map(c => c.sort || 0)) + 1 : 0);
+      const iconRaw = document.querySelector('#mc_iconprev')?.dataset.iconRaw || '';
+      try {
+        await CLOUD.upsert('categories', { id, name, note, sort });
+        if (iconRaw && A()) A().setS('catIcons.' + id, iconRaw);
+        toast(name + ' added');
+        closeModal();
+        await pull(); paintProducts();
+      } catch (e) { toast(e.message); }
+    });
+    /* wire the icon upload button inside the newly-opened modal */
+    setTimeout(() => {
+      const btn = document.querySelector('#mc_iconup [data-x="caticon"]');
+      const inp = document.querySelector('#mc_iconfile');
+      if (btn && inp) btn.addEventListener('click', () => inp.click());
+      if (inp) inp.addEventListener('change', async e => {
+        const f = e.target.files[0]; e.target.value = '';
+        if (!f) return;
+        const txt = await f.text();
+        const clean = f.name.endsWith('.svg') ? SKIN.cleanSvg(txt) : txt;
+        const prev = document.querySelector('#mc_iconprev');
+        if (prev) { prev.innerHTML = clean; prev.dataset.iconRaw = clean; }
+      });
+    }, 0);
+    return true;
+  }
+
+  if (act === 'catedit') {
+    const cid = t.closest('[data-cid]')?.dataset.cid || t.dataset.cid;
+    const cat = CATS.find(c => c.id === cid) || (window.CATEGORIES || []).find(c => c.id === cid);
+    if (!cat) return true;
+    const existingIcon = A() ? A().getS('catIcons.' + cid, '') : '';
+    openModal(`
+      <div class="ad-modal__head"><h3>Edit category</h3></div>
+      <div class="ad-modal__body">
+        <label class="ad-field"><span>Name</span><input id="mc_name" value="${esc(cat.name)}"></label>
+        <label class="ad-field"><span>Note (optional)</span><textarea id="mc_note" rows="2">${esc(cat.note || '')}</textarea></label>
+        <div class="ad-field">
+          <span>Icon (SVG or Lottie JSON)</span>
+          <div class="ad-iconup" id="mc_iconup">
+            <input type="file" id="mc_iconfile" accept=".svg,.json" hidden>
+            <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="caticon">Upload icon</button>
+            <div class="ad-iconup__preview" id="mc_iconprev" data-icon-raw="${esc(existingIcon)}">${existingIcon}</div>
+          </div>
+        </div>
+      </div>
+      <div class="ad-modal__foot">
+        <button class="ad-btn ad-btn--ghost" data-x="modal-cancel">Cancel</button>
+        <button class="ad-btn ad-btn--primary" data-x="modal-save">Save</button>
+      </div>`, async () => {
+      const name = document.querySelector('#mc_name')?.value.trim();
+      if (!name) { toast('Give the category a name'); return; }
+      const note = document.querySelector('#mc_note')?.value.trim() || '';
+      const iconRaw = document.querySelector('#mc_iconprev')?.dataset.iconRaw || '';
+      try {
+        await CLOUD.upsert('categories', { id: cid, name, note, sort: cat.sort ?? 0 });
+        if (A()) A().setS('catIcons.' + cid, iconRaw);
+        toast(name + ' saved');
+        closeModal();
+        await pull(); paintProducts();
+      } catch (e) { toast(e.message); }
+    });
+    setTimeout(() => {
+      const btn = document.querySelector('#mc_iconup [data-x="caticon"]');
+      const inp = document.querySelector('#mc_iconfile');
+      if (btn && inp) btn.addEventListener('click', () => inp.click());
+      if (inp) inp.addEventListener('change', async e => {
+        const f = e.target.files[0]; e.target.value = '';
+        if (!f) return;
+        const txt = await f.text();
+        const clean = f.name.endsWith('.svg') ? SKIN.cleanSvg(txt) : txt;
+        const prev = document.querySelector('#mc_iconprev');
+        if (prev) { prev.innerHTML = clean; prev.dataset.iconRaw = clean; }
+      });
+    }, 0);
+    return true;
+  }
+
+  if (act === 'catup' || act === 'catdown') {
+    const cid = t.dataset.cid;
+    const i = CATS.findIndex(c => c.id === cid);
+    if (i < 0) return true;
+    const j = act === 'catup' ? i - 1 : i + 1;
+    if (j < 0 || j >= CATS.length) return true;
+    [CATS[i], CATS[j]] = [CATS[j], CATS[i]];
+    /* reassign sort values and persist */
+    const updates = CATS.map((c, idx) => ({ id: c.id, name: c.name, note: c.note || '', sort: idx }));
+    CATS.forEach((c, idx) => { c.sort = idx; });
+    CLOUD.upsert('categories', updates).then(() => toast('Order saved')).catch(e => toast(e.message));
+    paintProducts($('#prodFilter')?.value || '');
+    paintLineup();
+    return true;
+  }
+
+  /* --- product add/edit via modal --- */
+  if (act === 'prodnew') {
+    const defaultCat = t.dataset.cat || '';
+    editing = { id: '', isNew: true, data: { cat: defaultCat, tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
+    custDraft = [];
+    const V0 = loadVariantDrafts(null);
+    sizeDraft = JSON.parse(JSON.stringify(V0.SIZES || []));
+    matDraft = JSON.parse(JSON.stringify(V0.MATERIALS || []));
+    openProductModal();
+    return true;
+  }
+
+  if (act === 'prodedit') {
+    const pid = t.dataset.pid || t.closest('[data-pid]')?.dataset.pid;
+    editing = PRODUCTS.find(r => r.id === pid);
+    if (!editing) return true;
+    custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
+    loadVariantDrafts(editing.data);
+    openProductModal();
+    return true;
+  }
+
+  if (act === 'xlsxinprod') { $('#xlsxFileProd')?.click(); return true; }
+
   if (act === 'new') {
     editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
     custDraft = [];
     const V0 = loadVariantDrafts(null);
     sizeDraft = JSON.parse(JSON.stringify(V0.SIZES || []));
     matDraft = JSON.parse(JSON.stringify(V0.MATERIALS || []));
-    paintProducts(); paintCustom(); paintSizes(); paintMats(); paintImage(); return true;
+    openProductModal(); return true;
   }
   if (act === 'edit') {
     const id = t.closest('[data-pid]').dataset.pid;
     editing = PRODUCTS.find(r => r.id === id);
     custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
     loadVariantDrafts(editing.data);
-    paintProducts(); paintCustom(); paintSizes(); paintMats(); paintImage(); return true;
+    openProductModal(); return true;
   }
 
   if (act === 'lnadd') {
@@ -978,7 +1303,7 @@ function wire(t) {
     if (j >= 0 && j < custDraft.length) { [custDraft[i], custDraft[j]] = [custDraft[j], custDraft[i]]; paintCustom(); }
     return true;
   }
-  if (act === 'cancel') { editing = null; paintProducts(); return true; }
+  if (act === 'cancel') { editing = null; closeModal(); paintProducts(); return true; }
   if (act === 'save') return saveProduct();
   if (act === 'delete') return deleteProduct(editing.id);
 
@@ -1058,7 +1383,7 @@ async function paint(tab) {
   if (tab === 'products') {
     if (inn() && !PRODUCTS.length) await pull();
     paintProducts($('#prodFilter')?.value || '');
-    paintCustom(); paintSizes(); paintMats(); paintImage(); paintLineup();
+    paintLineup();
   }
   if (tab === 'orders') paintOrders();
   if (tab === 'requests') paintRequests();
