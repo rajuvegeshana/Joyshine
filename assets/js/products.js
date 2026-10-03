@@ -128,6 +128,41 @@ const ART = {
     </g>
     ${lay(36, 36, 128, 60, 6)}`,
 
+  /* --- gopuram / temple tower ----------------------------- */
+  /* Tiered South-Indian gopuram silhouette. All fills use CSS custom
+     props so the art recolours when the customer picks a variant. */
+  gopuram: `${base(58)}
+    <ellipse cx="100" cy="172" rx="52" ry="7" fill="var(--art-4)" opacity=".18"/>
+    <rect x="68" y="148" width="64" height="26" rx="3" fill="var(--art-2)"/>
+    <rect x="60" y="130" width="80" height="22" rx="3" fill="var(--art-1)"/>
+    <rect x="66" y="112" width="68" height="22" rx="3" fill="var(--art-2)"/>
+    <rect x="72" y="96" width="56" height="20" rx="3" fill="var(--art-1)"/>
+    <rect x="78" y="82" width="44" height="18" rx="3" fill="var(--art-2)"/>
+    <rect x="84" y="68" width="32" height="18" rx="3" fill="var(--art-1)"/>
+    <rect x="88" y="56" width="24" height="16" rx="3" fill="var(--art-2)"/>
+    <rect x="92" y="44" width="16" height="16" rx="3" fill="var(--art-1)"/>
+    <circle cx="100" cy="38" r="6" fill="var(--art-3)"/>
+    <circle cx="84" cy="44" r="4" fill="var(--art-3)"/><circle cx="116" cy="44" r="4" fill="var(--art-3)"/>
+    <circle cx="72" cy="54" r="3" fill="var(--art-3)"/><circle cx="128" cy="54" r="3" fill="var(--art-3)"/>
+    <rect x="86" y="156" width="28" height="18" rx="2" fill="var(--art-4)" opacity=".4"/>
+    <path d="M62 130h76M68 112h64M74 96h52M80 82h40M86 68h28M90 56h20"
+      stroke="var(--art-4)" stroke-width="1.5" stroke-linecap="round" opacity=".25"/>
+    ${lay(60, 96, 80, 78, 3)}`,
+
+  gopurambox: `${base(62)}
+    <rect x="52" y="90" width="96" height="84" rx="4" fill="var(--art-1)"/>
+    ${lay(52, 90, 96, 84, 4)}
+    <line x1="100" y1="90" x2="100" y2="174" stroke="var(--art-4)" stroke-width="2.5" opacity=".3"/>
+    <rect x="54" y="92" width="44" height="40" rx="2" fill="var(--art-2)" opacity=".35"/>
+    <rect x="102" y="92" width="44" height="40" rx="2" fill="var(--art-2)" opacity=".35"/>
+    <rect x="52" y="84" width="96" height="10" rx="3" fill="var(--art-2)"/>
+    <rect x="58" y="68" width="84" height="20" rx="3" fill="var(--art-1)"/>
+    <rect x="66" y="56" width="68" height="16" rx="3" fill="var(--art-2)"/>
+    <rect x="74" y="44" width="52" height="16" rx="3" fill="var(--art-1)"/>
+    <circle cx="100" cy="38" r="6" fill="var(--art-3)"/>
+    <circle cx="82" cy="44" r="3" fill="var(--art-3)"/><circle cx="118" cy="44" r="3" fill="var(--art-3)"/>
+    ${lay(58, 68, 84, 20, 3)}`,
+
   /* --- home ------------------------------------------------ */
   planter: `${base()}
     <path d="M70 46q10-22 30-10M100 40q6-26 26-20" stroke="var(--art-2)" stroke-width="7" fill="none" stroke-linecap="round"/>
@@ -369,6 +404,58 @@ window.PRODUCTS = [
     variants: { colour: COLOURS },
     details: D('PLA leaves and flowers on a cotton cord (included).',
       'Roughly 900 mm across, 180 mm at the longest drop.', CARE_STD, PROD_STD, SHIP_STD),
+    bulk: true, reviews: [],
+  },
+  {
+    id: 'kumkum-gopuram-chivil', name: 'Kumkumam Chivil Temple Gopuram', cat: 'puja', art: ART.gopuram,
+    photo: 'product-photos/kumkum-gopuram-chivil.jpg',
+    price: 799,
+    tags: ['bestseller', 'festival', 'gift', 'madeinindia'],
+    blurb: 'A four-tiered temple tower in antique gold. Doubles as a kumkumam chivil — the hollow base holds kum-kum, tilak powder or sindoor.',
+    story: 'Every tier is printed separately and press-fit together, so the proportions hold across sizes. The gold variant ships as standard; choose from the colour palette for something different.',
+    specs: { Material: 'PLA', Layer: '0.16 mm', Print: '7 h', Size: '120 mm tall' },
+    variants: { size: SIZES.slice(1, 3), colour: COLOURS },
+    details: D('PLA. The base cavity is food-safe by material but no sealer is applied — for dry powders only.',
+      'Medium 120 mm · Large 170 mm tall.', CARE_STD, PROD_STD, SHIP_STD),
+    bulk: true, reviews: [],
+  },
+  {
+    id: 'gopuram-storage-box', name: 'Divine Heritage Gopuram Storage Box', cat: 'puja', art: ART.gopurambox,
+    photo: 'product-photos/gopuram-storage-box.jpg',
+    price: 699,
+    tags: ['festival', 'gift', 'madeinindia'],
+    blurb: 'A gopuram-lid storage box with two separate compartments — one for kum-kum, one for vibhuti or haldi.',
+    story: 'The lid sits on four corner pins so it lifts straight off without catching. Temple carvings line each face; the detailing prints clean at 0.16 mm.',
+    specs: { Material: 'PLA', Layer: '0.16 mm', Print: '6 h 30 m', Size: '110 x 70 x 90 mm' },
+    variants: { colour: COLOURS },
+    details: D('PLA. Dry powders only — no sealer applied.',
+      '110 x 70 x 90 mm with the lid on.', CARE_STD, PROD_STD, SHIP_STD),
+    bulk: true, reviews: [],
+  },
+  {
+    id: 'gopuram-murugan', name: 'Kunguma Chimil Gopuram — Murugan', cat: 'puja', art: ART.gopuram,
+    photo: 'product-photos/gopuram-murugan.jpg',
+    price: 899,
+    tags: ['festival', 'new', 'madeinindia'],
+    blurb: 'A Murugan-themed gopuram tower with two internal partitions. Three separate spaces for kum-kum, vibhuti and haldi.',
+    story: 'Murugan\'s peacock motif is pressed into the base panels. Printed in pearl white as standard; the colour picker lets you match it to your puja room.',
+    specs: { Material: 'PLA', Layer: '0.16 mm', Print: '8 h', Size: '150 mm tall' },
+    variants: { size: SIZES.slice(1, 3), colour: COLOURS },
+    details: D('PLA. Three-compartment base, dry powders only.',
+      'Medium 150 mm · Large 200 mm tall.', CARE_STD, PROD_STD, SHIP_STD),
+    bulk: true, reviews: [],
+  },
+  {
+    id: 'pillayar-gopuram', name: 'Pillayar Temple Gopuram', cat: 'puja', art: ART.gopuram,
+    photo: 'product-photos/pillayar-gopuram.jpg',
+    price: 799,
+    tags: ['popular', 'festival', 'gift', 'madeinindia'],
+    blurb: 'A Pillayar gopuram in terracotta red, with full-tier detailing from plinth to finial. Decorative and functional — the base stores sacred powders.',
+    story: 'The terracotta colour was chosen to match the traditional clay lamps on either side, but every colour in the palette is available.',
+    specs: { Material: 'PLA', Layer: '0.16 mm', Print: '7 h 20 m', Size: '130 mm tall' },
+    variants: { size: SIZES.slice(1, 3), colour: COLOURS },
+    details: D('PLA. Hollow base for dry powders; no food-contact sealer applied.',
+      'Medium 130 mm · Large 180 mm tall.', CARE_STD, PROD_STD, SHIP_STD),
     bulk: true, reviews: [],
   },
 
@@ -630,7 +717,7 @@ window.PRODUCTS = [
   {
     id: 'tractor-tyre-keychain', name: 'Tractor Tyre Keychain', cat: 'keys',
     photo: 'product-photos/tyre-keychain-hero.jpg',
-    price: 249,
+    price: 60, was: 99,
     tags: ['bestseller', 'gift', 'quirky', 'personalised'],
     blurb: 'A miniature tractor tyre on a split ring. Printed with your business name or any text — front and back.',
     story: 'Tyre shops, farm equipment dealers and automobile enthusiasts order these by the box. The deep tread pattern is printed at 0.16 mm layers so every lug is sharp. Your name wraps the sidewall in raised dual-colour lettering — readable from across the room.',
