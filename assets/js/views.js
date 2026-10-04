@@ -21,6 +21,8 @@ const BADGES = [
 const badgeOf = p => { const b = BADGES.find(([t]) => S.has(p, t)); return b ? b[1] : ''; };
 
 function art(p, hex, cls = '') {
+  const imgs = S.variantImages ? S.variantImages(p, {}) : [];
+  if (imgs.length) return `<img src="${esc(imgs[0])}" alt="${esc(p.name)}" loading="lazy">`;
   if (p.photo) return `<img src="${esc(p.photo)}" alt="${esc(p.name)}" loading="lazy">`;
   const style = hex ? ` style="--art-1:${esc(hex)}"` : '';
   return `<svg class="${cls}" viewBox="0 0 200 200" role="img" aria-label="${esc(p.name)}"${style}>${p.art}</svg>`;
@@ -35,24 +37,40 @@ function dims(o) {
 
 /* what the customer has chosen, in words */
 function selNow(p, v) {
-  const find = (list, k) => (p.variants?.[list] || []).find(o => o.k === v[list]);
-  const sz = find('size'), mt = find('material'), cl = find('colour');
+  const opts = p.variants?.options || [];
   const bits = [];
-  if (sz) bits.push(`Size <b>${esc(sz.label || sz.k)}</b> \u00b7 ${dims(sz)} (L \u00d7 B \u00d7 H)`);
-  if (mt) bits.push(`Material <b>${esc(mt.label || mt.k)}</b>`);
-  if (cl) bits.push(`Colour <b>${esc(cl.label)}</b>`);
+  for (const opt of opts) {
+    const chosen = v?.[opt.name];
+    if (!chosen) continue;
+    const val = opt.values.find(o => o.k === chosen);
+    if (!val) continue;
+    if (opt.type === 'colour') {
+      bits.push(`Colour <b>${esc(val.label)}</b>`);
+    } else if (val.l && val.b && val.h) {
+      bits.push(`${esc(opt.name)} <b>${esc(val.label)}</b> &nbsp;${val.l} \u00d7 ${val.b} \u00d7 ${val.h} mm`);
+    } else {
+      bits.push(`${esc(opt.name)} <b>${esc(val.label)}</b>`);
+    }
+  }
   return bits.join(' &nbsp;\u00b7&nbsp; ');
 }
 
-const priceBlock = p => p.quote
-  ? `<div class="price"><b>Quoted</b><em>on WhatsApp</em></div>`
-  : `<div class="price"><b class="num">${money(p.price)}</b>${p.was
+const priceBlock = p => {
+  if (p.quote) return `<div class="price"><b>Quoted</b><em>on WhatsApp</em></div>`;
+  const from = S.fromPrice ? S.fromPrice(p) : null;
+  const show = from || p.price;
+  return `<div class="price"><b class="num">${from ? 'From ' : ''}${money(show)}</b>${!from && p.was
       ? `<s class="num">${money(p.was)}</s><em>${Math.round((1 - p.price / p.was) * 100)}% off</em>` : ''}</div>`;
+};
 
-const swatches = p => !p.variants?.colour ? '' :
-  `<div class="dots" aria-hidden="true">${p.variants.colour.slice(0, 5)
-    .map(c => `<i style="background:${c.hex}"></i>`).join('')}${p.variants.colour.length > 5
-    ? `<u>+${p.variants.colour.length - 5}</u>` : ''}</div>`;
+const swatches = p => {
+  const opts = p.variants?.options || [];
+  const colOpt = opts.find(o => o.type === 'colour');
+  if (!colOpt) return '';
+  return `<div class="dots" aria-hidden="true">${colOpt.values.slice(0, 5)
+    .map(c => `<i style="background:${c.hex || '#ccc'}"></i>`).join('')}${colOpt.values.length > 5
+    ? `<u>+${colOpt.values.length - 5}</u>` : ''}</div>`;
+};
 
 function card(p, i = 0) {
   const b = badgeOf(p);
@@ -335,38 +353,66 @@ function product(id, sel) {
   const v = sel || S.defaults(p);
   const hex = S.colourHex(p, v);
   const unit = S.unitPrice(p, v);
+  const vp = S.variantPrice(p, v);
+  const imgs = S.variantImages(p, v);
+  const status = S.variantStatus ? S.variantStatus(p, v) : 'available';
+  const pt = S.variantProcessingTime ? S.variantProcessingTime(p, v) : null;
   const related = window.PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 6);
   const alsoLike = window.PRODUCTS.filter(x => x.cat !== p.cat && S.has(x, 'bestseller')).slice(0, 6);
+  const opts = p.variants?.options || [];
 
-  const optRow = (kind, label, opts, render) => !opts ? '' : `
-    <div class="opt"><span class="opt__l">${label}${kind === 'material'
+  /* build option rows — each option becomes one row */
+  const optRows = opts.map(opt => {
+    const chosen = v[opt.name];
+    if (opt.type === 'colour') {
+      return `<div class="opt"><span class="opt__l">${esc(opt.name)}</span>
+        <div class="opt__r" role="group">
+          ${opt.values.map(o => {
+            const gone = o.status === 'out-of-stock' || (o.stock != null && o.stock <= 0);
+            return `<button class="sw${chosen === o.k ? ' on' : ''}${gone ? ' pill--gone' : ''}"
+              data-v="${esc(opt.name)}" data-val="${esc(o.k)}" title="${esc(o.label)}"
+              aria-label="${esc(o.label)}"${gone ? ' disabled' : ''}><i style="background:${o.hex || '#ccc'}"></i></button>`;
+          }).join('')}
+        </div></div>`;
+    }
+    return `<div class="opt"><span class="opt__l">${esc(opt.name)}${opt.name === 'Material'
       ? ` <button class="qmark" data-tip="PLA is the everyday choice. PGLA is tougher and glossier. ABS handles heat." aria-label="Material help">?</button>` : ''}</span>
-      <div class="opt__r" role="group">${opts.map(o => render(o)).join('')}</div></div>`;
+      <div class="opt__r" role="group">
+        ${opt.values.map(o => {
+          const gone = o.status === 'out-of-stock' || (o.stock != null && o.stock <= 0);
+          return `<button class="pill${chosen === o.k ? ' on' : ''}${gone ? ' pill--gone' : ''}"
+            data-v="${esc(opt.name)}" data-val="${esc(o.k)}"${gone ? ' disabled' : ''}>
+            <b>${esc(o.label || o.k)}</b>
+            <span>${gone ? 'Out of stock' : (o.delta ? `+${money(o.delta)}` : (o.note || ''))}</span>
+            ${o.stock != null && o.stock > 0 && o.stock <= 5 ? `<i class="pill__low">only ${o.stock} left</i>` : ''}
+          </button>`;
+        }).join('')}
+      </div></div>`;
+  }).join('');
+
+  const mainImg = imgs.length
+    ? `<img src="${esc(imgs[0])}" alt="${esc(p.name)}" id="pdpMainImg" loading="eager">`
+    : (p.art ? `<svg class="pdp__art" viewBox="0 0 200 200"${hex ? ` style="--art-1:${esc(hex)}"` : ''}>${p.art}</svg>` : '');
+
+  const thumbList = imgs.length > 1
+    ? `<div class="pdp__thumbrow" id="pdpThumbs" role="list">
+        ${imgs.map((url, i) => `<button class="thumb${i === 0 ? ' on' : ''}" data-gi="${i}" aria-label="Image ${i+1}">
+          <img src="${esc(url)}" alt="" loading="lazy"></button>`).join('')}
+      </div>`
+    : '';
 
   return `<nav class="crumbs wrap"><a href="#/shop">Shop</a><i>/</i><a href="#/c/${p.cat}">${esc(S.catName(p.cat))}</a><i>/</i><span>${esc(p.name)}</span></nav>
 
   <section class="pdp wrap" data-id="${p.id}">
     <div class="pdp__media">
-      <div class="pdp__stage" id="pdpStage">${art(p, hex, 'pdp__art')}
+      <div class="pdp__stage" id="pdpStage">${mainImg}
         ${badgeOf(p) ? `<span class="card__tag">${esc(badgeOf(p))}</span>` : ''}
         <div class="pdp__acts">
           <button class="heart" data-share="${p.id}" aria-label="Share this">${ico('share')}</button>
           <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}" aria-label="Save to wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
         </div>
       </div>
-      <div class="thumbs">
-        ${(p.variants?.colour || [{ k: '', hex: null, label: 'As shown' }]).slice(0, 6).map(c =>
-          `<button class="thumb${v.colour === c.k ? ' on' : ''}" data-v="colour" data-val="${c.k}" title="${esc(c.label)}">
-            <svg viewBox="0 0 200 200"${c.hex ? ` style="--art-1:${c.hex}"` : ''}>${p.art}</svg></button>`).join('')}
-        <div class="thumb thumb--scale" title="Size reference">
-          <svg viewBox="0 0 200 200" aria-hidden="true">
-            <rect x="24" y="150" width="152" height="6" rx="3" fill="var(--art-4)" opacity=".3"/>
-            <path d="M28 142v20M100 146v16M172 142v20" stroke="var(--art-4)" stroke-width="4" stroke-linecap="round" opacity=".45"/>
-            <g opacity=".9">${p.art}</g>
-          </svg>
-          <b>Scale</b>
-        </div>
-      </div>
+      ${thumbList}
     </div>
 
     <div class="pdp__info">
@@ -379,28 +425,15 @@ function product(id, sel) {
       <div class="pdp__price">
         ${p.quote ? `<b>Quoted on WhatsApp</b>`
           : `<b class="num" id="pdpPrice">${money(unit)}</b>
-             ${p.was ? `<s class="num">${money(p.was)}</s><em>${Math.round((1 - p.price / p.was) * 100)}% off</em>` : ''}`}
+             ${vp.was ? `<s class="num" id="pdpWas">${money(vp.was)}</s><em id="pdpOff">${Math.round((1 - vp.price / vp.was) * 100)}% off</em>` : `<s class="num" id="pdpWas" hidden></s><em id="pdpOff" hidden></em>`}`}
         <span class="quiet">${p.quote ? 'Send the file, we price it' : 'Inclusive of taxes'}</span>
       </div>
+      ${status === 'out-of-stock' ? `<p class="pdp__status pdp__status--oos">Out of stock</p>` : ''}
+      ${status === 'made-to-order' ? `<p class="pdp__status pdp__status--mto">Made to order${pt ? ` &middot; ${esc(pt)}` : ''}</p>` : ''}
+      ${status === 'coming-soon' ? `<p class="pdp__status pdp__status--cs">Coming soon</p>` : ''}
+      <p class="pdp__proctime" id="pdpProcTime"${pt && status !== 'made-to-order' ? '' : ' hidden'}>${pt ? `Ships in ${esc(pt)}` : ''}</p>
 
-      <div class="opts">
-        ${optRow('size', 'Size', p.variants?.size, o =>
-          `<button class="pill${v.size === o.k ? ' on' : ''}" data-v="size" data-val="${o.k}">
-            <b>${esc(o.label || o.k)}</b>
-            <span>${dims(o)}</span></button>`)}
-        ${optRow('material', 'Material', p.variants?.material, o => {
-          const gone = o.stock != null && o.stock <= 0;
-          return `<button class="pill${v.material === o.k ? ' on' : ''}${gone ? ' pill--gone' : ''}"
-            data-v="material" data-val="${o.k}"${gone ? ' disabled' : ''}>
-            <b>${esc(o.label)}</b>
-            <span>${gone ? 'out of stock' : (o.delta ? `+${money(o.delta)}` : 'included')}</span>
-            ${o.stock != null && o.stock > 0 && o.stock <= 5 ? `<i class="pill__low">only ${o.stock} left</i>` : ''}
-          </button>`;
-        })}
-        ${optRow('colour', 'Colour', p.variants?.colour, o =>
-          `<button class="sw${v.colour === o.k ? ' on' : ''}" data-v="colour" data-val="${o.k}"
-            title="${esc(o.label)}" aria-label="${esc(o.label)}"><i style="background:${o.hex}"></i></button>`)}
-      </div>
+      <div class="opts" id="pdpOpts">${optRows}</div>
       <p class="quiet sel__now">${selNow(p, v)}</p>
 
       ${window.CUSTOM.render(p)}
@@ -417,9 +450,9 @@ function product(id, sel) {
       <div class="pdp__buys">
         ${p.quote
           ? `<a class="btn btn--wa btn--block" href="#/custom?p=${p.id}">${ico('wa')}Send your file for a quote</a>`
-          : `<button class="btn btn--pay" id="pdpBuy">${ico('bolt')}Buy now</button>
+          : `<button class="btn btn--pay" id="pdpBuy"${status === 'out-of-stock' ? ' disabled' : ''}>${ico('bolt')}Buy now</button>
              <button class="btn btn--wa" id="pdpWa">${ico('wa')}Order on WhatsApp</button>
-             <button class="btn btn--ghost btn--block" id="pdpAdd">Add to cart</button>`}
+             <button class="btn btn--ghost btn--block" id="pdpAdd"${status === 'out-of-stock' ? ' disabled' : ''}>Add to cart</button>`}
       </div>
 
       ${p.bulk ? `<details class="bulk">

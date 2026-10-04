@@ -499,3 +499,44 @@
 .oops__pick svg, .oops__pick img { width: 78%; height: 78%; object-fit: contain; }
 .oops__pick:hover { transform: translateY(-6px) rotate(-1.5deg); box-shadow: var(--shadow-2); }
 body.no-foot .foot { display: none; }
+
+/* ---------- PDP multi-image gallery ---------------------- */
+.pdp__stage img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pdp__thumbrow {
+  display: flex; gap: .5rem; flex-wrap: wrap; padding: .6rem 0 0;
+}
+.pdp__thumbrow .thumb {
+  width: 56px; height: 56px; border-radius: 8px; overflow: hidden;
+  border: 2px solid var(--c-line); cursor: pointer; flex-shrink: 0;
+  transition: border-color .15s;
+}
+.pdp__thumbrow .thumb.on { border-color: var(--c-primary); }
+.pdp__thumbrow .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ---------- PDP variant option rows ---------------------- */
+.pdp__opts { display: grid; gap: .75rem; margin-bottom: 1rem; }
+.pdp__opt-row { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.pdp__opt-label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: var(--ink-quiet); width: 100%; }
+.swatch {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer; transition: border-color .15s;
+}
+.swatch.on, .swatch:focus { border-color: var(--c-primary); outline: none; }
+.swatch:disabled { opacity: .35; cursor: not-allowed; }
+.pill-btn {
+  padding: .3rem .75rem; border-radius: 20px; border: 1.5px solid var(--c-line);
+  font-size: .82rem; cursor: pointer; background: var(--c-bg); color: var(--c-text);
+  transition: border-color .15s, background .15s;
+}
+.pill-btn.on { border-color: var(--c-primary); background: var(--c-primary-pale, oklch(from var(--c-primary) l c h / .12)); }
+.pill-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------- PDP status badges ---------------------------- */
+.pdp__status { font-size: .78rem; font-weight: 600; padding: .25rem .6rem; border-radius: 5px; display: inline-block; }
+.pdp__status--oos { background: #fbe9e7; color: #b71c1c; }
+.pdp__status--mto { background: #fff8e1; color: #e65100; }
+.pdp__status--cs  { background: #e3f2fd; color: #0d47a1; }
+
+/* ---------- PDP processing time -------------------------- */
+#pdpProcTime { font-size: .78rem; color: var(--ink-quiet); margin: .3rem 0 .8rem; }
+#pdpProcTime:empty { display: none; }

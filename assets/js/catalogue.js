@@ -26,10 +26,12 @@ async function get(path, ms = 3500) {
   } catch { return null; } finally { clearTimeout(t); }
 }
 
-/* rebuild a product's drawn art from the shared library */
+/* rebuild a product's drawn art from the shared library, and
+   normalise old variant format into the new options shape */
 function hydrate(p) {
   if (p.artKey && window.ART && window.ART[p.artKey]) p.art = window.ART[p.artKey];
   if (!p.art && window.ART) p.art = window.ART.upload;
+  if (window.S?.normaliseProduct) window.S.normaliseProduct(p);
   return p;
 }
 

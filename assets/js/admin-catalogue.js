@@ -346,14 +346,15 @@ function paintLineup() {
 
 /* ---------- one product ---------------------------------- */
 const TAGS = ['new', 'bestseller', 'trending', 'limited', 'personalised', 'madeinindia', 'gift', 'festival', 'quirky'];
+const VARIANT_STATUSES = ['available', 'out-of-stock', 'made-to-order', 'coming-soon', 'hidden'];
 
 function productForm(r) {
   const p = r.data || {};
   const d = p.details || {};
   const sp = p.specs || {};
-  const v = p.variants || {};
   const arts = Object.keys(window.ART || {});
   const has = t => (p.tags || []).includes(t);
+  const bo = p.bulkOptions || {};
 
   return `
   <div class="ad-cards">
@@ -365,33 +366,23 @@ function productForm(r) {
           `<option value="${esc(c.id)}"${p.cat === c.id ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}
       </select></label>
       <div class="ad-grid3">
-        <label class="ad-field"><span>Price (₹)</span><input id="f_price" type="number" min="0" value="${p.price ?? 0}"></label>
+        <label class="ad-field"><span>Base price (₹)</span><input id="f_price" type="number" min="0" value="${p.price ?? 0}"></label>
         <label class="ad-field"><span>Was (optional)</span><input id="f_was" type="number" min="0" value="${p.was ?? ''}"></label>
         <label class="ad-field"><span>Sort order</span><input id="f_sort" type="number" value="${r.sort ?? 0}"></label>
       </div>
       <label class="ad-field"><span>One-line description</span><textarea id="f_blurb" rows="2">${esc(p.blurb)}</textarea></label>
-      <label class="ad-field" style="margin-bottom:0"><span>The one detail worth knowing (optional)</span><textarea id="f_story" rows="2">${esc(p.story)}</textarea></label>
+      <label class="ad-field" style="margin-bottom:0"><span>Story (optional)</span><textarea id="f_story" rows="2">${esc(p.story)}</textarea></label>
     </div>
 
     <div class="ad-card">
       <h3>How it shows up</h3>
-      <label class="ad-field"><span>Picture</span><select id="f_art">
+      <label class="ad-field"><span>Drawn art</span><select id="f_art">
         ${arts.map(k => `<option value="${k}"${p.artKey === k ? ' selected' : ''}>${k}</option>`).join('')}
-      </select><i class="ad-hint">Drawn art that recolours with the theme. A photo URL below wins over it.</i></label>
-      <div class="ad-field"><span>Photograph</span>
-        <div class="ad-up" data-imgdrop>
-          <input type="file" id="f_imgfile" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
-          <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="imgpick">Upload from this computer</button>
-          <span class="ad-hint" id="f_imgmsg">or drag one here, or paste a link below</span>
-        </div>
-        <input id="f_photo" value="${esc(p.photo)}" placeholder="https://… or assets/img/thing.jpg" style="margin-top:.5rem">
-        <div id="f_imgprev" ${p.photo ? '' : 'hidden'}>${p.photo ? `<img src="${esc(p.photo)}" alt="">` : ''}</div>
-        <i class="ad-hint">A photograph replaces the drawn picture. Uploads go to your own Supabase storage.</i>
-      </div>
+      </select><i class="ad-hint">Used when there are no photos.</i></label>
       <div class="ad-field"><span>Badges and rails</span>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
           ${TAGS.map(t => `<label class="ad-pill" style="cursor:pointer">
-            <input type="checkbox" data-tag="${t}"${has(t) ? ' checked' : ''} style="accent-color:var(--c-primary)"> ${t}</label>`).join('')}
+            <input type="checkbox" data-tag="${t}"${has(t) ? ' checked' : ''}> ${t}</label>`).join('')}
         </div>
       </div>
       <div class="ad-grid3">
@@ -399,6 +390,17 @@ function productForm(r) {
         <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="f_quote"${p.quote ? ' checked' : ''}><span><b>Quote only</b></span></label>
         <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="f_hidden"${r.hidden ? ' checked' : ''}><span><b>Hide</b></span></label>
       </div>
+    </div>
+  </div>
+
+  <div class="ad-card">
+    <h3>Product images</h3>
+    <p class="ad-p">Upload multiple photos — they show in the gallery. First image is the primary. Adding images per option/variant below overrides these on a per-colour basis.</p>
+    <div id="prodGallery" class="ad-gallery"></div>
+    <div class="ad-up" data-gallerydrop="product">
+      <input type="file" id="f_galfile" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+      <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="galpick" data-gal="product">+ Add Images</button>
+      <span class="ad-hint" id="f_galmsg">or drag images here</span>
     </div>
   </div>
 
@@ -413,40 +415,51 @@ function productForm(r) {
       </div>
     </div>
     <div class="ad-card">
-      <h3>Colours</h3>
-      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="v_colour"${v.colour ? ' checked' : ''}>
-        <span><b>Offer the filament colours</b><i>Eight of them. The drawn art recolours to match.</i></span></label>
+      <h3>3D model</h3>
+      <p class="ad-p">Product-level model. You can also add variant-specific models in the matrix below.</p>
+      <label class="ad-field"><span>File URL or Supabase path</span><input id="f_model3d" value="${esc(p.model3d?.url || '')}" placeholder="https://… or storage path"></label>
+      <div class="ad-grid3">
+        <label class="ad-field"><span>File name</span><input id="f_modelname" value="${esc(p.model3d?.name || '')}"></label>
+        <label class="ad-field"><span>Type</span><input id="f_modeltype" value="${esc(p.model3d?.type || '')}" placeholder="3MF, STL, OBJ"></label>
+        <label class="ad-field" style="margin-bottom:0"><span>Size (MB)</span><input id="f_modelsize" type="number" min="0" step="0.1" value="${p.model3d?.size || ''}"></label>
+      </div>
     </div>
   </div>
 
   <div class="ad-card">
-    <h3>Price and photo per colour</h3>
-    <p class="ad-p">Leave price blank to use the base price for that colour. Add a photo URL to
-      swap the product image when a customer picks that colour. Enable colours above first.</p>
+    <h3>Options</h3>
+    <p class="ad-p">Define selectable options like Colour, Size or Material. Each option gets a list of values. Colour options show a swatch. Leave this empty and the product has no variants.</p>
+    <div id="optionsList"></div>
+    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" style="margin-top:.7rem">+ Add Option</button>
+  </div>
+
+  <div class="ad-card">
+    <h3>Variant matrix</h3>
+    <p class="ad-p">Set price, stock, status and processing time per variant. Leave price blank to use the base price. Click "Refresh" after adding or removing options.</p>
     <div id="varMatrixList"></div>
+    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="vmxrefresh" style="margin-top:.7rem">↻ Refresh matrix</button>
   </div>
 
   <div class="ad-card">
-    <h3>Sizes</h3>
-    <p class="ad-p">The dimensions show on the product page, so nobody has to guess what
-      "Large" means. Leave this empty and the product is one size.</p>
-    <div id="sizeList"></div>
-    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="szadd" style="margin-top:.7rem">+ Add a size</button>
-  </div>
-
-  <div class="ad-card">
-    <h3>Materials, pricing and stock</h3>
-    <p class="ad-p">The extra charge is added to the base price. Leave stock blank for made to
-      order; put a number in and the shop shows "only N left", then greys the option out at zero.</p>
-    <div id="matList"></div>
-    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="mtadd" style="margin-top:.7rem">+ Add a material</button>
+    <h3>Purchase options</h3>
+    <div class="ad-grid3" style="margin-bottom:.9rem">
+      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_individual"${bo.individual !== false ? ' checked' : ''}><span><b>Individual</b><i>Single-unit buying</i></span></label>
+      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_bulk"${bo.bulk ? ' checked' : ''}><span><b>Bulk</b><i>Qty-based pricing</i></span></label>
+      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_enquiry"${bo.enquiry ? ' checked' : ''}><span><b>Bulk enquiry</b><i>Large order form</i></span></label>
+    </div>
+    <div id="bulkPricingBlock"${bo.bulk ? '' : ' hidden'}>
+      <div class="ad-grid3">
+        <label class="ad-field"><span>Min bulk qty</span><input id="bo_min" type="number" min="1" value="${bo.bulkMin || 10}"></label>
+        <label class="ad-row--switch" style="margin:0;align-self:end"><input type="checkbox" id="bo_combined"${bo.bulkCombined ? ' checked' : ''}><span><b>Combined qty</b><i>All variants count together</i></span></label>
+      </div>
+      <div id="bulkTierList"></div>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="btadd" style="margin-top:.7rem">+ Add tier</button>
+    </div>
   </div>
 
   <div class="ad-card">
     <h3>What the customer fills in</h3>
-    <p class="ad-p">Each one becomes a field on the product page. Text for a name or a
-      message, a dropdown for a choice you want to limit, a colour picker, or a file
-      upload for a logo or artwork. Leave it empty and the product has no options.</p>
+    <p class="ad-p">Text, dropdowns, colour picker or file upload. Leave empty for no options.</p>
     <div id="custList" class="ad-occ"></div>
     <div class="ad-btns" style="margin-top:.9rem">
       ${Object.entries(window.CUSTOM.TYPES).map(([t, n]) =>
@@ -464,107 +477,158 @@ function productForm(r) {
   </div>`;
 }
 
-/* ---------- the size builder ------------------------------ */
-let sizeDraft = [];
-let matDraft = [];
-let varMatrixDraft = []; /* per-colour price/photo overrides */
+/* ---------- new draft state variables --------------------- */
+let optionsDraft = [];       /* [{name, type, values:[{k,label,hex?,images:[]}]}] */
+let matrixDraft  = [];       /* [{combo:{}, price, was, sku, stock, status, processingTime, images:[]}] */
+let productImagesDraft = []; /* [url, ...] */
+let model3dDraft = {};       /* {url, name, type, size} */
+let bulkTiersDraft = [];     /* [{min, max, off}] */
+let custDraft = [];
 
 const num = (x, d = 0) => (x === '' || x === null || x === undefined || isNaN(+x) ? d : +x);
 
-function paintSizes() {
-  const box = $('#sizeList'); if (!box) return;
-  if (!sizeDraft.length) {
-    box.innerHTML = '<p class="ad-empty">One size only. Add sizes if this product comes in more than one.</p>';
+function paintProductGallery() {
+  const box = $('#prodGallery'); if (!box) return;
+  if (!productImagesDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No images yet. Use the button below to add some.</p>';
     return;
   }
-  box.innerHTML = `
-    <div class="ad-vgrid ad-vgrid--head">
-      <span>Name</span><span>Extra ₹</span><span>L mm</span><span>B mm</span><span>H mm</span><span></span>
-    </div>
-    ${sizeDraft.map((z, i) => `
-      <div class="ad-vgrid" data-szi="${i}">
-        <input data-szf="label" value="${esc(z.label)}" placeholder="Medium">
-        <input data-szf="delta" type="number" step="10" value="${z.delta ?? 0}">
-        <input data-szf="l" type="number" min="0" value="${z.l ?? ''}">
-        <input data-szf="b" type="number" min="0" value="${z.b ?? ''}">
-        <input data-szf="h" type="number" min="0" value="${z.h ?? ''}">
-        <button class="ad-o__more ad-o__more--warn" data-x="szdel" title="Remove">&times;</button>
-      </div>`).join('')}`;
+  box.innerHTML = productImagesDraft.map((url, i) => `
+    <div class="ad-gallery__item" data-pgi="${i}">
+      <img src="${esc(url)}" alt="">
+      ${i === 0 ? '<span class="ad-gallery__primary">Primary</span>' : ''}
+      <div class="ad-gallery__actions">
+        ${i > 0 ? `<button type="button" class="ad-gallery__btn" data-x="pgmovefirst" data-i="${i}" title="Set as primary">★</button>` : ''}
+        <button type="button" class="ad-gallery__btn ad-gallery__btn--del" data-x="pgdel" data-i="${i}" title="Remove">&times;</button>
+      </div>
+    </div>`).join('');
 }
 
-function paintMats() {
-  const box = $('#matList'); if (!box) return;
-  if (!matDraft.length) {
-    box.innerHTML = '<p class="ad-empty">No choice of material. Printed in whatever the spec says.</p>';
-    return;
-  }
-  box.innerHTML = `
-    <div class="ad-vgrid ad-vgrid--mat ad-vgrid--head">
-      <span>Name</span><span>Extra ₹</span><span>In stock</span><span>Note for the customer</span><span></span>
-    </div>
-    ${matDraft.map((m, i) => `
-      <div class="ad-vgrid ad-vgrid--mat" data-mti="${i}">
-        <input data-mtf="label" value="${esc(m.label)}" placeholder="PLA">
-        <input data-mtf="delta" type="number" step="10" value="${m.delta ?? 0}">
-        <input data-mtf="stock" type="number" min="0" value="${m.stock ?? ''}" placeholder="to order">
-        <input data-mtf="note" value="${esc(m.note)}" placeholder="Sturdy, matte, everyday">
-        <button class="ad-o__more ad-o__more--warn" data-x="mtdel" title="Remove">&times;</button>
-      </div>`).join('')}`;
-}
-
-/* a key the cart can rely on: stable, short, and never blank */
+/* a stable key: uppercase, no punctuation, 6 chars max */
 function vkey(label, i) {
   const k = String(label || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
   return k || 'V' + (i + 1);
 }
 
-function loadVariantDrafts(p) {
-  const V = window.VARIANT_OPTIONS || {};
-  const v = (p && p.variants) || {};
-  const copy = a => JSON.parse(JSON.stringify(a || []));
-  sizeDraft = copy(v.size);
-  matDraft = copy(v.material);
-  /* load per-colour rows: one entry per colour, preserving saved price/was/photo */
-  if (V.COLOURS) {
-    const saved = (p && p.variantMatrix) || [];
-    varMatrixDraft = V.COLOURS.map(c => {
-      const found = saved.find(e => e.combo?.colour === c.k) || {};
-      return { colour: c.k, label: c.label, hex: c.hex,
-               price: found.price ?? '', was: found.was ?? '',
-               photo: found.photo || '',
-               colourPhoto: (p && p.colourPhotos?.[c.k]) || '' };
-    });
+function paintOptions() {
+  const box = $('#optionsList'); if (!box) return;
+  if (!optionsDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No options yet. This product has one variant only.</p>';
+    return;
   }
-  return V;
+  box.innerHTML = optionsDraft.map((opt, oi) => `
+    <div class="ad-opt" data-oi="${oi}">
+      <div class="ad-opt__head">
+        <input class="ad-opt__name" data-opf="name" data-oi="${oi}" value="${esc(opt.name)}" placeholder="Option name (e.g. Colour)">
+        <select data-opf="type" data-oi="${oi}">
+          <option value="colour"${opt.type === 'colour' ? ' selected' : ''}>Colour (swatch)</option>
+          <option value="text"${opt.type === 'text' ? ' selected' : ''}>Text (pill)</option>
+          <option value="select"${opt.type === 'select' ? ' selected' : ''}>Dropdown</option>
+        </select>
+        <button type="button" class="ad-o__more ad-o__more--warn" data-x="optdel" data-oi="${oi}" title="Remove option">&times;</button>
+      </div>
+      <div class="ad-opt__vals">
+        ${(opt.values || []).map((val, vi) => `
+          <div class="ad-opt__val" data-oi="${oi}" data-vi="${vi}">
+            <input data-valf="label" value="${esc(val.label)}" placeholder="Value label">
+            ${opt.type === 'colour' ? `<input type="color" data-valf="hex" value="${esc(val.hex || '#cccccc')}" title="Swatch colour">` : ''}
+            <span class="ad-opt__imgcount">${(val.images || []).length} img${(val.images || []).length !== 1 ? 's' : ''}</span>
+            <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="valimgs" data-oi="${oi}" data-vi="${vi}">Images</button>
+            <button type="button" class="ad-o__more ad-o__more--warn" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
+          </div>`).join('')}
+        <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="valadd" data-oi="${oi}" style="margin-top:.4rem">+ Add value</button>
+      </div>
+    </div>`).join('');
+}
+
+function loadVariantDrafts(p) {
+  const copy = a => JSON.parse(JSON.stringify(a || []));
+  const v = (p && p.variants) || {};
+  /* load normalised options — normaliseProduct already ran in hydrate */
+  optionsDraft = copy(v.options || []);
+  /* load variant matrix */
+  matrixDraft = copy(p && p.variantMatrix || []);
+  /* load product images */
+  productImagesDraft = copy(p && p.productImages || (p && p.photo ? [p.photo] : []));
+  /* load 3D model */
+  model3dDraft = JSON.parse(JSON.stringify(p && p.model3d || {}));
+  /* load bulk tiers */
+  bulkTiersDraft = copy(p && p.bulkOptions?.tiers || []);
+  /* load customisation */
+  custDraft = copy(p && p.custom || []);
+}
+
+function rebuildMatrixFromOptions() {
+  /* generate the cartesian product of option values */
+  const opts = optionsDraft.filter(o => (o.values || []).length);
+  if (!opts.length) { matrixDraft = []; return; }
+  let combos = [{}];
+  for (const opt of opts) {
+    const next = [];
+    for (const combo of combos) {
+      for (const val of opt.values) {
+        next.push({ ...combo, [opt.name]: val.k || vkey(val.label, 0) });
+      }
+    }
+    combos = next;
+  }
+  /* preserve existing data for matching combos */
+  const existing = new Map(matrixDraft.map(e => [JSON.stringify(e.combo), e]));
+  matrixDraft = combos.map(combo => {
+    const old = existing.get(JSON.stringify(combo)) || {};
+    return { combo, price: old.price ?? '', was: old.was ?? '',
+             sku: old.sku || '', stock: old.stock ?? '',
+             status: old.status || 'available',
+             processingTime: old.processingTime || '',
+             images: old.images || [] };
+  });
 }
 
 function paintVariantMatrix() {
   const box = $('#varMatrixList'); if (!box) return;
-  if (!varMatrixDraft.length) {
-    box.innerHTML = '<p class="ad-empty">Enable "Offer the filament colours" above to set prices per colour.</p>';
+  if (!matrixDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No variants yet. Add options above then click Refresh.</p>';
+    return;
+  }
+  const comboLabel = combo => Object.values(combo).join(' / ');
+  box.innerHTML = `
+    <div class="ad-vmx">
+      <div class="ad-vmx__head">
+        <span>Variant</span><span>Price ₹</span><span>Was ₹</span><span>SKU</span><span>Stock</span><span>Status</span><span>Processing</span>
+      </div>
+      ${matrixDraft.map((row, i) => `
+        <div class="ad-vmx__row" data-mxi="${i}">
+          <span class="ad-vmx__label">${esc(comboLabel(row.combo))}</span>
+          <input data-mxf="price" type="number" min="0" step="10" value="${row.price !== '' ? row.price : ''}" placeholder="base">
+          <input data-mxf="was" type="number" min="0" step="10" value="${row.was !== '' ? row.was : ''}">
+          <input data-mxf="sku" value="${esc(row.sku)}" placeholder="SKU">
+          <input data-mxf="stock" type="number" min="0" value="${row.stock !== '' ? row.stock : ''}" placeholder="∞">
+          <select data-mxf="status">
+            ${VARIANT_STATUSES.map(s => `<option value="${s}"${row.status === s ? ' selected' : ''}>${s}</option>`).join('')}
+          </select>
+          <input data-mxf="processingTime" value="${esc(row.processingTime)}" placeholder="3–5 days">
+        </div>`).join('')}
+    </div>`;
+}
+
+function paintBulkTiers() {
+  const box = $('#bulkTierList'); if (!box) return;
+  if (!bulkTiersDraft.length) {
+    box.innerHTML = '<p class="ad-empty">No tiers. Add a tier to set a discount at a quantity break.</p>';
     return;
   }
   box.innerHTML = `
-    <div class="ad-vgrid ad-vgrid--vmx ad-vgrid--head">
-      <span>Colour</span><span>Price (₹)</span><span>Was (₹)</span><span>Photo URL</span>
+    <div class="ad-vgrid ad-vgrid--bt ad-vgrid--head">
+      <span>Min qty</span><span>Max qty</span><span>Discount %</span><span></span>
     </div>
-    ${varMatrixDraft.map((row, i) => `
-      <div class="ad-vgrid ad-vgrid--vmx" data-vmxi="${i}">
-        <span style="display:flex;align-items:center;gap:6px">
-          <i style="width:14px;height:14px;border-radius:50%;background:${esc(row.hex)};display:inline-block;flex-shrink:0"></i>
-          ${esc(row.label)}
-        </span>
-        <input data-vmxf="price" type="number" min="0" step="10"
-               value="${row.price !== '' ? row.price : ''}" placeholder="(same as base)">
-        <input data-vmxf="was" type="number" min="0" step="10"
-               value="${row.was !== '' ? row.was : ''}" placeholder="">
-        <input data-vmxf="colourPhoto" value="${esc(row.colourPhoto)}"
-               placeholder="https://… or assets/img/…">
+    ${bulkTiersDraft.map((t, i) => `
+      <div class="ad-vgrid ad-vgrid--bt" data-bti="${i}">
+        <input data-btf="min" type="number" min="1" value="${t.min ?? ''}">
+        <input data-btf="max" type="number" min="1" value="${t.max ?? ''}" placeholder="no limit">
+        <input data-btf="off" type="number" min="0" max="100" step="1" value="${t.off ?? ''}">
+        <button class="ad-o__more ad-o__more--warn" data-x="btdel" data-i="${i}">&times;</button>
       </div>`).join('')}`;
 }
-
-/* ---------- the customisation builder --------------------- */
-let custDraft = [];
 
 function paintCustom() {
   const box = $('#custList'); if (!box) return;
@@ -613,7 +677,6 @@ function readForm(r) {
   const g = id => $('#' + id)?.value.trim() ?? '';
   const n = id => { const v = $('#' + id)?.value; return v === '' || v == null ? null : +v; };
   const on = id => !!$('#' + id)?.checked;
-  const V = window.VARIANT_OPTIONS || {};
 
   const name = g('f_name');
   const data = {
@@ -630,41 +693,60 @@ function readForm(r) {
   };
   if (n('f_was')) data.was = n('f_was');
   if (g('f_story')) data.story = g('f_story');
-  if (g('f_photo')) data.photo = g('f_photo');
   if (on('f_quote')) { data.quote = true; data.price = 0; }
 
-  const variants = {};
-  const sizes = sizeDraft.filter(z => (z.label || '').trim()).map((z, i) => ({
-    k: z.k || vkey(z.label, i), label: z.label.trim(), delta: num(z.delta),
-    l: num(z.l, null), b: num(z.b, null), h: num(z.h, null),
-  }));
-  const mats = matDraft.filter(m => (m.label || '').trim()).map((m, i) => ({
-    k: m.k || vkey(m.label, i), label: m.label.trim(), delta: num(m.delta),
-    stock: m.stock === '' || m.stock === null || m.stock === undefined ? null : num(m.stock),
-    note: (m.note || '').trim(),
-  }));
-  if (sizes.length) variants.size = sizes;
-  if (mats.length) variants.material = mats;
-  if (on('v_colour') && V.COLOURS) variants.colour = V.COLOURS;
-  if (Object.keys(variants).length) data.variants = variants;
+  /* options */
+  const options = optionsDraft
+    .filter(o => (o.name || '').trim() && (o.values || []).length)
+    .map(o => ({
+      name: o.name.trim(), type: o.type || 'text',
+      values: (o.values || []).filter(v => (v.label || '').trim()).map((v, i) => {
+        const val = { k: v.k || vkey(v.label, i), label: v.label.trim() };
+        if (o.type === 'colour' && v.hex) val.hex = v.hex;
+        if ((v.images || []).length) val.images = v.images;
+        return val;
+      }),
+    }));
+  if (options.length) data.variants = { options };
 
-  /* collect per-colour price/photo overrides from varMatrixDraft */
-  if (varMatrixDraft.length) {
-    const matrix = varMatrixDraft
-      .filter(row => (row.price !== '' && row.price != null) || row.colourPhoto)
-      .map(row => {
-        const entry = { combo: { colour: row.colour } };
-        if (row.price !== '' && row.price != null) entry.price = +row.price;
-        if (row.was !== '' && row.was != null && row.was !== '') entry.was = +row.was;
-        if (row.colourPhoto) entry.photo = row.colourPhoto;
-        return entry;
-      });
-    if (matrix.length) data.variantMatrix = matrix;
+  /* variant matrix */
+  const matrix = matrixDraft.map(row => {
+    const e = { combo: row.combo };
+    if (row.price !== '' && row.price != null) e.price = +row.price;
+    if (row.was !== '' && row.was != null) e.was = +row.was;
+    if (row.sku) e.sku = row.sku;
+    if (row.stock !== '' && row.stock != null) e.stock = +row.stock;
+    if (row.status && row.status !== 'available') e.status = row.status;
+    if (row.processingTime) e.processingTime = row.processingTime;
+    if ((row.images || []).length) e.images = row.images;
+    return e;
+  });
+  if (matrix.length) data.variantMatrix = matrix;
 
-    const colourPhotos = {};
-    varMatrixDraft.forEach(row => { if (row.colourPhoto) colourPhotos[row.colour] = row.colourPhoto; });
-    if (Object.keys(colourPhotos).length) data.colourPhotos = colourPhotos;
+  /* product images */
+  if (productImagesDraft.length) {
+    data.productImages = productImagesDraft;
+    data.photo = productImagesDraft[0]; /* keep p.photo for compat */
   }
+
+  /* 3D model */
+  const m3url = g('f_model3d');
+  if (m3url) {
+    data.model3d = { url: m3url, name: g('f_modelname'),
+                     type: g('f_modeltype'), size: n('f_modelsize') || null };
+  }
+
+  /* bulk options */
+  data.bulkOptions = {
+    individual: on('bo_individual'),
+    bulk: on('bo_bulk'),
+    enquiry: on('bo_enquiry'),
+    bulkMin: n('bo_min') || 10,
+    bulkCombined: on('bo_combined'),
+    tiers: bulkTiersDraft.map(t => ({
+      min: num(t.min, 0), max: t.max !== '' && t.max != null ? num(t.max) : null, off: num(t.off, 0),
+    })),
+  };
 
   const custom = custDraft.filter(f => (f.label || '').trim());
   if (custom.length) data.custom = custom;
@@ -687,8 +769,14 @@ function openProductModal() {
       ${!editing.isNew ? `<button class="ad-btn ad-btn--warn" data-x="delete">Delete</button>` : ''}
       <button class="ad-btn ad-btn--primary" data-x="save">Save</button>
     </div>`, saveProduct);
-  /* after the modal DOM is in place, wire the sub-editors */
-  setTimeout(() => { paintCustom(); paintSizes(); paintMats(); paintVariantMatrix(); paintImage(); }, 0);
+  setTimeout(() => {
+    paintProductGallery();
+    wireGalleryInput();
+    paintOptions();
+    paintVariantMatrix();
+    paintBulkTiers();
+    paintCustom();
+  }, 0);
 }
 
 async function saveProduct() {
@@ -1089,39 +1177,42 @@ async function paintVisits() {
 }
 
 /* ---------- the product photograph ------------------------ */
-function paintImage() {
-  const box = $('#f_imgprev'); const url = $('#f_photo')?.value.trim();
-  if (!box) return;
-  box.hidden = !url;
-  box.innerHTML = url ? `<img src="${esc(url)}" alt="">` : '';
-
-  const drop = $('[data-imgdrop]'), file = $('#f_imgfile');
+function wireGalleryInput() {
+  const file = $('#f_galfile');
+  const drop = $('[data-gallerydrop="product"]');
   if (file && !file.dataset.wired) {
     file.dataset.wired = '1';
-    file.addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) putImage(f); });
+    file.addEventListener('change', e => {
+      const files = [...e.target.files]; e.target.value = '';
+      files.forEach(f => putGalleryImage(f));
+    });
   }
   if (drop && !drop.dataset.wired) {
     drop.dataset.wired = '1';
-    ['dragenter', 'dragover'].forEach(n => drop.addEventListener(n, e => {
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
       e.preventDefault(); drop.classList.add('on');
     }));
-    ['dragleave', 'drop'].forEach(n => drop.addEventListener(n, e => {
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
       e.preventDefault(); drop.classList.remove('on');
     }));
-    drop.addEventListener('drop', e => { const f = e.dataTransfer?.files?.[0]; if (f) putImage(f); });
+    drop.addEventListener('drop', e => {
+      const files = [...(e.dataTransfer?.files || [])];
+      files.forEach(f => putGalleryImage(f));
+    });
   }
 }
 
-async function putImage(file) {
-  const msg = $('#f_imgmsg');
-  if (!/^image\//.test(file.type)) { if (msg) msg.textContent = 'That is not an image'; return; }
+async function putGalleryImage(file) {
+  const msg = $('#f_galmsg');
+  if (!/^image\//.test(file.type)) { if (msg) msg.textContent = 'That is not an image file'; return; }
   if (msg) msg.textContent = 'Uploading ' + file.name + '…';
   try {
     const url = await CLOUD.uploadImage(file);
-    $('#f_photo').value = url;
-    paintImage();
-    if (msg) msg.textContent = 'Uploaded. Save the product to keep it.';
-    toast('Photograph uploaded');
+    productImagesDraft.push(url);
+    paintProductGallery();
+    wireGalleryInput();
+    if (msg) msg.textContent = 'Added. Save the product to keep it.';
+    toast('Image uploaded');
   } catch (e) {
     if (msg) msg.textContent = e.message;
     toast(e.message);
@@ -1285,10 +1376,7 @@ function wire(t) {
   if (act === 'prodnew') {
     const defaultCat = t.dataset.cat || '';
     editing = { id: '', isNew: true, data: { cat: defaultCat, tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
-    custDraft = [];
-    const V0 = loadVariantDrafts(null);
-    sizeDraft = JSON.parse(JSON.stringify(V0.SIZES || []));
-    matDraft = JSON.parse(JSON.stringify(V0.MATERIALS || []));
+    loadVariantDrafts(null);
     openProductModal();
     return true;
   }
@@ -1297,7 +1385,6 @@ function wire(t) {
     const pid = t.dataset.pid || t.closest('[data-pid]')?.dataset.pid;
     editing = PRODUCTS.find(r => r.id === pid);
     if (!editing) return true;
-    custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
     loadVariantDrafts(editing.data);
     openProductModal();
     return true;
@@ -1307,16 +1394,12 @@ function wire(t) {
 
   if (act === 'new') {
     editing = { id: '', isNew: true, data: { tags: [], specs: {}, details: {} }, sort: PRODUCTS.length };
-    custDraft = [];
-    const V0 = loadVariantDrafts(null);
-    sizeDraft = JSON.parse(JSON.stringify(V0.SIZES || []));
-    matDraft = JSON.parse(JSON.stringify(V0.MATERIALS || []));
+    loadVariantDrafts(null);
     openProductModal(); return true;
   }
   if (act === 'edit') {
     const id = t.closest('[data-pid]').dataset.pid;
     editing = PRODUCTS.find(r => r.id === id);
-    custDraft = JSON.parse(JSON.stringify(window.CUSTOM.fields(editing.data)));
     loadVariantDrafts(editing.data);
     openProductModal(); return true;
   }
@@ -1345,11 +1428,108 @@ function wire(t) {
     lineWrite([], lineRead().only); return true;
   }
 
-  if (act === 'szadd') { sizeDraft.push({ label: '', delta: 0, l: '', b: '', h: '' }); paintSizes(); return true; }
-  if (act === 'szdel') { sizeDraft.splice(+t.closest('[data-szi]').dataset.szi, 1); paintSizes(); return true; }
-  if (act === 'mtadd') { matDraft.push({ label: '', delta: 0, stock: '', note: '' }); paintMats(); return true; }
-  if (act === 'mtdel') { matDraft.splice(+t.closest('[data-mti]').dataset.mti, 1); paintMats(); return true; }
-  if (act === 'imgpick') { $('#f_imgfile')?.click(); return true; }
+  /* --- options builder --- */
+  if (act === 'optadd') {
+    optionsDraft.push({ name: '', type: 'text', values: [] });
+    paintOptions(); return true;
+  }
+  if (act === 'optdel') {
+    optionsDraft.splice(+t.closest('[data-oi]').dataset.oi, 1);
+    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
+  }
+  if (act === 'valadd') {
+    const oi = +t.closest('[data-oi]').dataset.oi;
+    optionsDraft[oi].values.push({ k: '', label: '', hex: '#cccccc', images: [] });
+    paintOptions(); return true;
+  }
+  if (act === 'valdel') {
+    const oi = +t.closest('[data-oi]').dataset.oi;
+    const vi = +t.closest('[data-vi]').dataset.vi;
+    optionsDraft[oi].values.splice(vi, 1);
+    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
+  }
+  if (act === 'vmxrefresh') { rebuildMatrixFromOptions(); paintVariantMatrix(); return true; }
+
+  /* --- product image gallery --- */
+  if (act === 'galpick') {
+    const inp = $('#f_galfile'); if (inp) inp.click(); return true;
+  }
+  if (act === 'pgdel') {
+    productImagesDraft.splice(+t.dataset.i, 1);
+    paintProductGallery(); return true;
+  }
+  if (act === 'pgmovefirst') {
+    const i = +t.dataset.i;
+    if (i > 0) { productImagesDraft.unshift(productImagesDraft.splice(i, 1)[0]); paintProductGallery(); }
+    return true;
+  }
+
+  /* --- bulk tiers --- */
+  if (act === 'btadd') {
+    bulkTiersDraft.push({ min: '', max: '', off: '' });
+    paintBulkTiers(); return true;
+  }
+  if (act === 'btdel') {
+    bulkTiersDraft.splice(+t.dataset.i, 1);
+    paintBulkTiers(); return true;
+  }
+
+  /* --- per-option-value image gallery (opens a sub-modal) --- */
+  if (act === 'valimgs') {
+    const oi = +t.dataset.oi, vi = +t.dataset.vi;
+    const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
+    const imgs = val.images || (val.images = []);
+    openModal(`
+      <div class="ad-modal__head"><h3>Images for "${esc(val.label || 'this value')}"</h3></div>
+      <div class="ad-modal__body">
+        <p class="ad-p">These images show when a customer picks this option. They override the product images.</p>
+        <div id="valGallery" class="ad-gallery">${imgs.map((u, i) => `
+          <div class="ad-gallery__item">
+            <img src="${esc(u)}" alt="">
+            <div class="ad-gallery__actions">
+              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
+            </div>
+          </div>`).join('')}</div>
+        <input type="file" id="vg_file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+        <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" id="vg_pick" style="margin-top:.7rem">+ Add Images</button>
+      </div>
+      <div class="ad-modal__foot">
+        <button class="ad-btn ad-btn--primary" data-x="modal-save">Done</button>
+      </div>`, () => { paintOptions(); });
+    setTimeout(() => {
+      const pick = document.querySelector('#vg_pick');
+      const inp = document.querySelector('#vg_file');
+      if (pick && inp) pick.addEventListener('click', () => inp.click());
+      if (inp) inp.addEventListener('change', async e => {
+        const files = [...e.target.files]; e.target.value = '';
+        for (const f of files) {
+          const url = await CATALOGUE.uploadFile(f).catch(() => null);
+          if (url) { imgs.push(url); }
+        }
+        const gal = document.querySelector('#valGallery');
+        if (gal) gal.innerHTML = imgs.map((u, i) => `
+          <div class="ad-gallery__item">
+            <img src="${esc(u)}" alt="">
+            <div class="ad-gallery__actions">
+              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
+            </div>
+          </div>`).join('');
+      });
+      document.querySelector('#valGallery')?.addEventListener('click', e => {
+        const btn = e.target.closest('[data-x="vgdel"]');
+        if (!btn) return;
+        imgs.splice(+btn.dataset.i, 1);
+        const gal = document.querySelector('#valGallery');
+        if (gal) gal.innerHTML = imgs.map((u, i) => `
+          <div class="ad-gallery__item"><img src="${esc(u)}" alt="">
+            <div class="ad-gallery__actions">
+              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
+            </div>
+          </div>`).join('');
+      });
+    }, 0);
+    return true;
+  }
 
   if (act === 'cuadd') {
     const type = t.closest('[data-type]').dataset.type;
@@ -1403,35 +1583,37 @@ function wire(t) {
 function wireChange(t) {
   if (t.id === 'lineFor') { lineFor = t.value; paintLineup(); return true; }
   if (t.id === 'lineOnly') { lineWrite(lineRead().picks, t.checked); return true; }
-  if (t.dataset.szf) {
-    const z = sizeDraft[+t.closest('[data-szi]').dataset.szi]; if (!z) return true;
-    z[t.dataset.szf] = t.value;
+
+  /* options builder — option-level fields */
+  if (t.dataset.opf) {
+    const oi = +t.closest('[data-oi]')?.dataset.oi;
+    const opt = optionsDraft[oi]; if (!opt) return true;
+    opt[t.dataset.opf] = t.value;
+    if (t.dataset.opf === 'name') paintVariantMatrix(); /* combo keys change */
     return true;
   }
-  if (t.dataset.mtf) {
-    const m = matDraft[+t.closest('[data-mti]').dataset.mti]; if (!m) return true;
-    m[t.dataset.mtf] = t.value;
+  /* options builder — value-level fields */
+  if (t.dataset.valf) {
+    const oi = +t.closest('[data-oi]')?.dataset.oi;
+    const vi = +t.closest('[data-vi]')?.dataset.vi;
+    const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
+    val[t.dataset.valf] = t.value;
+    if (t.dataset.valf === 'label') { val.k = vkey(t.value, vi); }
     return true;
   }
-  if (t.dataset.vmxf) {
-    const row = varMatrixDraft[+t.closest('[data-vmxi]')?.dataset.vmxi]; if (!row) return true;
-    row[t.dataset.vmxf] = t.value;
+  /* variant matrix row fields */
+  if (t.dataset.mxf) {
+    const row = matrixDraft[+t.closest('[data-mxi]')?.dataset.mxi]; if (!row) return true;
+    row[t.dataset.mxf] = t.value;
     return true;
   }
-  if (t.id === 'f_photo') { paintImage(); return true; }
-  if (t.id === 'v_colour') {
-    /* when colour toggle changes, load/clear the matrix draft and repaint */
-    const V = window.VARIANT_OPTIONS || {};
-    if (t.checked && V.COLOURS) {
-      if (!varMatrixDraft.length) varMatrixDraft = V.COLOURS.map(c => ({
-        colour: c.k, label: c.label, hex: c.hex, price: '', was: '', colourPhoto: '',
-      }));
-    } else {
-      varMatrixDraft = [];
-    }
-    paintVariantMatrix();
+  /* bulk tier fields */
+  if (t.dataset.btf) {
+    const tier = bulkTiersDraft[+t.closest('[data-bti]')?.dataset.bti]; if (!tier) return true;
+    tier[t.dataset.btf] = t.value;
     return true;
   }
+  /* customisation fields */
   if (t.dataset.cuf) {
     const f = custDraft[+t.dataset.i]; if (!f) return true;
     const k = t.dataset.cuf;
@@ -1440,6 +1622,12 @@ function wireChange(t) {
     else if (k === 'max') f.max = +t.value || 24;
     else f[k] = t.value;
     if (k === 'label' || k === 'required') paintCustom();
+    return true;
+  }
+  /* bulk pricing block toggle */
+  if (t.id === 'bo_bulk') {
+    const blk = $('#bulkPricingBlock');
+    if (blk) blk.hidden = !t.checked;
     return true;
   }
   if (t.id === 'prodFilter') { paintProducts(t.value); return true; }

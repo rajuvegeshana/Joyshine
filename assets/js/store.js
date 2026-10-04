@@ -19,26 +19,61 @@ const money = n => CFG.currencySymbol + nf.format(Math.round(n));
 const byId = id => window.PRODUCTS.find(p => p.id === id);
 const catName = id => (window.CATEGORIES.find(c => c.id === id) || {}).name || id;
 
-/* unit price for a product with a chosen size / material */
+/* ---- backward-compat shim ---------------------------------
+   Old products store colour/size/material in variants.colour etc.
+   New products use variants.options[]. This shim normalises both
+   into the new shape so the rest of the code handles one format. */
+function normaliseProduct(p) {
+  if (!p) return p;
+  const v = p.variants || {};
+  if (v.options) return p; /* already new format */
+
+  const options = [];
+  /* migrate colour → options */
+  if (Array.isArray(v.colour) && v.colour.length) {
+    const vals = v.colour.map(c => ({
+      k: c.k, label: c.label, hex: c.hex || null,
+      images: (p.colourPhotos?.[c.k] ? [p.colourPhotos[c.k]] : []),
+    }));
+    options.push({ name: 'Colour', type: 'colour', values: vals });
+  }
+  /* migrate size */
+  if (Array.isArray(v.size) && v.size.length) {
+    const vals = v.size.map(s => ({
+      k: s.k, label: s.label,
+      delta: s.delta || 0, l: s.l, b: s.b, h: s.h,
+    }));
+    options.push({ name: 'Size', type: 'text', values: vals });
+  }
+  /* migrate material */
+  if (Array.isArray(v.material) && v.material.length) {
+    const vals = v.material.map(m => ({
+      k: m.k, label: m.label,
+      delta: m.delta || 0, stock: m.stock ?? null, note: m.note || '',
+    }));
+    options.push({ name: 'Material', type: 'text', values: vals });
+  }
+  if (options.length) p.variants = { ...v, options };
+  /* migrate single photo into productImages */
+  if (!p.productImages && p.photo) p.productImages = [p.photo];
+  return p;
+}
+
+/* unit price for a product with a chosen variant */
 function unitPrice(p, v = {}) {
   if (!p) return 0;
-  /* check variantMatrix first — may override the flat price */
-  const matrix = p.variantMatrix;
-  if (matrix && matrix.length) {
-    const e = matrix.find(e => {
-      const c = e.combo || {};
-      const colourMatch = !c.colour   || c.colour   === (v?.colour   || '');
-      const sizeMatch   = !c.size     || c.size     === (v?.size     || '');
-      const matMatch    = !c.material || c.material === (v?.material || '');
-      return colourMatch && sizeMatch && matMatch;
-    });
-    if (e && e.price != null) return Math.max(0, e.price);
-  }
+  /* variantMatrix wins — check by option keys */
+  const e = variantEntry(p, v);
+  if (e && e.price != null) return Math.max(0, e.price);
+  /* legacy delta system */
   let n = p.price;
-  const sz = (p.variants?.size || []).find(o => o.k === v.size);
-  const mt = (p.variants?.material || []).find(o => o.k === v.material);
-  if (sz) n += sz.delta;
-  if (mt) n += mt.delta;
+  const opts = p.variants?.options || [];
+  opts.forEach(opt => {
+    const chosen = v[opt.name];
+    if (!chosen) return;
+    const val = opt.values.find(o => o.k === chosen);
+    if (val?.delta) n += val.delta;
+  });
   return Math.max(0, n);
 }
 
@@ -48,56 +83,118 @@ function bulkOff(qty) {
   return t ? t.off : 0;
 }
 
-/* default variant selection for a product */
+/* default variant selection — first value per option */
 function defaults(p) {
   const v = {};
-  if (p.variants?.size)     v.size     = (p.variants.size.find(o => o.k === 'M') || p.variants.size[0]).k;
-  if (p.variants?.material) v.material = p.variants.material[0].k;
-  if (p.variants?.colour)   v.colour   = p.variants.colour[0].k;
+  const opts = p.variants?.options || [];
+  for (const opt of opts) {
+    if (opt.values && opt.values.length) v[opt.name] = opt.values[0].k;
+  }
   return v;
 }
 
-const colourHex = (p, v) => (p.variants?.colour || []).find(o => o.k === v?.colour)?.hex || null;
-const variantText = (p, v) => {
-  if (!v) return '';
-  const out = [];
-  const sz = (p.variants?.size || []).find(o => o.k === v.size);
-  const mt = (p.variants?.material || []).find(o => o.k === v.material);
-  const cl = (p.variants?.colour || []).find(o => o.k === v.colour);
-  if (sz) out.push(sz.label);
-  if (mt) out.push(mt.label);
-  if (cl) out.push(cl.label);
-  return out.join(' · ');
-};
-
-/* find the matching variantMatrix row for a selection */
-function variantEntry(p, v) {
-  const matrix = p.variantMatrix;
-  if (!matrix || !matrix.length) return null;
-  /* exact match first; then colour-only; then any row */
-  return matrix.find(e => {
-    const c = e.combo || {};
-    const colourMatch = !c.colour   || c.colour   === (v?.colour   || '');
-    const sizeMatch   = !c.size     || c.size     === (v?.size     || '');
-    const matMatch    = !c.material || c.material === (v?.material || '');
-    return colourMatch && sizeMatch && matMatch;
-  }) || null;
+/* hex for the current colour selection */
+function colourHex(p, v) {
+  const opts = p.variants?.options || [];
+  const colOpt = opts.find(o => o.type === 'colour');
+  if (!colOpt) return null;
+  const chosen = v?.[colOpt.name];
+  return colOpt.values.find(o => o.k === chosen)?.hex || null;
 }
 
-/* price/was for current selection — matrix wins over product defaults */
+/* human-readable description of selected options */
+function variantText(p, v) {
+  if (!v) return '';
+  const opts = p.variants?.options || [];
+  const parts = [];
+  for (const opt of opts) {
+    const chosen = v[opt.name];
+    if (!chosen) continue;
+    const val = opt.values.find(o => o.k === chosen);
+    if (val) parts.push(val.label || val.k);
+  }
+  return parts.join(' · ');
+}
+
+/* find the best-matching variantMatrix entry */
+function variantEntry(p, v) {
+  const matrix = p.variantMatrix;
+  if (!matrix || !matrix.length || !v) return null;
+  /* score each entry by how many combo keys match */
+  let best = null, bestScore = -1;
+  for (const e of matrix) {
+    const c = e.combo || {};
+    const keys = Object.keys(c);
+    if (!keys.length) continue;
+    const allMatch = keys.every(k => c[k] === (v[k] || ''));
+    if (!allMatch) continue;
+    if (keys.length > bestScore) { best = e; bestScore = keys.length; }
+  }
+  return best;
+}
+
+/* price/was for current selection */
 function variantPrice(p, v) {
   const e = variantEntry(p, v);
   if (e && e.price != null) return { price: e.price, was: e.was ?? null };
   return { price: p.price, was: p.was ?? null };
 }
 
-/* best photo for current selection — exact match → colour → product default */
-function variantPhoto(p, v) {
+/* status for current variant — e.g. 'out-of-stock', 'made-to-order' */
+function variantStatus(p, v) {
   const e = variantEntry(p, v);
-  if (e && e.photo) return e.photo;
-  const ck = v?.colour;
-  if (ck && p.colourPhotos?.[ck]) return p.colourPhotos[ck];
-  return p.photo || null;
+  return e?.status || 'available';
+}
+
+/* processing time for current variant */
+function variantProcessingTime(p, v) {
+  const e = variantEntry(p, v);
+  return e?.processingTime || null;
+}
+
+/* ordered list of images for current selection with fallback hierarchy:
+   exact variant images → colour/option value images → productImages → p.photo */
+function variantImages(p, v) {
+  /* exact variant images */
+  const e = variantEntry(p, v);
+  if (e?.images?.length) return e.images;
+
+  /* colour option value images */
+  const opts = p.variants?.options || [];
+  const colOpt = opts.find(o => o.type === 'colour');
+  if (colOpt) {
+    const chosen = v?.[colOpt.name];
+    const val = colOpt.values.find(o => o.k === chosen);
+    if (val?.images?.length) return val.images;
+  }
+  /* any option value images for non-colour options */
+  for (const opt of opts) {
+    if (opt.type === 'colour') continue;
+    const chosen = v?.[opt.name];
+    const val = opt.values.find(o => o.k === chosen);
+    if (val?.images?.length) return val.images;
+  }
+
+  /* product-level images */
+  if (p.productImages?.length) return p.productImages;
+  if (p.photo) return [p.photo];
+  return [];
+}
+
+/* first/primary photo (for card art, backwards compat) */
+function variantPhoto(p, v) {
+  const imgs = variantImages(p, v);
+  return imgs[0] || null;
+}
+
+/* minimum price across all configured variants, or null if all same */
+function fromPrice(p) {
+  const matrix = p.variantMatrix;
+  if (!matrix || !matrix.length) return null;
+  const prices = matrix.map(e => e.price).filter(n => n != null);
+  if (!prices.length) return null;
+  const min = Math.min(...prices);
+  return min < p.price ? min : null;
 }
 
 /* ---- collections ---------------------------------------- */
@@ -201,9 +298,10 @@ function search(q) {
   if (!q) return [];
   const words = q.split(/\s+/);
   return inStockList().map(p => {
+    const colOpt = (p.variants?.options || []).find(o => o.type === 'colour');
     const hay = [p.name, catName(p.cat), p.blurb, (p.tags || []).join(' '),
                  Object.values(p.specs || {}).join(' '),
-                 (p.variants?.colour || []).map(c => c.label).join(' ')].join(' ').toLowerCase();
+                 (colOpt?.values || []).map(c => c.label).join(' ')].join(' ').toLowerCase();
     let score = 0;
     words.forEach(w => {
       if (p.name.toLowerCase().startsWith(w)) score += 6;
@@ -218,8 +316,11 @@ function search(q) {
 const POPULAR = ['kumkum barni', 'keychain', 'lamp', 'diya', 'phone stand', 'return gifts', 'tractor'];
 
 return {
-  CFG, K, read, write, money, byId, catName, unitPrice, bulkOff, defaults, colourHex, variantText,
-  variantEntry, variantPrice, variantPhoto,
+  CFG, K, read, write, money, byId, catName,
+  normaliseProduct,
+  unitPrice, bulkOff, defaults, colourHex, variantText,
+  variantEntry, variantPrice, variantStatus, variantProcessingTime,
+  variantImages, variantPhoto, fromPrice,
   key, add, setQty, removeAt, clearCart, toLater, fromLater, inWish, toggleWish,
   sawProduct, sawSearch, lineTotal, totals, rail, search, has, POPULAR,
   get cart() { return cart; }, get wish() { return wish; }, get later() { return later; },

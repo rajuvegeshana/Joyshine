@@ -270,55 +270,68 @@ function syncPdp() {
   const unit = S.unitPrice(p, v);
   const off = p.bulk ? S.bulkOff(qty) : 0;
   const hex = S.colourHex(p, v);
+  const vp = S.variantPrice(p, v);
+  const imgs = S.variantImages(p, v);
+  const status = S.variantStatus ? S.variantStatus(p, v) : 'available';
+  const pt = S.variantProcessingTime ? S.variantProcessingTime(p, v) : null;
+  const oos = status === 'out-of-stock';
 
+  /* price */
   const price = $('#pdpPrice');
   if (price) price.textContent = money(off ? Math.round(unit * (1 - off / 100)) : unit);
 
-  /* update was/discount when variant changes price */
-  const vp = S.variantPrice(p, v);
-  const wasEl = price?.parentElement?.querySelector('s');
-  const offEl = price?.parentElement?.querySelector('em');
-  if (wasEl) {
-    if (vp.was) {
-      wasEl.textContent = money(vp.was);
-      wasEl.hidden = false;
-    } else {
-      wasEl.hidden = true;
-    }
-  }
+  /* was / discount */
+  const wasEl = $('#pdpWas'), offEl = $('#pdpOff');
+  if (wasEl) { wasEl.hidden = !vp.was; if (vp.was) wasEl.textContent = money(vp.was); }
   if (offEl) {
-    if (vp.was && vp.price) {
-      offEl.textContent = Math.round((1 - vp.price / vp.was) * 100) + '% off';
-      offEl.hidden = false;
-    } else {
-      offEl.hidden = true;
-    }
+    offEl.hidden = !(vp.was && vp.price);
+    if (vp.was && vp.price) offEl.textContent = Math.round((1 - vp.price / vp.was) * 100) + '% off';
   }
 
-  /* swap photo when variant has its own image */
-  const photo = S.variantPhoto(p, v);
+  /* gallery — rebuild thumbnails when image set changes */
   const stage = $('#pdpStage');
-  if (stage) {
-    const img = stage.querySelector('img');
-    const svg = stage.querySelector('svg');
-    if (photo) {
-      if (img) {
-        if (img.src !== photo && !img.src.endsWith(photo)) img.src = photo;
-      } else if (svg) {
-        /* replace SVG with img when first colour-photo is chosen */
+  if (stage && imgs.length) {
+    const mainImg = stage.querySelector('#pdpMainImg');
+    if (mainImg) { if (mainImg.src !== imgs[0] && !mainImg.src.endsWith(imgs[0])) mainImg.src = imgs[0]; }
+    else {
+      /* first time images arrive (was SVG before) */
+      const svg = stage.querySelector('svg');
+      if (svg) {
         const el = document.createElement('img');
-        el.alt = p.name;
-        el.loading = 'lazy';
-        el.src = photo;
+        el.id = 'pdpMainImg'; el.alt = p.name; el.loading = 'eager'; el.src = imgs[0];
         svg.replaceWith(el);
       }
-    } else if (!photo && !p.photo && svg && hex) {
-      svg.style.setProperty('--art-1', hex);
     }
+    /* rebuild or update thumbnail row */
+    let thumbRow = $('#pdpThumbs');
+    if (!thumbRow && imgs.length > 1) {
+      thumbRow = document.createElement('div');
+      thumbRow.className = 'pdp__thumbrow'; thumbRow.id = 'pdpThumbs';
+      stage.closest('.pdp__media')?.appendChild(thumbRow);
+    }
+    if (thumbRow) {
+      thumbRow.hidden = imgs.length <= 1;
+      thumbRow.innerHTML = imgs.map((url, i) =>
+        `<button class="thumb${i === 0 ? ' on' : ''}" data-gi="${i}" aria-label="Image ${i+1}">
+          <img src="${url.replace(/"/g,'&quot;')}" alt="" loading="lazy"></button>`).join('');
+    }
+  } else if (stage && !imgs.length) {
+    /* recolour SVG if no photos */
+    const svg = stage.querySelector('svg');
+    if (svg && hex) svg.style.setProperty('--art-1', hex);
   }
-  /* also recolour SVG when no photo swap happened */
-  const stageSvg = $('#pdpStage svg');
-  if (stageSvg && hex) stageSvg.style.setProperty('--art-1', hex);
+
+  /* processing time */
+  const ptEl = $('#pdpProcTime');
+  if (ptEl) {
+    if (pt && status !== 'made-to-order') { ptEl.hidden = false; ptEl.textContent = 'Ships in ' + pt; }
+    else ptEl.hidden = true;
+  }
+
+  /* out-of-stock button states */
+  const buyBtn = $('#pdpBuy'), addBtn = $('#pdpAdd');
+  if (buyBtn) buyBtn.disabled = oos;
+  if (addBtn) addBtn.disabled = oos;
 
   $('#pdpQty') && ($('#pdpQty').textContent = qty);
   const bulk = $('#pdpBulk');
@@ -1050,6 +1063,15 @@ async function boot() {
     const quote = t.closest('[data-quote]'); if (quote) { location.hash = '#/custom?p=' + quote.dataset.quote; return; }
 
     /* pdp */
+    const gi = t.closest('[data-gi]');
+    if (gi && pdp) {
+      const idx = +gi.dataset.gi;
+      const mainImg = $('#pdpMainImg');
+      const imgs = S.variantImages(pdp.p, pdp.v);
+      if (mainImg && imgs[idx]) mainImg.src = imgs[idx];
+      $$('#pdpThumbs .thumb').forEach((b, i) => b.classList.toggle('on', i === idx));
+      return;
+    }
     const vb = t.closest('[data-v]');
     if (vb && pdp) { pdp.v = { ...pdp.v, [vb.dataset.v]: vb.dataset.val }; syncPdp(); return; }
     const pq = t.closest('[data-pq]');
