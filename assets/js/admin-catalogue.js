@@ -420,6 +420,13 @@ function productForm(r) {
   </div>
 
   <div class="ad-card">
+    <h3>Price and photo per colour</h3>
+    <p class="ad-p">Leave price blank to use the base price for that colour. Add a photo URL to
+      swap the product image when a customer picks that colour. Enable colours above first.</p>
+    <div id="varMatrixList"></div>
+  </div>
+
+  <div class="ad-card">
     <h3>Sizes</h3>
     <p class="ad-p">The dimensions show on the product page, so nobody has to guess what
       "Large" means. Leave this empty and the product is one size.</p>
@@ -460,6 +467,7 @@ function productForm(r) {
 /* ---------- the size builder ------------------------------ */
 let sizeDraft = [];
 let matDraft = [];
+let varMatrixDraft = []; /* per-colour price/photo overrides */
 
 const num = (x, d = 0) => (x === '' || x === null || x === undefined || isNaN(+x) ? d : +x);
 
@@ -516,7 +524,43 @@ function loadVariantDrafts(p) {
   const copy = a => JSON.parse(JSON.stringify(a || []));
   sizeDraft = copy(v.size);
   matDraft = copy(v.material);
+  /* load per-colour rows: one entry per colour, preserving saved price/was/photo */
+  if (V.COLOURS) {
+    const saved = (p && p.variantMatrix) || [];
+    varMatrixDraft = V.COLOURS.map(c => {
+      const found = saved.find(e => e.combo?.colour === c.k) || {};
+      return { colour: c.k, label: c.label, hex: c.hex,
+               price: found.price ?? '', was: found.was ?? '',
+               photo: found.photo || '',
+               colourPhoto: (p && p.colourPhotos?.[c.k]) || '' };
+    });
+  }
   return V;
+}
+
+function paintVariantMatrix() {
+  const box = $('#varMatrixList'); if (!box) return;
+  if (!varMatrixDraft.length) {
+    box.innerHTML = '<p class="ad-empty">Enable "Offer the filament colours" above to set prices per colour.</p>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="ad-vgrid ad-vgrid--vmx ad-vgrid--head">
+      <span>Colour</span><span>Price (₹)</span><span>Was (₹)</span><span>Photo URL</span>
+    </div>
+    ${varMatrixDraft.map((row, i) => `
+      <div class="ad-vgrid ad-vgrid--vmx" data-vmxi="${i}">
+        <span style="display:flex;align-items:center;gap:6px">
+          <i style="width:14px;height:14px;border-radius:50%;background:${esc(row.hex)};display:inline-block;flex-shrink:0"></i>
+          ${esc(row.label)}
+        </span>
+        <input data-vmxf="price" type="number" min="0" step="10"
+               value="${row.price !== '' ? row.price : ''}" placeholder="(same as base)">
+        <input data-vmxf="was" type="number" min="0" step="10"
+               value="${row.was !== '' ? row.was : ''}" placeholder="">
+        <input data-vmxf="colourPhoto" value="${esc(row.colourPhoto)}"
+               placeholder="https://… or assets/img/…">
+      </div>`).join('')}`;
 }
 
 /* ---------- the customisation builder --------------------- */
@@ -604,6 +648,24 @@ function readForm(r) {
   if (on('v_colour') && V.COLOURS) variants.colour = V.COLOURS;
   if (Object.keys(variants).length) data.variants = variants;
 
+  /* collect per-colour price/photo overrides from varMatrixDraft */
+  if (varMatrixDraft.length) {
+    const matrix = varMatrixDraft
+      .filter(row => (row.price !== '' && row.price != null) || row.colourPhoto)
+      .map(row => {
+        const entry = { combo: { colour: row.colour } };
+        if (row.price !== '' && row.price != null) entry.price = +row.price;
+        if (row.was !== '' && row.was != null && row.was !== '') entry.was = +row.was;
+        if (row.colourPhoto) entry.photo = row.colourPhoto;
+        return entry;
+      });
+    if (matrix.length) data.variantMatrix = matrix;
+
+    const colourPhotos = {};
+    varMatrixDraft.forEach(row => { if (row.colourPhoto) colourPhotos[row.colour] = row.colourPhoto; });
+    if (Object.keys(colourPhotos).length) data.colourPhotos = colourPhotos;
+  }
+
   const custom = custDraft.filter(f => (f.label || '').trim());
   if (custom.length) data.custom = custom;
 
@@ -626,7 +688,7 @@ function openProductModal() {
       <button class="ad-btn ad-btn--primary" data-x="save">Save</button>
     </div>`, saveProduct);
   /* after the modal DOM is in place, wire the sub-editors */
-  setTimeout(() => { paintCustom(); paintSizes(); paintMats(); paintImage(); }, 0);
+  setTimeout(() => { paintCustom(); paintSizes(); paintMats(); paintVariantMatrix(); paintImage(); }, 0);
 }
 
 async function saveProduct() {
@@ -1351,7 +1413,25 @@ function wireChange(t) {
     m[t.dataset.mtf] = t.value;
     return true;
   }
+  if (t.dataset.vmxf) {
+    const row = varMatrixDraft[+t.closest('[data-vmxi]')?.dataset.vmxi]; if (!row) return true;
+    row[t.dataset.vmxf] = t.value;
+    return true;
+  }
   if (t.id === 'f_photo') { paintImage(); return true; }
+  if (t.id === 'v_colour') {
+    /* when colour toggle changes, load/clear the matrix draft and repaint */
+    const V = window.VARIANT_OPTIONS || {};
+    if (t.checked && V.COLOURS) {
+      if (!varMatrixDraft.length) varMatrixDraft = V.COLOURS.map(c => ({
+        colour: c.k, label: c.label, hex: c.hex, price: '', was: '', colourPhoto: '',
+      }));
+    } else {
+      varMatrixDraft = [];
+    }
+    paintVariantMatrix();
+    return true;
+  }
   if (t.dataset.cuf) {
     const f = custDraft[+t.dataset.i]; if (!f) return true;
     const k = t.dataset.cuf;

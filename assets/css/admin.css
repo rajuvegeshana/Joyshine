@@ -394,6 +394,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin-bottom: .45rem;
 }
 .ad-vgrid--mat { grid-template-columns: minmax(0, 1.3fr) 5.5rem 6rem minmax(0, 2fr) 2rem; }
+.ad-vgrid--vmx { grid-template-columns: minmax(0, 1.4fr) 6rem 6rem minmax(0, 2fr); }
 .ad-vgrid input { width: 100%; min-width: 0; }
 .ad-vgrid--head {
   font-size: .74rem;

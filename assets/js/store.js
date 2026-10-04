@@ -22,6 +22,18 @@ const catName = id => (window.CATEGORIES.find(c => c.id === id) || {}).name || i
 /* unit price for a product with a chosen size / material */
 function unitPrice(p, v = {}) {
   if (!p) return 0;
+  /* check variantMatrix first — may override the flat price */
+  const matrix = p.variantMatrix;
+  if (matrix && matrix.length) {
+    const e = matrix.find(e => {
+      const c = e.combo || {};
+      const colourMatch = !c.colour   || c.colour   === (v?.colour   || '');
+      const sizeMatch   = !c.size     || c.size     === (v?.size     || '');
+      const matMatch    = !c.material || c.material === (v?.material || '');
+      return colourMatch && sizeMatch && matMatch;
+    });
+    if (e && e.price != null) return Math.max(0, e.price);
+  }
   let n = p.price;
   const sz = (p.variants?.size || []).find(o => o.k === v.size);
   const mt = (p.variants?.material || []).find(o => o.k === v.material);
@@ -57,6 +69,36 @@ const variantText = (p, v) => {
   if (cl) out.push(cl.label);
   return out.join(' · ');
 };
+
+/* find the matching variantMatrix row for a selection */
+function variantEntry(p, v) {
+  const matrix = p.variantMatrix;
+  if (!matrix || !matrix.length) return null;
+  /* exact match first; then colour-only; then any row */
+  return matrix.find(e => {
+    const c = e.combo || {};
+    const colourMatch = !c.colour   || c.colour   === (v?.colour   || '');
+    const sizeMatch   = !c.size     || c.size     === (v?.size     || '');
+    const matMatch    = !c.material || c.material === (v?.material || '');
+    return colourMatch && sizeMatch && matMatch;
+  }) || null;
+}
+
+/* price/was for current selection — matrix wins over product defaults */
+function variantPrice(p, v) {
+  const e = variantEntry(p, v);
+  if (e && e.price != null) return { price: e.price, was: e.was ?? null };
+  return { price: p.price, was: p.was ?? null };
+}
+
+/* best photo for current selection — exact match → colour → product default */
+function variantPhoto(p, v) {
+  const e = variantEntry(p, v);
+  if (e && e.photo) return e.photo;
+  const ck = v?.colour;
+  if (ck && p.colourPhotos?.[ck]) return p.colourPhotos[ck];
+  return p.photo || null;
+}
 
 /* ---- collections ---------------------------------------- */
 let cart   = read(K.cart, []).filter(i => byId(i.id));
@@ -177,6 +219,7 @@ const POPULAR = ['kumkum barni', 'keychain', 'lamp', 'diya', 'phone stand', 'ret
 
 return {
   CFG, K, read, write, money, byId, catName, unitPrice, bulkOff, defaults, colourHex, variantText,
+  variantEntry, variantPrice, variantPhoto,
   key, add, setQty, removeAt, clearCart, toLater, fromLater, inWish, toggleWish,
   sawProduct, sawSearch, lineTotal, totals, rail, search, has, POPULAR,
   get cart() { return cart; }, get wish() { return wish; }, get later() { return later; },

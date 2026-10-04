@@ -273,8 +273,53 @@ function syncPdp() {
 
   const price = $('#pdpPrice');
   if (price) price.textContent = money(off ? Math.round(unit * (1 - off / 100)) : unit);
-  const stage = $('#pdpStage svg');
-  if (stage && hex) stage.style.setProperty('--art-1', hex);
+
+  /* update was/discount when variant changes price */
+  const vp = S.variantPrice(p, v);
+  const wasEl = price?.parentElement?.querySelector('s');
+  const offEl = price?.parentElement?.querySelector('em');
+  if (wasEl) {
+    if (vp.was) {
+      wasEl.textContent = money(vp.was);
+      wasEl.hidden = false;
+    } else {
+      wasEl.hidden = true;
+    }
+  }
+  if (offEl) {
+    if (vp.was && vp.price) {
+      offEl.textContent = Math.round((1 - vp.price / vp.was) * 100) + '% off';
+      offEl.hidden = false;
+    } else {
+      offEl.hidden = true;
+    }
+  }
+
+  /* swap photo when variant has its own image */
+  const photo = S.variantPhoto(p, v);
+  const stage = $('#pdpStage');
+  if (stage) {
+    const img = stage.querySelector('img');
+    const svg = stage.querySelector('svg');
+    if (photo) {
+      if (img) {
+        if (img.src !== photo && !img.src.endsWith(photo)) img.src = photo;
+      } else if (svg) {
+        /* replace SVG with img when first colour-photo is chosen */
+        const el = document.createElement('img');
+        el.alt = p.name;
+        el.loading = 'lazy';
+        el.src = photo;
+        svg.replaceWith(el);
+      }
+    } else if (!photo && !p.photo && svg && hex) {
+      svg.style.setProperty('--art-1', hex);
+    }
+  }
+  /* also recolour SVG when no photo swap happened */
+  const stageSvg = $('#pdpStage svg');
+  if (stageSvg && hex) stageSvg.style.setProperty('--art-1', hex);
+
   $('#pdpQty') && ($('#pdpQty').textContent = qty);
   const bulk = $('#pdpBulk');
   if (bulk) bulk.textContent = off ? `${off}% bulk discount applied · ${money(Math.round(unit * qty * (1 - off / 100)))} total`
