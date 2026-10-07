@@ -442,17 +442,16 @@ function productForm(r) {
   </div>
 
   <div class="ad-card">
-    <h3>Options</h3>
-    <p class="ad-p">Define selectable options like Colour, Size or Material. Each option gets a list of values. Colour options show a swatch. Leave this empty and the product has no variants.</p>
+    <h3>Variants</h3>
+    <p class="ad-p" style="margin-bottom:.8rem">Add options like Colour or Size. The price table builds itself.</p>
     <div id="optionsList"></div>
-    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" style="margin-top:.7rem">+ Add Option</button>
-  </div>
-
-  <div class="ad-card">
-    <h3>Variant matrix</h3>
-    <p class="ad-p">Set price, stock, status and processing time per variant. Leave price blank to use the base price. Click "Refresh" after adding or removing options.</p>
-    <div id="varMatrixList"></div>
-    <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="vmxrefresh" style="margin-top:.7rem">↻ Refresh matrix</button>
+    <div class="ad-var-addrow">
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" data-preset="Colour" data-ptype="colour">+ Colour</button>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" data-preset="Size" data-ptype="text">+ Size</button>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" data-preset="Material" data-ptype="text">+ Material</button>
+      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" data-preset="" data-ptype="text">+ Custom</button>
+    </div>
+    <div id="varMatrixList" style="margin-top:1rem"></div>
   </div>
 
   <div class="ad-card">
@@ -546,33 +545,47 @@ function vkey(label, i) {
 
 function paintOptions() {
   const box = $('#optionsList'); if (!box) return;
-  if (!optionsDraft.length) {
-    box.innerHTML = '<p class="ad-empty">No options yet. This product has one variant only.</p>';
-    return;
-  }
+  if (!optionsDraft.length) { box.innerHTML = ''; return; }
   box.innerHTML = optionsDraft.map((opt, oi) => `
-    <div class="ad-opt" data-oi="${oi}">
-      <div class="ad-opt__head">
-        <input class="ad-opt__name" data-opf="name" data-oi="${oi}" value="${esc(opt.name)}" placeholder="Option name (e.g. Colour)">
-        <select data-opf="type" data-oi="${oi}">
-          <option value="colour"${opt.type === 'colour' ? ' selected' : ''}>Colour (swatch)</option>
-          <option value="text"${opt.type === 'text' ? ' selected' : ''}>Text (pill)</option>
-          <option value="select"${opt.type === 'select' ? ' selected' : ''}>Dropdown</option>
+    <div class="ad-varopt" data-oi="${oi}">
+      <div class="ad-varopt__head">
+        <input class="ad-varopt__name" data-opf="name" data-oi="${oi}" value="${esc(opt.name)}" placeholder="Option name">
+        <select class="ad-varopt__type" data-opf="type" data-oi="${oi}">
+          <option value="colour"${opt.type === 'colour' ? ' selected' : ''}>Colour</option>
+          <option value="text"${opt.type === 'text' ? ' selected' : ''}>Text</option>
         </select>
-        <button type="button" class="ad-o__more ad-o__more--warn" data-x="optdel" data-oi="${oi}" title="Remove option">&times;</button>
+        <button type="button" class="ad-varopt__del" data-x="optdel" data-oi="${oi}" title="Remove option">&times;</button>
       </div>
-      <div class="ad-opt__vals">
+      <div class="ad-varopt__chips">
         ${(opt.values || []).map((val, vi) => `
-          <div class="ad-opt__val" data-oi="${oi}" data-vi="${vi}">
-            <input data-valf="label" value="${esc(val.label)}" placeholder="Value label">
-            ${opt.type === 'colour' ? `<input type="color" data-valf="hex" value="${esc(val.hex || '#cccccc')}" title="Swatch colour">` : ''}
-            <span class="ad-opt__imgcount">${(val.images || []).length} img${(val.images || []).length !== 1 ? 's' : ''}</span>
-            <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="valimgs" data-oi="${oi}" data-vi="${vi}">Images</button>
-            <button type="button" class="ad-o__more ad-o__more--warn" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
-          </div>`).join('')}
-        <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="valadd" data-oi="${oi}" style="margin-top:.4rem">+ Add value</button>
+          <span class="ad-vchip" data-oi="${oi}" data-vi="${vi}">
+            ${opt.type === 'colour' ? `<input type="color" class="ad-vchip__swatch" data-valf="hex" data-oi="${oi}" data-vi="${vi}" value="${esc(val.hex || '#cccccc')}" title="${esc(val.label)}">` : ''}
+            <span class="ad-vchip__label">${esc(val.label)}</span>
+            <button type="button" class="ad-vchip__del" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
+          </span>`).join('')}
+        <input class="ad-vchip__input" data-oi="${oi}" placeholder="Type and press Enter" data-x="valinput">
       </div>
     </div>`).join('');
+
+  /* wire Enter/comma on the chip inputs */
+  box.querySelectorAll('.ad-vchip__input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ',') return;
+      e.preventDefault();
+      const label = inp.value.replace(',', '').trim();
+      if (!label) return;
+      const oi = +inp.dataset.oi;
+      const opt = optionsDraft[oi]; if (!opt) return;
+      const vi = (opt.values || []).length;
+      opt.values = opt.values || [];
+      opt.values.push({ k: vkey(label, vi), label,
+        ...(opt.type === 'colour' ? { hex: '#cccccc' } : {}) });
+      inp.value = '';
+      paintOptions();
+      rebuildMatrixFromOptions();
+      paintVariantMatrix();
+    });
+  });
 }
 
 function loadVariantDrafts(p) {
@@ -620,29 +633,33 @@ function rebuildMatrixFromOptions() {
 
 function paintVariantMatrix() {
   const box = $('#varMatrixList'); if (!box) return;
-  if (!matrixDraft.length) {
-    box.innerHTML = '<p class="ad-empty">No variants yet. Add options above then click Refresh.</p>';
-    return;
-  }
-  const comboLabel = combo => Object.values(combo).join(' / ');
+  if (!matrixDraft.length) { box.innerHTML = ''; return; }
+  const opts = optionsDraft.filter(o => (o.values || []).length);
+  const comboLabel = combo => {
+    return opts.map(o => {
+      const k = combo[o.name];
+      const val = (o.values || []).find(v => (v.k || vkey(v.label, 0)) === k);
+      return val ? val.label : k;
+    }).join(' / ');
+  };
   box.innerHTML = `
-    <div class="ad-vmx">
-      <div class="ad-vmx__head">
-        <span>Variant</span><span>Price ₹</span><span>Was ₹</span><span>SKU</span><span>Stock</span><span>Status</span><span>Processing</span>
-      </div>
-      ${matrixDraft.map((row, i) => `
-        <div class="ad-vmx__row" data-mxi="${i}">
-          <span class="ad-vmx__label">${esc(comboLabel(row.combo))}</span>
-          <input data-mxf="price" type="number" min="0" step="10" value="${row.price !== '' ? row.price : ''}" placeholder="base">
-          <input data-mxf="was" type="number" min="0" step="10" value="${row.was !== '' ? row.was : ''}">
-          <input data-mxf="sku" value="${esc(row.sku)}" placeholder="SKU">
-          <input data-mxf="stock" type="number" min="0" value="${row.stock !== '' ? row.stock : ''}" placeholder="∞">
-          <select data-mxf="status">
-            ${VARIANT_STATUSES.map(s => `<option value="${s}"${row.status === s ? ' selected' : ''}>${s}</option>`).join('')}
-          </select>
-          <input data-mxf="processingTime" value="${esc(row.processingTime)}" placeholder="3–5 days">
-        </div>`).join('')}
-    </div>`;
+    <table class="ad-vmx-table">
+      <thead><tr>
+        <th>Variant</th><th>Price ₹</th><th>Was ₹</th><th>Stock</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${matrixDraft.map((row, i) => `
+          <tr data-mxi="${i}">
+            <td class="ad-vmx-table__label">${esc(comboLabel(row.combo))}</td>
+            <td><input data-mxf="price" type="number" min="0" step="10" value="${row.price !== '' ? row.price : ''}" placeholder="₹0"></td>
+            <td><input data-mxf="was" type="number" min="0" step="10" value="${row.was !== '' ? row.was : ''}" placeholder="—"></td>
+            <td><input data-mxf="stock" type="number" min="0" value="${row.stock !== '' ? row.stock : ''}" placeholder="∞"></td>
+            <td><select data-mxf="status">
+              ${VARIANT_STATUSES.map(s => `<option value="${s}"${row.status === s ? ' selected' : ''}>${s}</option>`).join('')}
+            </select></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 
 function paintBulkTiers() {
@@ -1491,17 +1508,14 @@ function wire(t) {
 
   /* --- options builder --- */
   if (act === 'optadd') {
-    optionsDraft.push({ name: '', type: 'text', values: [] });
+    const name = t.dataset.preset || '';
+    const type = t.dataset.ptype || 'text';
+    optionsDraft.push({ name, type, values: [] });
     paintOptions(); return true;
   }
   if (act === 'optdel') {
     optionsDraft.splice(+t.closest('[data-oi]').dataset.oi, 1);
     paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
-  }
-  if (act === 'valadd') {
-    const oi = +t.closest('[data-oi]').dataset.oi;
-    optionsDraft[oi].values.push({ k: '', label: '', hex: '#cccccc', images: [] });
-    paintOptions(); return true;
   }
   if (act === 'valdel') {
     const oi = +t.closest('[data-oi]').dataset.oi;
@@ -1509,7 +1523,6 @@ function wire(t) {
     optionsDraft[oi].values.splice(vi, 1);
     paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
   }
-  if (act === 'vmxrefresh') { rebuildMatrixFromOptions(); paintVariantMatrix(); return true; }
 
   /* --- product image gallery --- */
   if (act === 'galpick') {
@@ -1650,16 +1663,16 @@ function wireChange(t) {
     const oi = +t.closest('[data-oi]')?.dataset.oi;
     const opt = optionsDraft[oi]; if (!opt) return true;
     opt[t.dataset.opf] = t.value;
-    if (t.dataset.opf === 'name') paintVariantMatrix(); /* combo keys change */
+    if (t.dataset.opf === 'type') paintOptions(); /* swatch vs text chips change */
+    if (t.dataset.opf === 'name') rebuildMatrixFromOptions(), paintVariantMatrix();
     return true;
   }
-  /* options builder — value-level fields */
+  /* options builder — value-level colour swatch */
   if (t.dataset.valf) {
     const oi = +t.closest('[data-oi]')?.dataset.oi;
     const vi = +t.closest('[data-vi]')?.dataset.vi;
     const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
     val[t.dataset.valf] = t.value;
-    if (t.dataset.valf === 'label') { val.k = vkey(t.value, vi); }
     return true;
   }
   /* variant matrix row fields */
