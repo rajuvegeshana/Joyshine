@@ -948,6 +948,7 @@ body.modal-open { overflow: hidden; }
   border: 1px solid var(--c-line); border-radius: 5px; padding: .3rem .5rem;
   background: var(--c-bg); color: var(--c-text);
 }
+.ad-colval__imgs { flex-shrink: 0; font-size: .78rem; white-space: nowrap; }
 .ad-vchip {
   display: inline-flex; align-items: center; gap: .3rem;
   background: var(--c-primary-soft); border: 1px solid color-mix(in oklab, var(--c-primary) 40%, transparent);

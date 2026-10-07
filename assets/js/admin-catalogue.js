@@ -571,6 +571,10 @@ function paintOptions() {
                 value="${esc(val.hex || '#cccccc')}" placeholder="#rrggbb" maxlength="7" spellcheck="false">
               <input type="text" class="ad-colval__label" data-valf="label" data-oi="${oi}" data-vi="${vi}"
                 value="${esc(val.label)}" placeholder="Name (e.g. Sky Blue)">
+              <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm ad-colval__imgs"
+                data-x="valimgs" data-oi="${oi}" data-vi="${vi}" title="Photos for this colour">
+                📷 ${(val.images || []).length ? `${val.images.length} photo${val.images.length !== 1 ? 's' : ''}` : 'Photos'}
+              </button>
               <button type="button" class="ad-varopt__del" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
             </div>`).join('')}
           <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="coladd" data-oi="${oi}" style="margin-top:.5rem">+ Add colour</button>
@@ -1708,53 +1712,63 @@ function wire(t) {
     const oi = +t.dataset.oi, vi = +t.dataset.vi;
     const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
     const imgs = val.images || (val.images = []);
+    const label = val.label || 'this colour';
+
+    const refreshGal = () => {
+      const gal = document.querySelector('#valGallery');
+      if (!gal) return;
+      gal.innerHTML = imgs.length
+        ? imgs.map((u, i) => `
+            <div class="ad-gallery__item">
+              <img src="${esc(u)}" alt="">
+              <div class="ad-gallery__actions">
+                <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
+              </div>
+            </div>`).join('')
+        : '<p class="ad-empty" style="padding:.5rem 0">No photos yet — add some below.</p>';
+      /* update the count badge on the Photos button in the colour row */
+      const btn = document.querySelector(`.ad-colval[data-oi="${oi}"][data-vi="${vi}"] .ad-colval__imgs`);
+      if (btn) btn.textContent = `📷 ${imgs.length ? `${imgs.length} photo${imgs.length !== 1 ? 's' : ''}` : 'Photos'}`;
+    };
+
     openModal(`
-      <div class="ad-modal__head"><h3>Images for "${esc(val.label || 'this value')}"</h3></div>
+      <div class="ad-modal__head">
+        <h3>Photos for <b>${esc(label)}</b></h3>
+      </div>
       <div class="ad-modal__body">
-        <p class="ad-p">These images show when a customer picks this option. They override the product images.</p>
-        <div id="valGallery" class="ad-gallery">${imgs.map((u, i) => `
-          <div class="ad-gallery__item">
-            <img src="${esc(u)}" alt="">
-            <div class="ad-gallery__actions">
-              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
-            </div>
-          </div>`).join('')}</div>
-        <input type="file" id="vg_file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
-        <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" id="vg_pick" style="margin-top:.7rem">+ Add Images</button>
+        <p class="ad-p">These photos show in the gallery when a customer picks this colour. They override the main product photos.</p>
+        <div id="valGallery" class="ad-gallery"></div>
+        <div class="ad-up" style="margin-top:.7rem">
+          <input type="file" id="vg_file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+          <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" id="vg_pick">+ Add photos</button>
+          <span class="ad-hint" id="vg_msg">or drag here</span>
+        </div>
       </div>
       <div class="ad-modal__foot">
         <button class="ad-btn ad-btn--primary" data-x="modal-save">Done</button>
-      </div>`, () => { paintOptions(); });
+      </div>`, () => { /* close callback — nothing extra needed */ });
+
     setTimeout(() => {
+      refreshGal();
       const pick = document.querySelector('#vg_pick');
       const inp = document.querySelector('#vg_file');
+      const msg = document.querySelector('#vg_msg');
       if (pick && inp) pick.addEventListener('click', () => inp.click());
       if (inp) inp.addEventListener('change', async e => {
         const files = [...e.target.files]; e.target.value = '';
+        if (msg) msg.textContent = 'Uploading…';
         for (const f of files) {
-          const url = await CATALOGUE.uploadFile(f).catch(() => null);
-          if (url) { imgs.push(url); }
+          const url = await CLOUD.uploadImage(f).catch(() => null);
+          if (url) imgs.push(url);
         }
-        const gal = document.querySelector('#valGallery');
-        if (gal) gal.innerHTML = imgs.map((u, i) => `
-          <div class="ad-gallery__item">
-            <img src="${esc(u)}" alt="">
-            <div class="ad-gallery__actions">
-              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
-            </div>
-          </div>`).join('');
+        if (msg) msg.textContent = 'or drag here';
+        refreshGal();
       });
       document.querySelector('#valGallery')?.addEventListener('click', e => {
         const btn = e.target.closest('[data-x="vgdel"]');
         if (!btn) return;
         imgs.splice(+btn.dataset.i, 1);
-        const gal = document.querySelector('#valGallery');
-        if (gal) gal.innerHTML = imgs.map((u, i) => `
-          <div class="ad-gallery__item"><img src="${esc(u)}" alt="">
-            <div class="ad-gallery__actions">
-              <button class="ad-gallery__btn ad-gallery__btn--del" data-x="vgdel" data-i="${i}">&times;</button>
-            </div>
-          </div>`).join('');
+        refreshGal();
       });
     }, 0);
     return true;
@@ -1829,7 +1843,7 @@ function wireChange(t) {
     const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
     const field = t.dataset.valf;
     val[field] = t.value;
-    if (field === 'label') val.k = vkey(t.value, vi);
+    /* never regen val.k on label edit — that breaks the combo→price lookup */
     /* keep colour picker and hex text in sync when changed via wireChange */
     if (field === 'hex') {
       const row = t.closest('[data-vi]');
