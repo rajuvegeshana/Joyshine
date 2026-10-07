@@ -484,7 +484,7 @@ function discardAll() {
 
 /* ---- 2. Save and preview ---------------------------------- */
 function saveAndPreview() {
-  if (!dirty) { toast('Nothing has changed yet'); return; }
+  if (!dirty) { toast('No settings changes to preview. Products save straight to the shop — they are already live.'); return; }
   save();
   try { localStorage.setItem(PREVIEW, JSON.stringify(build())); } catch {
     toast('This browser will not let the panel store a preview'); return;
@@ -549,7 +549,7 @@ const STEPS = [
 
 function publishFlow() {
   const changes = changeList();
-  if (!changes.length) { toast('Nothing has changed since the last publish'); return; }
+  if (!changes.length) { toast('No settings changes to publish. Products save straight to the shop — they are already live.'); return; }
   modal({
     title: 'Publish these changes?',
     lead: 'Everything below goes to the live shop at once. Nothing else is touched.',
