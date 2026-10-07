@@ -694,7 +694,9 @@ li[data-state="bad"] .ad-steps__dot::after {
   background: rgb(0 0 0 / .45); backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
   padding: 1rem; animation: adScrimIn .18s ease;
+  overflow-y: auto;
 }
+body.modal-open { overflow: hidden; }
 @keyframes adScrimIn { from { opacity: 0 } to { opacity: 1 } }
 .ad-modal {
   background: var(--c-surface); border-radius: var(--r-card);
@@ -755,6 +757,30 @@ li[data-state="bad"] .ad-steps__dot::after {
 .ad-drag-handle:active { cursor: grabbing; }
 .ad-prodtable .dragging { opacity: .4; }
 .ad-prodtable .drag-over td { border-top: 2px solid var(--c-primary); }
+
+/* ===== FULL-PAGE PRODUCT EDITOR ======================== */
+.ad-prodeditor {
+  display: flex; flex-direction: column; min-height: 100%;
+}
+.ad-prodeditor__topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; background: var(--c-surface);
+  border-bottom: 1px solid var(--c-line);
+  flex-shrink: 0;
+}
+.ad-prodeditor__body {
+  padding: 20px; display: flex; flex-direction: column; gap: 16px; flex: 1;
+}
+.ad-field-label {
+  display: block; font-size: .78rem; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--c-text-3); margin-bottom: 6px;
+}
+.ad-card__inner {
+  background: var(--c-bg); border: 1px solid var(--c-line);
+  border-radius: var(--r-base); padding: 12px 14px;
+}
 
 /* icon upload area */
 .ad-iconup {

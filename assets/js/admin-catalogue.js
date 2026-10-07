@@ -59,11 +59,10 @@ function openModal(html, onSave) {
   scrim.className = 'ad-modal-scrim';
   scrim.innerHTML = `<div class="ad-modal" role="dialog" aria-modal="true">${html}</div>`;
   document.body.appendChild(scrim);
-  /* close on scrim click, not on modal click */
+  document.body.classList.add('modal-open');
   scrim.addEventListener('click', e => { if (e.target === scrim) closeModal(); });
   scrim.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   if (onSave) scrim._onSave = onSave;
-  /* wire the footer buttons */
   scrim.addEventListener('click', e => {
     const act = e.target.closest('[data-x]')?.dataset.x;
     if (act === 'modal-save') { if (scrim._onSave) scrim._onSave(); }
@@ -74,6 +73,7 @@ function openModal(html, onSave) {
 function closeModal() {
   const s = document.querySelector('.ad-modal-scrim');
   if (s) s.remove();
+  document.body.classList.remove('modal-open');
 }
 
 /* ---------- products list -------------------------------- */
@@ -486,7 +486,26 @@ function productForm(r) {
   <div class="ad-card">
     <h3>The expandable sections</h3>
     <label class="ad-field"><span>Materials</span><textarea id="d_materials" rows="2">${esc(d.materials)}</textarea></label>
-    <label class="ad-field"><span>Dimensions</span><textarea id="d_dimensions" rows="2">${esc(d.dimensions)}</textarea></label>
+
+    <div class="ad-card__inner">
+      <span class="ad-field-label">Dimensions (mm)</span>
+      <div class="ad-grid3" style="gap:8px">
+        <label class="ad-field" style="margin:0"><span>Length (L)</span><input id="d_dimL" type="number" min="0" step="0.1" value="${esc(d.dimL ?? '')}"></label>
+        <label class="ad-field" style="margin:0"><span>Breadth (B)</span><input id="d_dimB" type="number" min="0" step="0.1" value="${esc(d.dimB ?? '')}"></label>
+        <label class="ad-field" style="margin:0"><span>Height (H)</span><input id="d_dimH" type="number" min="0" step="0.1" value="${esc(d.dimH ?? '')}"></label>
+      </div>
+      <div style="margin-top:8px">
+        <span class="ad-hint">Or pick a clothing size label:</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          ${['XS','S','M','L','XL','XXL','One size'].map(sz =>
+            `<label class="ad-pill" style="cursor:pointer">
+              <input type="radio" name="d_sizePreset" value="${sz}"${d.sizePreset === sz ? ' checked' : ''}> ${sz}</label>`).join('')}
+          <label class="ad-pill" style="cursor:pointer">
+            <input type="radio" name="d_sizePreset" value=""${!d.sizePreset ? ' checked' : ''}> None</label>
+        </div>
+      </div>
+    </div>
+
     <label class="ad-field"><span>Care</span><textarea id="d_care" rows="2">${esc(d.care)}</textarea></label>
     <label class="ad-field"><span>Production</span><textarea id="d_production" rows="2">${esc(d.production)}</textarea></label>
     <label class="ad-field" style="margin-bottom:0"><span>Shipping</span><textarea id="d_shipping" rows="2">${esc(d.shipping)}</textarea></label>
@@ -702,7 +721,10 @@ function readForm(r) {
     artKey: g('f_art'),
     tags: $$('[data-tag]').filter(c => c.checked).map(c => c.dataset.tag),
     specs: { Material: g('s_Material'), Layer: g('s_Layer'), Print: g('s_Print'), Size: g('s_Size') },
-    details: { materials: g('d_materials'), dimensions: g('d_dimensions'), care: g('d_care'),
+    details: { materials: g('d_materials'),
+               dimL: n('d_dimL'), dimB: n('d_dimB'), dimH: n('d_dimH'),
+               sizePreset: document.querySelector('[name="d_sizePreset"]:checked')?.value || '',
+               care: g('d_care'),
                production: g('d_production'), shipping: g('d_shipping') },
     bulk: on('f_bulk'),
     reviews: r.data?.reviews || [],
@@ -770,21 +792,23 @@ function readForm(r) {
   return { id: r.id || slug(name), data, sort: n('f_sort') ?? 0, hidden: on('f_hidden') };
 }
 
-/* open the product add/edit form in a modal overlay */
+/* open the product editor as a full-page panel inside #pane-products */
 function openProductModal() {
   if (!editing) return;
-  openModal(`
-    <div class="ad-modal__head">
-      <h3>${editing.isNew ? 'New product' : esc((editing.data || {}).name || editing.id)}</h3>
-    </div>
-    <div class="ad-modal__body">
-      ${productForm(editing)}
-    </div>
-    <div class="ad-modal__foot">
-      <button class="ad-btn ad-btn--ghost" data-x="cancel">Cancel</button>
-      ${!editing.isNew ? `<button class="ad-btn ad-btn--warn" data-x="delete">Delete</button>` : ''}
-      <button class="ad-btn ad-btn--primary" data-x="save">Save</button>
-    </div>`, saveProduct);
+  const box = $('#pane-products');
+  if (!box) return;
+  box.innerHTML = `
+    <div class="ad-prodeditor">
+      <div class="ad-prodeditor__topbar">
+        <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="cancel">← Back</button>
+        <h2 style="margin:0;font-size:1.05rem;flex:1">${editing.isNew ? 'New product' : esc((editing.data || {}).name || editing.id)}</h2>
+        ${!editing.isNew ? `<button class="ad-btn ad-btn--warn ad-btn--sm" data-x="delete">Delete</button>` : ''}
+        <button class="ad-btn ad-btn--primary ad-btn--sm" data-x="save">Save draft</button>
+      </div>
+      <div class="ad-prodeditor__body">
+        ${productForm(editing)}
+      </div>
+    </div>`;
   setTimeout(() => {
     paintProductGallery();
     wireGalleryInput();
@@ -980,7 +1004,7 @@ const COLS = ['id','name','category','price','was','tags','blurb','story','photo
   'sizes','materials','has_colours',
   'personalise_label','personalise_max','personalise_example',
   'bulk','quote','hidden','sort',
-  'details_materials','details_dimensions','details_care','details_production','details_shipping'];
+  'details_materials','details_dimL','details_dimB','details_dimH','details_sizePreset','details_care','details_production','details_shipping'];
 
 function toRow(r) {
   const p = r.data || {}, d = p.details || {}, sp = p.specs || {}, v = p.variants || {};
@@ -999,7 +1023,9 @@ function toRow(r) {
     personalise_example: p.personalise?.placeholder || '',
     bulk: p.bulk ? 'yes' : '', quote: p.quote ? 'yes' : '', hidden: r.hidden ? 'yes' : '',
     sort: r.sort ?? 0,
-    details_materials: d.materials || '', details_dimensions: d.dimensions || '',
+    details_materials: d.materials || '',
+    details_dimL: d.dimL ?? '', details_dimB: d.dimB ?? '', details_dimH: d.dimH ?? '',
+    details_sizePreset: d.sizePreset || '',
     details_care: d.care || '', details_production: d.production || '', details_shipping: d.shipping || '',
   };
 }
@@ -1018,7 +1044,11 @@ function fromRow(row) {
     tags: String(row.tags || '').split(/[,;]/).map(t => t.trim()).filter(Boolean),
     specs: { Material: row.spec_material || '', Layer: row.spec_layer || '',
              Print: row.spec_print || '', Size: row.spec_size || '' },
-    details: { materials: row.details_materials || '', dimensions: row.details_dimensions || '',
+    details: { materials: row.details_materials || '',
+               dimL: row.details_dimL !== '' && row.details_dimL != null ? +row.details_dimL : null,
+               dimB: row.details_dimB !== '' && row.details_dimB != null ? +row.details_dimB : null,
+               dimH: row.details_dimH !== '' && row.details_dimH != null ? +row.details_dimH : null,
+               sizePreset: row.details_sizePreset || '',
                care: row.details_care || '', production: row.details_production || '',
                shipping: row.details_shipping || '' },
     bulk: yes(row.bulk), reviews: [],

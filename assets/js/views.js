@@ -467,10 +467,15 @@ function product(id, sel) {
           /* a heading with nothing under it is worse than no heading */
           const d = p.details || {};
           const ship = (d.shipping || '').trim();
+          /* build a human-readable dimensions string from the separate fields */
+          const dimParts = [d.dimL && `L ${d.dimL} mm`, d.dimB && `B ${d.dimB} mm`, d.dimH && `H ${d.dimH} mm`].filter(Boolean);
+          const dimStr = d.sizePreset
+            ? (dimParts.length ? `${d.sizePreset} — ${dimParts.join(' × ')}` : d.sizePreset)
+            : dimParts.join(' × ');
           const rows = [
             ['Description', [p.blurb, p.story].filter(Boolean).join(' ')],
             ['Materials', d.materials],
-            ['Dimensions', d.dimensions],
+            ['Dimensions', dimStr || d.dimensions],
             ['Care', d.care],
             ['Production', d.production],
             ['Shipping & returns', ship && ship + ' Unused shelf items can be returned within 7 days. Personalised and custom pieces cannot be returned once printed.'],

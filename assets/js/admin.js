@@ -536,8 +536,11 @@ function modal({ title, lead, changes = [], go, warn, onGo, wide }) {
       </div>
     </div>`;
   document.body.appendChild(box);
+  document.body.classList.add('modal-open');
   box.addEventListener('click', e => {
-    if (e.target === box || e.target.closest('[data-m="close"]')) return box.remove();
+    if (e.target === box || e.target.closest('[data-m="close"]')) {
+      box.remove(); document.body.classList.remove('modal-open'); return;
+    }
     if (e.target.closest('[data-m="go"]')) onGo(box);
   });
   return box;
@@ -599,9 +602,9 @@ async function runPublish(box) {
       </div>`);
     body.addEventListener('click', e => {
       const f = e.target.closest('[data-f]')?.dataset.f;
-      if (f === 'retry') { box.remove(); publishFlow(); }
+      if (f === 'retry') { box.remove(); document.body.classList.remove('modal-open'); publishFlow(); }
       if (f === 'file') download();
-      if (f === 'close') box.remove();
+      if (f === 'close') { box.remove(); document.body.classList.remove('modal-open'); }
     }, { once: true });
   };
 
@@ -681,7 +684,9 @@ async function runPublish(box) {
         <button class="ad-btn ad-btn--ghost" data-f="close">Close</button>
       </div>
     </div>`);
-  body.addEventListener('click', e => { if (e.target.closest('[data-f="close"]')) box.remove(); });
+  body.addEventListener('click', e => {
+    if (e.target.closest('[data-f="close"]')) { box.remove(); document.body.classList.remove('modal-open'); }
+  });
   toast('Published — the live shop is updated');
 }
 
