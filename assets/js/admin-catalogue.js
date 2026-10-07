@@ -455,7 +455,16 @@ function productForm(r) {
     </div>
     <div id="varMatrixList" style="margin-top:1rem"></div>
 
-    <details class="ad-pe-details" style="margin-top:1.2rem">
+    <details class="ad-pe-details" style="margin-top:1.2rem" open>
+      <summary>Dimensions</summary>
+      <div class="ad-pe-details__body">
+        <p class="ad-p" style="margin-bottom:.7rem">Add one row per size or variant. Label is optional (e.g. "Small", "Box only").</p>
+        <div id="dimsList"></div>
+        <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="dimadd" style="margin-top:.6rem">+ Add dimension</button>
+      </div>
+    </details>
+
+    <details class="ad-pe-details">
       <summary>Purchase options</summary>
       <div class="ad-pe-details__body">
         <div class="ad-grid3" style="margin-bottom:.9rem">
@@ -490,24 +499,6 @@ function productForm(r) {
       <summary>Product details (shown on page)</summary>
       <div class="ad-pe-details__body">
         <label class="ad-field"><span>Materials</span><textarea id="d_materials" rows="2">${esc(d.materials)}</textarea></label>
-        <div class="ad-card__inner">
-          <span class="ad-field-label">Dimensions (mm)</span>
-          <div class="ad-grid3" style="gap:8px">
-            <label class="ad-field" style="margin:0"><span>Length (L)</span><input id="d_dimL" type="number" min="0" step="0.1" value="${esc(d.dimL ?? '')}"></label>
-            <label class="ad-field" style="margin:0"><span>Breadth (B)</span><input id="d_dimB" type="number" min="0" step="0.1" value="${esc(d.dimB ?? '')}"></label>
-            <label class="ad-field" style="margin:0"><span>Height (H)</span><input id="d_dimH" type="number" min="0" step="0.1" value="${esc(d.dimH ?? '')}"></label>
-          </div>
-          <div style="margin-top:8px">
-            <span class="ad-hint">Or pick a clothing size label:</span>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-              ${['XS','S','M','L','XL','XXL','One size'].map(sz =>
-                `<label class="ad-pill" style="cursor:pointer">
-                  <input type="radio" name="d_sizePreset" value="${sz}"${d.sizePreset === sz ? ' checked' : ''}> ${sz}</label>`).join('')}
-              <label class="ad-pill" style="cursor:pointer">
-                <input type="radio" name="d_sizePreset" value=""${!d.sizePreset ? ' checked' : ''}> None</label>
-            </div>
-          </div>
-        </div>
         <label class="ad-field"><span>Care</span><textarea id="d_care" rows="2">${esc(d.care)}</textarea></label>
         <label class="ad-field"><span>Production</span><textarea id="d_production" rows="2">${esc(d.production)}</textarea></label>
         <label class="ad-field" style="margin-bottom:0"><span>Shipping</span><textarea id="d_shipping" rows="2">${esc(d.shipping)}</textarea></label>
@@ -530,6 +521,7 @@ let productImagesDraft = []; /* [url, ...] */
 let model3dDraft = {};       /* {url, name, type, size} */
 let bulkTiersDraft = [];     /* [{min, max, off}] */
 let custDraft = [];
+let dimsDraft = [];          /* [{label, L, B, H, sizePreset}] */
 
 const num = (x, d = 0) => (x === '' || x === null || x === undefined || isNaN(+x) ? d : +x);
 
@@ -605,18 +597,21 @@ function paintOptions() {
 function loadVariantDrafts(p) {
   const copy = a => JSON.parse(JSON.stringify(a || []));
   const v = (p && p.variants) || {};
-  /* load normalised options — normaliseProduct already ran in hydrate */
   optionsDraft = copy(v.options || []);
-  /* load variant matrix */
   matrixDraft = copy(p && p.variantMatrix || []);
-  /* load product images */
   productImagesDraft = copy(p && p.productImages || (p && p.photo ? [p.photo] : []));
-  /* load 3D model */
   model3dDraft = JSON.parse(JSON.stringify(p && p.model3d || {}));
-  /* load bulk tiers */
   bulkTiersDraft = copy(p && p.bulkOptions?.tiers || []);
-  /* load customisation */
   custDraft = copy(p && p.custom || []);
+  const d = (p && p.details) || {};
+  if (d.dims && d.dims.length) {
+    dimsDraft = copy(d.dims);
+  } else if (d.dimL != null || d.dimB != null || d.dimH != null || d.sizePreset) {
+    /* migrate old single-row format */
+    dimsDraft = [{ label: d.sizePreset || '', L: d.dimL ?? '', B: d.dimB ?? '', H: d.dimH ?? '' }];
+  } else {
+    dimsDraft = [];
+  }
 }
 
 function rebuildMatrixFromOptions() {
@@ -671,6 +666,28 @@ function paintVariantMatrix() {
             <td><select data-mxf="status">
               ${VARIANT_STATUSES.map(s => `<option value="${s}"${row.status === s ? ' selected' : ''}>${s}</option>`).join('')}
             </select></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function paintDims() {
+  const box = $('#dimsList'); if (!box) return;
+  if (!dimsDraft.length) { box.innerHTML = ''; return; }
+  const SIZE_PRESETS = ['', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'One size'];
+  box.innerHTML = `
+    <table class="ad-dims-table">
+      <thead><tr>
+        <th>Label / size</th><th>L (mm)</th><th>B (mm)</th><th>H (mm)</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${dimsDraft.map((row, i) => `
+          <tr data-di="${i}">
+            <td><input data-dmf="label" type="text" value="${esc(row.label ?? '')}" placeholder="e.g. Small"></td>
+            <td><input data-dmf="L" type="number" min="0" step="0.1" value="${row.L ?? ''}"></td>
+            <td><input data-dmf="B" type="number" min="0" step="0.1" value="${row.B ?? ''}"></td>
+            <td><input data-dmf="H" type="number" min="0" step="0.1" value="${row.H ?? ''}"></td>
+            <td><button type="button" class="ad-varopt__del" data-x="dimdel" data-di="${i}" title="Remove">&times;</button></td>
           </tr>`).join('')}
       </tbody>
     </table>`;
@@ -788,8 +805,11 @@ function paintPreview() {
 
   /* accordion sections as they appear on the product page */
   const d = data.details || {};
-  const dimParts = [d.dimL && `L ${d.dimL} mm`, d.dimB && `B ${d.dimB} mm`, d.dimH && `H ${d.dimH} mm`].filter(Boolean);
-  const dimStr = d.sizePreset ? (dimParts.length ? `${d.sizePreset} — ${dimParts.join(' × ')}` : d.sizePreset) : dimParts.join(' × ');
+  const dimsArr = d.dims && d.dims.length ? d.dims : [];
+  const dimStr = dimsArr.map(row => {
+    const parts = [row.L && `L ${row.L} mm`, row.B && `B ${row.B} mm`, row.H && `H ${row.H} mm`].filter(Boolean);
+    return (row.label ? row.label + ': ' : '') + parts.join(' × ');
+  }).filter(Boolean).join('\n');
   const rows = [
     ['Description', [data.blurb, data.story].filter(Boolean).join(' ')],
     ['Materials', d.materials],
@@ -830,8 +850,7 @@ function readForm(r) {
     tags: $$('[data-tag]').filter(c => c.checked).map(c => c.dataset.tag),
     specs: { Material: g('s_Material'), Layer: g('s_Layer'), Print: g('s_Print') },
     details: { materials: g('d_materials'),
-               dimL: n('d_dimL'), dimB: n('d_dimB'), dimH: n('d_dimH'),
-               sizePreset: document.querySelector('[name="d_sizePreset"]:checked')?.value || '',
+               dims: dimsDraft.filter(row => row.L || row.B || row.H || row.label),
                care: g('d_care'),
                production: g('d_production'), shipping: g('d_shipping') },
     bulk: on('f_bulk'),
@@ -923,6 +942,7 @@ function openProductModal() {
     paintOptions();
     paintVariantMatrix();
     paintBulkTiers();
+    paintDims();
     paintCustom();
     paintPreview();
   }, 0);
@@ -1641,6 +1661,14 @@ function wire(t) {
     bulkTiersDraft.splice(+t.dataset.i, 1);
     paintBulkTiers(); return true;
   }
+  if (act === 'dimadd') {
+    dimsDraft.push({ label: '', L: '', B: '', H: '' });
+    paintDims(); return true;
+  }
+  if (act === 'dimdel') {
+    dimsDraft.splice(+t.dataset.di, 1);
+    paintDims(); paintPreview(); return true;
+  }
 
   /* --- per-option-value image gallery (opens a sub-modal) --- */
   if (act === 'valimgs') {
@@ -1780,6 +1808,11 @@ function wireChange(t) {
     const tier = bulkTiersDraft[+t.closest('[data-bti]')?.dataset.bti]; if (!tier) return true;
     tier[t.dataset.btf] = t.value;
     return true;
+  }
+  if (t.dataset.dmf) {
+    const row = dimsDraft[+t.closest('[data-di]')?.dataset.di]; if (!row) return true;
+    row[t.dataset.dmf] = t.value;
+    paintPreview(); return true;
   }
   /* customisation fields */
   if (t.dataset.cuf) {

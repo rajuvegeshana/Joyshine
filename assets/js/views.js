@@ -464,14 +464,19 @@ function product(id, sel) {
 
       <div class="acc">
         ${(() => {
-          /* a heading with nothing under it is worse than no heading */
           const d = p.details || {};
           const ship = (d.shipping || '').trim();
-          /* build a human-readable dimensions string from the separate fields */
-          const dimParts = [d.dimL && `L ${d.dimL} mm`, d.dimB && `B ${d.dimB} mm`, d.dimH && `H ${d.dimH} mm`].filter(Boolean);
-          const dimStr = d.sizePreset
-            ? (dimParts.length ? `${d.sizePreset} — ${dimParts.join(' × ')}` : d.sizePreset)
-            : dimParts.join(' × ');
+          /* build dimensions string — supports both new dims[] array and old scalar fields */
+          let dimStr = '';
+          if (d.dims && d.dims.length) {
+            dimStr = d.dims.map(row => {
+              const parts = [row.L && `L ${row.L} mm`, row.B && `B ${row.B} mm`, row.H && `H ${row.H} mm`].filter(Boolean);
+              return (row.label ? row.label + ': ' : '') + parts.join(' × ');
+            }).filter(Boolean).join('\n');
+          } else {
+            const dimParts = [d.dimL && `L ${d.dimL} mm`, d.dimB && `B ${d.dimB} mm`, d.dimH && `H ${d.dimH} mm`].filter(Boolean);
+            dimStr = d.sizePreset ? (dimParts.length ? `${d.sizePreset} — ${dimParts.join(' × ')}` : d.sizePreset) : dimParts.join(' × ');
+          }
           const rows = [
             ['Description', [p.blurb, p.story].filter(Boolean).join(' ')],
             ['Materials', d.materials],
