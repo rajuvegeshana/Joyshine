@@ -561,18 +561,33 @@ function paintOptions() {
         </select>
         <button type="button" class="ad-varopt__del" data-x="optdel" data-oi="${oi}" title="Remove option">&times;</button>
       </div>
-      <div class="ad-varopt__chips">
-        ${(opt.values || []).map((val, vi) => `
-          <span class="ad-vchip" data-oi="${oi}" data-vi="${vi}">
-            ${opt.type === 'colour' ? `<input type="color" class="ad-vchip__swatch" data-valf="hex" data-oi="${oi}" data-vi="${vi}" value="${esc(val.hex || '#cccccc')}" title="${esc(val.label)}">` : ''}
-            <span class="ad-vchip__label">${esc(val.label)}</span>
-            <button type="button" class="ad-vchip__del" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
-          </span>`).join('')}
-        <input class="ad-vchip__input" data-oi="${oi}" placeholder="Type and press Enter" data-x="valinput">
-      </div>
+      ${opt.type === 'colour' ? `
+        <div class="ad-colvals">
+          ${(opt.values || []).map((val, vi) => `
+            <div class="ad-colval" data-oi="${oi}" data-vi="${vi}">
+              <input type="color" class="ad-colval__picker" data-valf="hex" data-oi="${oi}" data-vi="${vi}"
+                value="${esc(val.hex || '#cccccc')}" title="Pick colour">
+              <input type="text" class="ad-colval__hex" data-valf="hex" data-oi="${oi}" data-vi="${vi}"
+                value="${esc(val.hex || '#cccccc')}" placeholder="#rrggbb" maxlength="7" spellcheck="false">
+              <input type="text" class="ad-colval__label" data-valf="label" data-oi="${oi}" data-vi="${vi}"
+                value="${esc(val.label)}" placeholder="Name (e.g. Sky Blue)">
+              <button type="button" class="ad-varopt__del" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
+            </div>`).join('')}
+          <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="coladd" data-oi="${oi}" style="margin-top:.5rem">+ Add colour</button>
+        </div>
+      ` : `
+        <div class="ad-varopt__chips">
+          ${(opt.values || []).map((val, vi) => `
+            <span class="ad-vchip" data-oi="${oi}" data-vi="${vi}">
+              <span class="ad-vchip__label">${esc(val.label)}</span>
+              <button type="button" class="ad-vchip__del" data-x="valdel" data-oi="${oi}" data-vi="${vi}" title="Remove">&times;</button>
+            </span>`).join('')}
+          <input class="ad-vchip__input" data-oi="${oi}" placeholder="Type and press Enter" data-x="valinput">
+        </div>
+      `}
     </div>`).join('');
 
-  /* wire Enter/comma on the chip inputs */
+  /* wire Enter/comma on text chip inputs */
   box.querySelectorAll('.ad-vchip__input').forEach(inp => {
     inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ',') return;
@@ -583,13 +598,24 @@ function paintOptions() {
       const opt = optionsDraft[oi]; if (!opt) return;
       const vi = (opt.values || []).length;
       opt.values = opt.values || [];
-      opt.values.push({ k: vkey(label, vi), label,
-        ...(opt.type === 'colour' ? { hex: '#cccccc' } : {}) });
+      opt.values.push({ k: vkey(label, vi), label });
       inp.value = '';
       paintOptions();
       rebuildMatrixFromOptions();
       paintVariantMatrix();
       paintPreview();
+    });
+  });
+
+  /* keep colour picker and hex text input in sync */
+  box.querySelectorAll('.ad-colval').forEach(row => {
+    const picker = row.querySelector('.ad-colval__picker');
+    const hexInp = row.querySelector('.ad-colval__hex');
+    if (!picker || !hexInp) return;
+    picker.addEventListener('input', () => { hexInp.value = picker.value; });
+    hexInp.addEventListener('input', () => {
+      const v = hexInp.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) picker.value = v;
     });
   });
 }
@@ -1631,6 +1657,13 @@ function wire(t) {
     optionsDraft.splice(+t.closest('[data-oi]').dataset.oi, 1);
     paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); paintPreview(); return true;
   }
+  if (act === 'coladd') {
+    const oi = +t.dataset.oi;
+    const vi = (optionsDraft[oi].values || []).length;
+    optionsDraft[oi].values = optionsDraft[oi].values || [];
+    optionsDraft[oi].values.push({ k: vkey('colour', vi), label: '', hex: '#cccccc' });
+    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); paintPreview(); return true;
+  }
   if (act === 'valdel') {
     const oi = +t.closest('[data-oi]').dataset.oi;
     const vi = +t.closest('[data-vi]').dataset.vi;
@@ -1794,8 +1827,18 @@ function wireChange(t) {
     const oi = +t.closest('[data-oi]')?.dataset.oi;
     const vi = +t.closest('[data-vi]')?.dataset.vi;
     const val = optionsDraft[oi]?.values?.[vi]; if (!val) return true;
-    val[t.dataset.valf] = t.value;
-    return true;
+    const field = t.dataset.valf;
+    val[field] = t.value;
+    if (field === 'label') val.k = vkey(t.value, vi);
+    /* keep colour picker and hex text in sync when changed via wireChange */
+    if (field === 'hex') {
+      const row = t.closest('[data-vi]');
+      if (row) {
+        const other = row.querySelector(t.classList.contains('ad-colval__hex') ? '.ad-colval__picker' : '.ad-colval__hex');
+        if (other && /^#[0-9a-fA-F]{6}$/.test(t.value)) other.value = t.value;
+      }
+    }
+    paintPreview(); return true;
   }
   /* variant matrix row fields */
   if (t.dataset.mxf) {
