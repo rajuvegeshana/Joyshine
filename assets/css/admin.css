@@ -770,8 +770,81 @@ body.modal-open { overflow: hidden; }
   flex-shrink: 0;
 }
 .ad-prodeditor__body {
-  padding: 20px; display: flex; flex-direction: column; gap: 16px; flex: 1;
+  padding: 20px; display: flex; flex-direction: column; gap: 0; flex: 1;
 }
+
+/* ---------- editor split: form + live preview ------------- */
+.ad-pe-split {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 0;
+  align-items: start;
+}
+.ad-pe-form {
+  padding-right: 20px;
+  min-width: 0;
+}
+.ad-pe-preview {
+  position: sticky; top: 60px;
+  border-left: 1px solid var(--c-line);
+  padding: 16px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+.ad-pe-preview__label {
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-muted); margin-bottom: 12px;
+}
+
+/* ---------- preview card (mirrors shop .card) ------------- */
+.ad-preview-wrap { display: flex; flex-direction: column; gap: 12px; }
+.ad-preview-card {
+  border: 1px solid var(--c-line); border-radius: 12px; overflow: hidden;
+  background: var(--c-surface);
+}
+.ad-preview-card__art {
+  width: 100%; height: 200px; background: var(--c-surface); overflow: hidden;
+}
+.ad-preview-card__body { padding: 10px 12px; }
+.ad-preview-card__cat { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); }
+.ad-preview-card__name { display: block; font-size: .95rem; font-weight: 700; margin: 4px 0 2px; }
+.ad-preview-card__blurb { font-size: .8rem; color: var(--c-text-2); margin: 0 0 6px; line-height: 1.4; }
+.ad-preview-card__price { font-size: 1rem; font-weight: 700; color: var(--c-primary); }
+.ad-preview-swatches { display: flex; align-items: center; gap: 4px; margin: 4px 0; }
+.ad-preview-specs {
+  font-size: .78rem; color: var(--c-muted);
+  padding: 6px 10px; background: var(--c-surface);
+  border: 1px solid var(--c-line); border-radius: 8px;
+}
+.ad-preview-acc details {
+  border-bottom: 1px solid var(--c-line); padding: 6px 0;
+}
+.ad-preview-acc summary {
+  font-size: .82rem; font-weight: 600; cursor: pointer; padding: 2px 0;
+}
+.ad-preview-acc details div {
+  font-size: .8rem; color: var(--c-text-2); padding: 4px 0 2px;
+  line-height: 1.5; white-space: pre-wrap;
+}
+
+/* ---------- collapsible sections inside Variants card ----- */
+.ad-pe-details {
+  border-top: 1px solid var(--c-line); margin-top: 1rem; padding-top: .8rem;
+}
+.ad-pe-details > summary {
+  font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--c-text);
+  list-style: none; display: flex; align-items: center; gap: .4rem;
+}
+.ad-pe-details > summary::after { content: '›'; font-size: 1rem; color: var(--c-muted); transition: transform .15s; }
+.ad-pe-details[open] > summary::after { transform: rotate(90deg); }
+.ad-pe-details__body { padding-top: .8rem; }
+
+@media (max-width: 900px) {
+  .ad-pe-split { grid-template-columns: 1fr; }
+  .ad-pe-form { padding-right: 0; }
+  .ad-pe-preview { position: static; border-left: none; border-top: 1px solid var(--c-line); margin-top: 20px; max-height: none; }
+}
+
 .ad-field-label {
   display: block; font-size: .78rem; font-weight: 600;
   letter-spacing: .06em; text-transform: uppercase;

@@ -373,6 +373,8 @@ function productForm(r) {
   const bo = p.bulkOptions || {};
 
   return `
+  <div class="ad-pe-split">
+  <div class="ad-pe-form">
   <div class="ad-cards">
     <div class="ad-card">
       <h3>The basics</h3>
@@ -442,7 +444,7 @@ function productForm(r) {
   </div>
 
   <div class="ad-card">
-    <h3>Variants</h3>
+    <h3>Variants &amp; pricing</h3>
     <p class="ad-p" style="margin-bottom:.8rem">Add options like Colour or Size. The price table builds itself.</p>
     <div id="optionsList"></div>
     <div class="ad-var-addrow">
@@ -452,62 +454,73 @@ function productForm(r) {
       <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="optadd" data-preset="" data-ptype="text">+ Custom</button>
     </div>
     <div id="varMatrixList" style="margin-top:1rem"></div>
-  </div>
 
-  <div class="ad-card">
-    <h3>Purchase options</h3>
-    <div class="ad-grid3" style="margin-bottom:.9rem">
-      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_individual"${bo.individual !== false ? ' checked' : ''}><span><b>Individual</b><i>Single-unit buying</i></span></label>
-      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_bulk"${bo.bulk ? ' checked' : ''}><span><b>Bulk</b><i>Qty-based pricing</i></span></label>
-      <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_enquiry"${bo.enquiry ? ' checked' : ''}><span><b>Bulk enquiry</b><i>Large order form</i></span></label>
-    </div>
-    <div id="bulkPricingBlock"${bo.bulk ? '' : ' hidden'}>
-      <div class="ad-grid3">
-        <label class="ad-field"><span>Min bulk qty</span><input id="bo_min" type="number" min="1" value="${bo.bulkMin || 10}"></label>
-        <label class="ad-row--switch" style="margin:0;align-self:end"><input type="checkbox" id="bo_combined"${bo.bulkCombined ? ' checked' : ''}><span><b>Combined qty</b><i>All variants count together</i></span></label>
-      </div>
-      <div id="bulkTierList"></div>
-      <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="btadd" style="margin-top:.7rem">+ Add tier</button>
-    </div>
-  </div>
-
-  <div class="ad-card">
-    <h3>What the customer fills in</h3>
-    <p class="ad-p">Text, dropdowns, colour picker or file upload. Leave empty for no options.</p>
-    <div id="custList" class="ad-occ"></div>
-    <div class="ad-btns" style="margin-top:.9rem">
-      ${Object.entries(window.CUSTOM.TYPES).map(([t, n]) =>
-        `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="cuadd" data-type="${t}">+ ${n}</button>`).join('')}
-    </div>
-  </div>
-
-  <div class="ad-card">
-    <h3>The expandable sections</h3>
-    <label class="ad-field"><span>Materials</span><textarea id="d_materials" rows="2">${esc(d.materials)}</textarea></label>
-
-    <div class="ad-card__inner">
-      <span class="ad-field-label">Dimensions (mm)</span>
-      <div class="ad-grid3" style="gap:8px">
-        <label class="ad-field" style="margin:0"><span>Length (L)</span><input id="d_dimL" type="number" min="0" step="0.1" value="${esc(d.dimL ?? '')}"></label>
-        <label class="ad-field" style="margin:0"><span>Breadth (B)</span><input id="d_dimB" type="number" min="0" step="0.1" value="${esc(d.dimB ?? '')}"></label>
-        <label class="ad-field" style="margin:0"><span>Height (H)</span><input id="d_dimH" type="number" min="0" step="0.1" value="${esc(d.dimH ?? '')}"></label>
-      </div>
-      <div style="margin-top:8px">
-        <span class="ad-hint">Or pick a clothing size label:</span>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-          ${['XS','S','M','L','XL','XXL','One size'].map(sz =>
-            `<label class="ad-pill" style="cursor:pointer">
-              <input type="radio" name="d_sizePreset" value="${sz}"${d.sizePreset === sz ? ' checked' : ''}> ${sz}</label>`).join('')}
-          <label class="ad-pill" style="cursor:pointer">
-            <input type="radio" name="d_sizePreset" value=""${!d.sizePreset ? ' checked' : ''}> None</label>
+    <details class="ad-pe-details" style="margin-top:1.2rem">
+      <summary>Purchase options</summary>
+      <div class="ad-pe-details__body">
+        <div class="ad-grid3" style="margin-bottom:.9rem">
+          <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_individual"${bo.individual !== false ? ' checked' : ''}><span><b>Individual</b><i>Single-unit buying</i></span></label>
+          <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_bulk"${bo.bulk ? ' checked' : ''}><span><b>Bulk</b><i>Qty-based pricing</i></span></label>
+          <label class="ad-row--switch" style="margin:0"><input type="checkbox" id="bo_enquiry"${bo.enquiry ? ' checked' : ''}><span><b>Bulk enquiry</b><i>Large order form</i></span></label>
+        </div>
+        <div id="bulkPricingBlock"${bo.bulk ? '' : ' hidden'}>
+          <div class="ad-grid3">
+            <label class="ad-field"><span>Min bulk qty</span><input id="bo_min" type="number" min="1" value="${bo.bulkMin || 10}"></label>
+            <label class="ad-row--switch" style="margin:0;align-self:end"><input type="checkbox" id="bo_combined"${bo.bulkCombined ? ' checked' : ''}><span><b>Combined qty</b><i>All variants count together</i></span></label>
+          </div>
+          <div id="bulkTierList"></div>
+          <button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="btadd" style="margin-top:.7rem">+ Add tier</button>
         </div>
       </div>
-    </div>
+    </details>
 
-    <label class="ad-field"><span>Care</span><textarea id="d_care" rows="2">${esc(d.care)}</textarea></label>
-    <label class="ad-field"><span>Production</span><textarea id="d_production" rows="2">${esc(d.production)}</textarea></label>
-    <label class="ad-field" style="margin-bottom:0"><span>Shipping</span><textarea id="d_shipping" rows="2">${esc(d.shipping)}</textarea></label>
-  </div>`;
+    <details class="ad-pe-details">
+      <summary>What the customer fills in</summary>
+      <div class="ad-pe-details__body">
+        <p class="ad-p">Text, dropdowns, colour picker or file upload.</p>
+        <div id="custList" class="ad-occ"></div>
+        <div class="ad-btns" style="margin-top:.9rem">
+          ${Object.entries(window.CUSTOM.TYPES).map(([t, n]) =>
+            `<button class="ad-btn ad-btn--ghost ad-btn--sm" data-x="cuadd" data-type="${t}">+ ${n}</button>`).join('')}
+        </div>
+      </div>
+    </details>
+
+    <details class="ad-pe-details">
+      <summary>Product details (shown on page)</summary>
+      <div class="ad-pe-details__body">
+        <label class="ad-field"><span>Materials</span><textarea id="d_materials" rows="2">${esc(d.materials)}</textarea></label>
+        <div class="ad-card__inner">
+          <span class="ad-field-label">Dimensions (mm)</span>
+          <div class="ad-grid3" style="gap:8px">
+            <label class="ad-field" style="margin:0"><span>Length (L)</span><input id="d_dimL" type="number" min="0" step="0.1" value="${esc(d.dimL ?? '')}"></label>
+            <label class="ad-field" style="margin:0"><span>Breadth (B)</span><input id="d_dimB" type="number" min="0" step="0.1" value="${esc(d.dimB ?? '')}"></label>
+            <label class="ad-field" style="margin:0"><span>Height (H)</span><input id="d_dimH" type="number" min="0" step="0.1" value="${esc(d.dimH ?? '')}"></label>
+          </div>
+          <div style="margin-top:8px">
+            <span class="ad-hint">Or pick a clothing size label:</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+              ${['XS','S','M','L','XL','XXL','One size'].map(sz =>
+                `<label class="ad-pill" style="cursor:pointer">
+                  <input type="radio" name="d_sizePreset" value="${sz}"${d.sizePreset === sz ? ' checked' : ''}> ${sz}</label>`).join('')}
+              <label class="ad-pill" style="cursor:pointer">
+                <input type="radio" name="d_sizePreset" value=""${!d.sizePreset ? ' checked' : ''}> None</label>
+            </div>
+          </div>
+        </div>
+        <label class="ad-field"><span>Care</span><textarea id="d_care" rows="2">${esc(d.care)}</textarea></label>
+        <label class="ad-field"><span>Production</span><textarea id="d_production" rows="2">${esc(d.production)}</textarea></label>
+        <label class="ad-field" style="margin-bottom:0"><span>Shipping</span><textarea id="d_shipping" rows="2">${esc(d.shipping)}</textarea></label>
+      </div>
+    </details>
+  </div>
+
+  </div><!-- /ad-pe-form -->
+  <div class="ad-pe-preview" id="ad-pe-preview">
+    <div class="ad-pe-preview__label">Live preview</div>
+    <div id="prod-preview"></div>
+  </div>
+  </div><!-- /ad-pe-split -->`;
 }
 
 /* ---------- new draft state variables --------------------- */
@@ -584,6 +597,7 @@ function paintOptions() {
       paintOptions();
       rebuildMatrixFromOptions();
       paintVariantMatrix();
+      paintPreview();
     });
   });
 }
@@ -724,6 +738,84 @@ function paintCustom() {
     </div>`).join('');
 }
 
+function paintPreview() {
+  const box = $('#prod-preview'); if (!box || !editing) return;
+  const data = readForm(editing);
+  /* mini product object that looks like a shop product */
+  const p = {
+    id: editing.id || 'preview',
+    ...data,
+    /* fromPrice scans variantMatrix for cheapest; provide a shim */
+    variantMatrix: data.variantMatrix || [],
+    variants: data.variants || {},
+  };
+  /* card preview */
+  const cardHtml = typeof window.V?.card === 'function' ? window.V.card(p) :
+    `<div class="ad-preview-card">
+      <div class="ad-preview-card__art">${
+        productImagesDraft.length
+          ? `<img src="${esc(productImagesDraft[0])}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`
+          : `<div style="width:100%;height:100%;background:var(--c-surface);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--c-muted);font-size:.8rem">No image</div>`
+      }</div>
+      <div class="ad-preview-card__body">
+        <span class="ad-preview-card__cat">${esc((CATS.find(c => c.id === data.cat) || {}).name || '')}</span>
+        <b class="ad-preview-card__name">${esc(data.name || 'Product name')}</b>
+        <p class="ad-preview-card__blurb">${esc(data.blurb || '')}</p>
+        ${(() => {
+          const opts = (data.variants?.options || []);
+          const col = opts.find(o => o.type === 'colour');
+          if (!col) return '';
+          return `<div class="ad-preview-swatches">${
+            (col.values || []).slice(0, 5).map(v =>
+              `<i style="background:${esc(v.hex || '#ccc')};width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid #ccc"></i>`
+            ).join('')}${(col.values||[]).length > 5 ? `<span style="font-size:.75rem;color:var(--c-muted)">+${col.values.length-5}</span>` : ''}
+          </div>`;
+        })()}
+        <div class="ad-preview-card__price">
+          ${(() => {
+            /* show from-price if variants have different prices */
+            const prices = (data.variantMatrix || []).map(r => r.price).filter(x => x != null && x !== '');
+            const base = data.price || 0;
+            const min = prices.length ? Math.min(...prices.map(Number)) : base;
+            const show = prices.length && min < base ? min : base;
+            const prefix = prices.length && min < base ? 'From ' : '';
+            const was = !prices.length && data.was;
+            return `<b>₹${show}${prefix !== '' ? '' : ''}</b>${prefix ? `<small>${prefix}₹${show}</small>`.replace('<b>','') : ''}${was ? `<s style="color:var(--c-muted);font-size:.8rem;margin-left:.3rem">₹${was}</s>` : ''}`;
+          })()}
+        </div>
+      </div>
+    </div>`;
+
+  /* accordion sections as they appear on the product page */
+  const d = data.details || {};
+  const dimParts = [d.dimL && `L ${d.dimL} mm`, d.dimB && `B ${d.dimB} mm`, d.dimH && `H ${d.dimH} mm`].filter(Boolean);
+  const dimStr = d.sizePreset ? (dimParts.length ? `${d.sizePreset} — ${dimParts.join(' × ')}` : d.sizePreset) : dimParts.join(' × ');
+  const rows = [
+    ['Description', [data.blurb, data.story].filter(Boolean).join(' ')],
+    ['Materials', d.materials],
+    ['Dimensions', dimStr],
+    ['Care', d.care],
+    ['Production', d.production],
+    ['Shipping & returns', d.shipping],
+  ].filter(([, v]) => (v || '').toString().trim());
+
+  const specsHtml = (() => {
+    const sp = data.specs || {};
+    const bits = [sp.Material, sp.Layer, sp.Print].filter(Boolean);
+    if (!bits.length) return '';
+    return `<div class="ad-preview-specs">${bits.join(' &nbsp;·&nbsp; ')}</div>`;
+  })();
+
+  box.innerHTML = `
+    <div class="ad-preview-wrap">
+      ${cardHtml}
+      ${specsHtml}
+      ${rows.length ? `<div class="ad-preview-acc">${rows.map(([t, b], i) =>
+        `<details${i === 0 ? ' open' : ''}><summary>${esc(t)}</summary><div>${esc(b)}</div></details>`).join('')}
+      </div>` : ''}
+    </div>`;
+}
+
 function readForm(r) {
   const g = id => $('#' + id)?.value.trim() ?? '';
   const n = id => { const v = $('#' + id)?.value; return v === '' || v == null ? null : +v; };
@@ -832,6 +924,7 @@ function openProductModal() {
     paintVariantMatrix();
     paintBulkTiers();
     paintCustom();
+    paintPreview();
   }, 0);
 }
 
@@ -1289,6 +1382,7 @@ async function putGalleryImage(file) {
     productImagesDraft.push(url);
     paintProductGallery();
     wireGalleryInput();
+    paintPreview();
     if (msg) msg.textContent = 'Added. Save the product to keep it.';
     toast('Image uploaded');
   } catch (e) {
@@ -1511,17 +1605,17 @@ function wire(t) {
     const name = t.dataset.preset || '';
     const type = t.dataset.ptype || 'text';
     optionsDraft.push({ name, type, values: [] });
-    paintOptions(); return true;
+    paintOptions(); paintPreview(); return true;
   }
   if (act === 'optdel') {
     optionsDraft.splice(+t.closest('[data-oi]').dataset.oi, 1);
-    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
+    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); paintPreview(); return true;
   }
   if (act === 'valdel') {
     const oi = +t.closest('[data-oi]').dataset.oi;
     const vi = +t.closest('[data-vi]').dataset.vi;
     optionsDraft[oi].values.splice(vi, 1);
-    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); return true;
+    paintOptions(); rebuildMatrixFromOptions(); paintVariantMatrix(); paintPreview(); return true;
   }
 
   /* --- product image gallery --- */
@@ -1530,11 +1624,11 @@ function wire(t) {
   }
   if (act === 'pgdel') {
     productImagesDraft.splice(+t.dataset.i, 1);
-    paintProductGallery(); return true;
+    paintProductGallery(); paintPreview(); return true;
   }
   if (act === 'pgmovefirst') {
     const i = +t.dataset.i;
-    if (i > 0) { productImagesDraft.unshift(productImagesDraft.splice(i, 1)[0]); paintProductGallery(); }
+    if (i > 0) { productImagesDraft.unshift(productImagesDraft.splice(i, 1)[0]); paintProductGallery(); paintPreview(); }
     return true;
   }
 
@@ -1702,11 +1796,13 @@ function wireChange(t) {
   if (t.id === 'bo_bulk') {
     const blk = $('#bulkPricingBlock');
     if (blk) blk.hidden = !t.checked;
-    return true;
+    paintPreview(); return true;
   }
   if (t.id === 'prodFilter') { paintProducts(t.value); return true; }
   if (t.dataset.ostatus) { CLOUD.update('orders', 'id=eq.' + t.dataset.ostatus, { status: t.value }).then(() => toast('Order updated')); return true; }
   if (t.dataset.qstatus) { CLOUD.update('requests', 'id=eq.' + t.dataset.qstatus, { status: t.value }).then(() => toast('Request updated')); return true; }
+  /* refresh preview on any form field change inside the editor */
+  if (t.closest('.ad-pe-form')) { paintPreview(); }
   return false;
 }
 
