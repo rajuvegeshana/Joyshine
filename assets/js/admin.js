@@ -59,12 +59,12 @@ function paintHistory() {
   if (d) d.hidden = !dirty;
   const pub = $('#btnSave');
   if (pub) {
-    pub.disabled = !(saved && dirty);
+    pub.classList.toggle('ad-btn--dim', !(saved && dirty));
     pub.title = !dirty ? 'Nothing has changed since the last publish'
       : !saved ? 'Press Save and preview first' : 'Publish to the live shop';
   }
   const sp = $('#btnSavePrev');
-  if (sp) sp.disabled = !dirty;
+  if (sp) sp.classList.toggle('ad-btn--dim', !dirty);
 }
 
 function step(dir) {
