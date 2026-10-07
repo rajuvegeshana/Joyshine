@@ -56,12 +56,17 @@ function paintHistory() {
   const u = $('#btnUndo'), r = $('#btnRedo'), d = $('#btnDiscard');
   if (u) u.disabled = at <= 0;
   if (r) r.disabled = at >= past.length - 1;
-  if (d) d.hidden = !dirty;
+  const pending = window.ADMINX?.pendingProducts?.() || { upserts: [], deletes: [] };
+  const hasProducts = pending.upserts.length + pending.deletes.length > 0;
+  if (d) d.hidden = !dirty && !hasProducts;
   const pub = $('#btnSave');
   if (pub) {
-    pub.classList.toggle('ad-btn--dim', !(saved && dirty));
-    pub.title = !dirty ? 'Nothing has changed since the last publish'
-      : !saved ? 'Press Save and preview first' : 'Publish to the live shop';
+    /* products don't need a preview step — allow Publish directly when products are staged */
+    const canPublish = hasProducts || (saved && dirty);
+    pub.classList.toggle('ad-btn--dim', !canPublish);
+    pub.title = (!dirty && !hasProducts) ? 'Nothing has changed yet'
+      : (dirty && !saved && !hasProducts) ? 'Press Save and preview first'
+      : 'Publish to the live shop';
   }
   const sp = $('#btnSavePrev');
   if (sp) sp.classList.toggle('ad-btn--dim', !dirty);
@@ -460,12 +465,14 @@ const REVIEW = 'joyshine.review';
 
 /* ---- 1. Cancel: show what would be lost, then lose it ------ */
 function discardAll() {
+  const productPending = window.ADMINX?.pendingProducts?.() || { upserts: [], deletes: [] };
+  const hasPending = productPending.upserts.length || productPending.deletes.length;
   const changes = changeList();
-  if (!changes.length && at === 0) { toast('Nothing to cancel'); return; }
+  if (!changes.length && at === 0 && !hasPending) { toast('Nothing to cancel'); return; }
   modal({
     title: 'Cancel these changes?',
     lead: 'Everything below goes back to what the live shop is wearing. The live shop itself is not touched, and this cannot be undone.',
-    changes,
+    changes: [...changes, ...pendingProductSummary()],
     go: 'Cancel these changes',
     warn: true,
     onGo: box => {
@@ -476,6 +483,7 @@ function discardAll() {
       dirty = false; saved = false;
       try { localStorage.setItem(DRAFT, JSON.stringify(patch)); localStorage.removeItem(PREVIEW); localStorage.removeItem(REVIEW); } catch {}
       $('#unsaved').hidden = true;
+      window.ADMINX?.discardProductDrafts?.();
       paintAll(); paintHistory();
       toast(live ? 'Back to what is on the live shop' : 'Back to the built-in defaults');
     },
@@ -484,7 +492,7 @@ function discardAll() {
 
 /* ---- 2. Save and preview ---------------------------------- */
 function saveAndPreview() {
-  if (!dirty) { toast('No settings changes to preview. Products save straight to the shop — they are already live.'); return; }
+  if (!dirty) { toast('Nothing to preview yet. Edit settings first, then save and preview.'); return; }
   save();
   try { localStorage.setItem(PREVIEW, JSON.stringify(build())); } catch {
     toast('This browser will not let the panel store a preview'); return;
@@ -540,16 +548,17 @@ function modal({ title, lead, changes = [], go, warn, onGo, wide }) {
    fails, the reason is on screen and the way out — commit the
    same settings through GitHub — is one click away.            */
 const STEPS = [
-  ['sign',   'Checking you are still signed in'],
-  ['send',   'Sending the settings to the database'],
-  ['read',   'Reading them back to be sure'],
-  ['match',  'Checking the live shop agrees'],
-  ['done',   'Clearing the preview'],
+  ['sign',     'Checking you are still signed in'],
+  ['send',     'Sending the settings to the database'],
+  ['read',     'Reading them back to be sure'],
+  ['match',    'Checking the live shop agrees'],
+  ['products', 'Saving product changes'],
+  ['done',     'Clearing the preview'],
 ];
 
 function publishFlow() {
-  const changes = changeList();
-  if (!changes.length) { toast('No settings changes to publish. Products save straight to the shop — they are already live.'); return; }
+  const changes = [...changeList(), ...pendingProductSummary()];
+  if (!changes.length) { toast('Nothing to publish. Edit settings or products first.'); return; }
   modal({
     title: 'Publish these changes?',
     lead: 'Everything below goes to the live shop at once. Nothing else is touched.',
@@ -641,7 +650,19 @@ async function runPublish(box) {
   } catch (e) { return fail('match', 'The shop does not agree yet', e.message); }
   await wait(120);
 
-  /* 5. tidy up */
+  /* 5. product upserts and deletes */
+  step('products', 'busy');
+  try {
+    const pending = window.ADMINX?.pendingProducts?.() || { upserts: [], deletes: [] };
+    for (const row of pending.upserts) await window.CLOUD.upsert('products', row);
+    for (const id of pending.deletes) await window.CLOUD.remove('products', 'id=eq.' + encodeURIComponent(id));
+    const n = pending.upserts.length + pending.deletes.length;
+    step('products', 'ok', n ? `${n} product${n === 1 ? '' : 's'} saved` : 'no product changes');
+    window.ADMINX?.clearProductDrafts?.();
+  } catch (e) { return fail('products', 'Product save failed', e.message); }
+  await wait(120);
+
+  /* 6. tidy up */
   step('done', 'busy');
   live = data;
   dirty = false; saved = false;
@@ -801,6 +822,14 @@ function changeList() {
     out.push({ label: (occ ? occ.name : o.id), from: '', to: bits.join(', ') || 'edited', occasion: true });
   }
   return out.filter(c => !c.same);
+}
+
+function pendingProductSummary() {
+  const p = window.ADMINX?.pendingProducts?.() || { upserts: [], deletes: [] };
+  const out = [];
+  if (p.upserts.length) out.push({ label: `${p.upserts.length} product${p.upserts.length === 1 ? '' : 's'}`, from: '', to: 'added or edited', same: false });
+  if (p.deletes.length) out.push({ label: `${p.deletes.length} product${p.deletes.length === 1 ? '' : 's'}`, from: '', to: 'deleted', same: false });
+  return out;
 }
 
 async function publish() {

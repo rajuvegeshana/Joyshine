@@ -20,10 +20,21 @@ const gate = what => `<div class="ad-card"><p class="ad-empty">Sign in at the to
 /* the working copy, loaded from the database */
 let PRODUCTS = [], CATS = [], editing = null;
 
+/* staged product changes — written to Supabase only on Publish */
+const productUpserts = new Map();   /* id → row */
+const productDeletes = new Set();   /* id */
+
 /* ---------- loading -------------------------------------- */
 async function pull() {
   PRODUCTS = await CLOUD.rows('products?select=id,data,sort,hidden&order=sort.asc') || [];
   CATS     = await CLOUD.rows('categories?select=id,name,note,sort&order=sort.asc') || [];
+  /* overlay any staged drafts so the pane stays consistent after a reload */
+  for (const [id, row] of productUpserts) {
+    const i = PRODUCTS.findIndex(r => r.id === id);
+    if (i >= 0) PRODUCTS[i] = { ...PRODUCTS[i], ...row };
+    else PRODUCTS.push(row);
+  }
+  PRODUCTS = PRODUCTS.filter(r => !productDeletes.has(r.id));
 }
 
 /* copy what is in products.js into the database, once */
@@ -104,6 +115,8 @@ function paintProducts(filter = '') {
         <td>${p.quote ? '<span class="ad-pill ad-pill--clay">quoted</span>' : esc(p.price ? '₹' + p.price : '—')}</td>
         <td style="white-space:nowrap">
           ${r.hidden ? '<span class="ad-pill ad-pill--need" style="margin-right:.3rem">hidden</span>' : ''}
+          ${productUpserts.has(r.id) ? '<span class="ad-pill ad-pill--staged" style="margin-right:.3rem">not published</span>' : ''}
+          ${productDeletes.has(r.id) ? '<span class="ad-pill ad-pill--need" style="margin-right:.3rem">deleting</span>' : ''}
           <button class="ad-o__more" data-x="prodedit" data-pid="${esc(r.id)}">Edit</button>
         </td>
       </tr>`;
@@ -164,7 +177,10 @@ function paintProducts(filter = '') {
             <td><div class="ad-prodthumb-wrap"><div class="ad-prodthumb">${thumbHtml(r)}</div></div></td>
             <td>${esc(p.name || r.id)}</td>
             <td>${p.quote ? '<span class="ad-pill ad-pill--clay">quoted</span>' : esc(p.price ? '₹' + p.price : '—')}</td>
-            <td><button class="ad-o__more" data-x="prodedit" data-pid="${esc(r.id)}">Edit</button></td>
+            <td>
+              ${productUpserts.has(r.id) ? '<span class="ad-pill ad-pill--staged" style="margin-right:.3rem">not published</span>' : ''}
+              <button class="ad-o__more" data-x="prodedit" data-pid="${esc(r.id)}">Edit</button>
+            </td>
           </tr>`;
         }).join('')}</tbody>
         </table>
@@ -783,20 +799,36 @@ async function saveProduct() {
   const row = readForm(editing);
   if (!row.data.name) { toast('Give it a name first'); return; }
   if (!row.id) { toast('That name does not make a usable id'); return; }
-  await CLOUD.upsert('products', row);
-  toast(`${row.data.name} saved`);
+
+  /* stage the change — written to Supabase on Publish, not immediately */
+  productUpserts.set(row.id, row);
+  productDeletes.delete(row.id);   /* un-delete if previously staged for deletion */
+
+  /* update local working copy so the pane reflects the draft */
+  const existing = PRODUCTS.findIndex(r => r.id === row.id);
+  if (existing >= 0) PRODUCTS[existing] = { ...PRODUCTS[existing], ...row };
+  else PRODUCTS.push(row);
+
   editing = null;
   closeModal();
-  await pull(); paintProducts(); paintLineup();
+  paintProducts(); paintLineup();
+  A().mark();
+  toast(`${row.data.name} staged — press Publish to take it live`);
 }
 
 async function deleteProduct(id) {
-  if (!confirm('Delete this product for good? This cannot be undone.\n\nHiding it instead keeps the record.')) return;
-  await CLOUD.remove('products', 'id=eq.' + encodeURIComponent(id));
-  toast('Deleted');
+  if (!confirm('Delete this product? It will be removed from the live shop when you Publish.\n\nHiding it instead keeps the record.')) return;
+
+  productDeletes.add(id);
+  productUpserts.delete(id);
+
+  PRODUCTS = PRODUCTS.filter(r => r.id !== id);
+
   editing = null;
   closeModal();
-  await pull(); paintProducts();
+  paintProducts();
+  A().mark();
+  toast('Deletion staged — press Publish to take it live');
 }
 
 /* ---------- orders --------------------------------------- */
@@ -1660,5 +1692,11 @@ async function paint(tab) {
 
 return { paint, wire, wireChange, setToast: fn => { toast = fn; }, pull,
          list: () => everyProduct().map(p => ({ ...p, price: (PRODUCTS.find(r => r.id === p.id)?.data.price)
-           ?? (window.PRODUCTS.find(x => x.id === p.id)?.price) ?? 0 })) };
+           ?? (window.PRODUCTS.find(x => x.id === p.id)?.price) ?? 0 })),
+         pendingProducts: () => ({ upserts: [...productUpserts.values()], deletes: [...productDeletes] }),
+         clearProductDrafts: () => { productUpserts.clear(); productDeletes.clear(); },
+         discardProductDrafts: () => {
+           productUpserts.clear(); productDeletes.clear();
+           pull().then(() => { paintProducts(); paintLineup(); });
+         } };
 })();

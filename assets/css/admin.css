@@ -229,6 +229,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ad-live b, .ad-cloud b { color: var(--c-text); }
 .ad-pill--live { background: var(--c-accent-soft); color: color-mix(in oklab, var(--c-accent) 85%, var(--c-text)); }
 .ad-pill--need { background: var(--c-warning-soft); color: var(--c-warning); }
+.ad-pill--staged { background: color-mix(in oklab, var(--c-primary) 12%, var(--c-surface)); color: var(--c-primary-text); }
 .ad-pill--retro { background: var(--c-secondary-soft); color: color-mix(in oklab, var(--c-secondary) 85%, var(--c-text)); }
 .ad-pill--clay { background: var(--c-primary-soft); color: var(--c-primary-text); }
 .ad-pill--future { background: color-mix(in oklab, var(--c-text) 86%, var(--c-surface)); color: var(--c-bg); }
