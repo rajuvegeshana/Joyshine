@@ -321,6 +321,29 @@ function syncPdp() {
     if (svg && hex) svg.style.setProperty('--art-1', hex);
   }
 
+  /* swipe on the stage to advance images */
+  if (stage && !stage.dataset.swipeWired) {
+    stage.dataset.swipeWired = '1';
+    let tx0 = 0, ty0 = 0;
+    stage.addEventListener('touchstart', e => {
+      tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY;
+    }, { passive: true });
+    stage.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - tx0;
+      const dy = e.changedTouches[0].clientY - ty0;
+      if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return; /* too short or mostly vertical */
+      const cur = pdp;
+      if (!cur) return;
+      const list = S.variantImages(cur.p, cur.v);
+      if (list.length < 2) return;
+      const active = $$('#pdpThumbs .thumb').findIndex(b => b.classList.contains('on'));
+      const next = ((active < 0 ? 0 : active) + (dx < 0 ? 1 : -1) + list.length) % list.length;
+      const mainImg = $('#pdpMainImg');
+      if (mainImg) mainImg.src = list[next];
+      $$('#pdpThumbs .thumb').forEach((b, i) => b.classList.toggle('on', i === next));
+    }, { passive: true });
+  }
+
   /* processing time */
   const ptEl = $('#pdpProcTime');
   if (ptEl) {
