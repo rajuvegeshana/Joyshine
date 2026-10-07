@@ -426,8 +426,7 @@ function productForm(r) {
       <div class="ad-grid3">
         <label class="ad-field"><span>Material</span><input id="s_Material" value="${esc(sp.Material)}"></label>
         <label class="ad-field"><span>Layer</span><input id="s_Layer" value="${esc(sp.Layer)}"></label>
-        <label class="ad-field"><span>Print time</span><input id="s_Print" value="${esc(sp.Print)}"></label>
-        <label class="ad-field" style="margin-bottom:0"><span>Size</span><input id="s_Size" value="${esc(sp.Size)}"></label>
+        <label class="ad-field" style="margin-bottom:0"><span>Print time</span><input id="s_Print" value="${esc(sp.Print)}"></label>
       </div>
     </div>
     <div class="ad-card">
@@ -720,7 +719,7 @@ function readForm(r) {
     blurb: g('f_blurb'),
     artKey: g('f_art'),
     tags: $$('[data-tag]').filter(c => c.checked).map(c => c.dataset.tag),
-    specs: { Material: g('s_Material'), Layer: g('s_Layer'), Print: g('s_Print'), Size: g('s_Size') },
+    specs: { Material: g('s_Material'), Layer: g('s_Layer'), Print: g('s_Print') },
     details: { materials: g('d_materials'),
                dimL: n('d_dimL'), dimB: n('d_dimB'), dimH: n('d_dimH'),
                sizePreset: document.querySelector('[name="d_sizePreset"]:checked')?.value || '',
@@ -1014,7 +1013,7 @@ function toRow(r) {
     tags: (p.tags || []).join(', '), blurb: p.blurb || '', story: p.story || '',
     photo: p.photo || '', picture: p.artKey || '',
     spec_material: sp.Material || '', spec_layer: sp.Layer || '',
-    spec_print: sp.Print || '', spec_size: sp.Size || '',
+    spec_print: sp.Print || '', spec_size: sp.Size || '',  /* spec_size kept for backward compat, not shown in editor */
     sizes: (v.size || []).map(z => [z.label, z.delta || 0, [z.l, z.b, z.h].join('x')].join('|')).join(' ; '),
     materials: (v.material || []).map(m => [m.label, m.delta || 0,
       m.stock === null || m.stock === undefined ? '' : m.stock].join('|')).join(' ; '),
