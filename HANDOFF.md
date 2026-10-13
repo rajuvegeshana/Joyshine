@@ -3,7 +3,7 @@
 Everything you need to pick this up cold and keep going. Read `CLAUDE.md`
 first for the rules; this is the map.
 
-Last written: 1 October 2026.
+Last written: 13 October 2026.
 
 ---
 
@@ -38,7 +38,7 @@ assets/data/        site.json — the file fallback if Supabase is unreachable
 supabase/           eight SQL files, all of them run already
 ```
 
-**15,900 lines**, 51 files, no dependencies, no build.
+**~17,400 lines** across 62 tracked files, no dependencies, no build.
 
 ### The JavaScript, in load order
 
@@ -46,25 +46,25 @@ supabase/           eight SQL files, all of them run already
 |---|---|---|
 | `config.js` | 245 | Every business setting. The thing the panel edits. |
 | `occasions.js` | 337 | 45 Indian occasions + the resolver that picks today's |
-| `products.js` | 672 | The seed catalogue, variant options, ~29 drawn SVGs |
+| `products.js` | 777 | The seed catalogue, variant options, ~29 drawn SVGs |
 | `cloud.js` | 272 | Supabase REST client — auth, settings, tables, uploads |
 | `settings.js` | 111 | Merges Supabase → site.json → defaults, in that order |
-| `catalogue.js` | 151 | Loads products/reviews/sales; customer file upload; line-up |
+| `catalogue.js` | 153 | Loads products/reviews/sales; customer file upload; line-up |
 | `customise.js` | 251 | Per-product custom fields (text, dropdown, colour, upload) |
 | `promo.js` | 167 | Ribbon, welcome popup, discount codes, visit counting |
 | `analytics.js` | 98 | GA4 behind a consent notice — nothing loads until agreed |
 | `legal.js` | 183 | Policy pages, hidden until the owner fills in three facts |
-| `store.js` | 185 | Cart, wishlist, recents, money, search, totals |
+| `store.js` | 329 | Cart, wishlist, recents, money, search, totals, `normaliseProduct`, `variantImages` |
 | `icons.js` | 27 | The icon set, shared by shop and panel |
 | `skin.js` | 330 | Uploaded art, icon overrides, per-theme type, cursors, logo |
 | `kit.js` | 260 | Per-theme character: motif, accessory, accent icon, wording |
-| `views.js` | 846 | Every screen, rendered as a string |
+| `views.js` | 889 | Every screen, rendered as a string |
 | `fly.js` | 190 | The add-to-basket arc (ported from a Motion component) |
-| `app.js` | 1038 | Router, all interaction, Razorpay, WhatsApp, orders, GA |
+| `app.js` | 1193 | Router, all interaction, Razorpay, WhatsApp, orders, GA, PDP gallery swipe |
 | `review.js` | 121 | The confirm-before-publishing bar |
 | `rig.js` | 226 | The printer chrome: ruler, filament rail, print bed |
-| `admin.js` | 1184 | Panel shell, settings buffer, undo/redo, publish flow |
-| `admin-catalogue.js` | 1071 | Products, orders, requests, reviews, offers, xlsx, line-up |
+| `admin.js` | 1218 | Panel shell, settings buffer, undo/redo, publish flow |
+| `admin-catalogue.js` | 1930 | Products (variants, colour, dimensions, live preview), orders, requests, reviews, offers, xlsx, line-up |
 | `admin-content.js` | 486 | Content & art: hero, icons, type, brand, cursors, errors |
 | `admin-shop.js` | 735 | The Workshop: filament, billing, money out, dashboard |
 
@@ -160,6 +160,11 @@ field for anything already on a drive.
 text, long text, dropdown, colour, file upload), and the customer fills them in
 before adding to the cart.
 
+**Product photos** — the PDP gallery is multi-image with thumbnails, and
+**swiping left or right on the main image advances through them** on touch.
+Images come from the colour the customer picked where per-colour photos exist,
+otherwise from the product's gallery.
+
 **Reviews** — a customer can write one but cannot publish it; the database
 refuses anything already marked published. The owner approves, and can pin one
 to the homepage.
@@ -201,10 +206,53 @@ engineering page keeps its own look.
 icons with micro-interactions, per-theme typography with eight weights and
 uploadable fonts, logo/favicon/share picture, the mouse pointer, error pages.
 
-**Products** — full editor: sizes with L×B×H, materials with per-product
-pricing and stock, colours, customisation fields, photographs, spreadsheet
-import and export, and a **line-up** that decides which products lead the shop
-and in what order, per occasion or every day.
+**Products** — full editor, split into the form on the left and a **live
+preview** on the right that repaints as you type, so what the shop will show is
+visible before anything is published. Variants, colours, dimensions,
+customisation fields, photographs, spreadsheet import and export, and a
+**line-up** that decides which products lead the shop and in what order, per
+occasion or every day.
+
+### The product editor, in detail
+
+Rewritten 7–13 October. Worth knowing before you touch it.
+
+**Layout.** `productForm()` returns `.ad-pe-split` — a `1fr 320px` grid, form
+left, sticky preview right, collapsing to one column under 900px. Everything
+that was three separate collapsible cards (options, variant matrix, details) is
+now one **Variants & pricing** card: option rows, then preset buttons
+(`+ Colour` / `+ Size` / `+ Material` / `+ Custom`), then the variant table,
+then four `<details>` for Dimensions, Purchase options, What the customer
+fills in, and Product details. Dimensions sits **above** Purchase options
+because it was being missed at the bottom.
+
+**Options.** Typed. `colour` options render one row per value with a
+`<input type="color">` picker, a hex text box, a name field and a per-colour
+photo button; the picker and the hex box stay in sync both ways. Every other
+type renders removable chips plus a type-and-Enter box. The **Refresh
+variants** button is gone — `rebuildMatrixFromOptions()` runs on every change.
+
+**The variant table** is a plain table of every cartesian combination of the
+option values, priced independently: Variant / Price / Was / Stock / Status.
+Renaming an option value updates the row label in place.
+
+**Per-colour photographs.** The 📷 button on a colour row uploads through
+`CLOUD.uploadImage` into the `product-images` bucket and stores the URLs in
+`val.images`. The PDP prefers these over the product's shared gallery when the
+customer picks that colour (`variantImages` in `store.js`), so each colour can
+have its own pictures. The count on the button reflects what is already there.
+
+**Dimensions** moved from three scalars to an array, `details.dims` —
+`[{ label, L, B, H }]`, any number of rows. Old products carrying
+`dimL/dimB/dimH/sizePreset` are migrated once in `loadVariantDrafts()`, and both
+`views.js` and `paintPreview()` fall back to the scalars when `dims` is absent.
+No migration script needed; nothing to run in Supabase.
+
+**The preview** is fed by `readForm(r)` — the same function that builds the save
+payload — so it cannot drift from what gets published. It shows the art, name,
+category, blurb, price (switching to "From ₹…" when variants disagree),
+colour swatches from the option hex values, the dimensions line, and the
+details accordion.
 
 **Orders, Requests, Reviews, Marketing, Traffic & SEO, Policies.**
 
@@ -254,6 +302,8 @@ Nothing here can be invented. Each one blocks something real.
   confirmation appears in the panel instead.
 - **The `products` table overrides the seed entirely** — one row hides thirty.
 
+---
+
 ## 9. Not built
 
 Blog posts (the table exists), section-by-section image and copy editing, a
@@ -282,3 +332,48 @@ Kept because they will otherwise happen again.
   changes. Sort keys before comparing.
 - GitHub's `gh auth token` returns the wrong account's token on this machine.
   Always `-u rajuvegeshana`.
+
+---
+
+## 11. Invariants in the variants code
+
+These are the rules that keep the variant editor from eating its own data.
+All four have already cost time once.
+
+- **Never regenerate `val.k` when a label changes.** `vkey(label, i)` derives a
+  value's identity from its label, but `k` is assigned **once, at creation**,
+  and is then a stable identifier. `rebuildMatrixFromOptions()` finds an
+  existing row by `JSON.stringify(combo)`; if the label edit re-keys the value,
+  the lookup misses, `old` falls back to `{}`, and every price, stock and SKU
+  in that row is blanked. The customer sees their prices vanish on a rename.
+  This is exactly what happened, and the line is commented in `wireChange`.
+- **`--c-primary-pale` is not a token.** It appears nowhere in `themes.css`, so
+  `var(--c-primary-pale, #f0f0ff)` silently applies the pale fallback in every
+  theme, including dark — white chip text on a pale chip, i.e. invisible. The
+  theme-aware pair is `--c-primary-soft` (background) and `--c-primary-text`
+  (foreground). Never give a custom property a fallback and assume the token
+  exists; check `themes.css` first.
+- **`CLOUD.uploadImage(file)`, not `CATALOGUE.uploadFile`.** The latter does
+  not exist anywhere. It was written once by pattern-matching, and because the
+  upload is `.catch(() => null)`-wrapped, every file would have failed
+  *silently* — the button would simply never attach anything.
+- **A variant's price is not its option value's property.** They are separate
+  drafts (`matrixDraft` vs `optionsDraft`). Editing options only reshapes the
+  table and carries prices across by combo key; it never sets a price.
+
+---
+
+## 12. Uncommitted in the working tree
+
+As of 13 October, present but not committed. Confirm before removing any of it
+— some is the owner's material.
+
+- `product-photos/gopuram-*.jpg` deleted; `product-photos/gopuram-temple-box/`
+  added — a replacement photo set, staged neither way.
+- `.archify/` — untracked, unrelated tooling output.
+- `assets/img/` — untracked; not yet committed, not yet referenced.
+- `joyshine-logo-exploration.html`, `joyshine-reel-brief.html`,
+  `joyshine-reel-motion.html` — design exploration files at the repo root,
+  not part of the site.
+- `joyshine-products.xlsx` — a local spreadsheet; the panel's own export lives
+  in `assets/`.
