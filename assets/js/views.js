@@ -161,7 +161,7 @@ function home() {
           <a class="btn btn--ghost" href="#/custom"><span data-spark>${I.spark}</span>Create something custom</a>
         </div>
         <dl class="hero__facts r" style="--d:280ms">
-          <div class="fact"><b class="num">${window.PRODUCTS.length}</b><span>things to print</span></div>
+          <div class="fact"><b class="num">${window.PRODUCTS.filter(p => !p.hidden).length}</b><span>things to print</span></div>
           <div class="fact"><b class="num">0.05<span style="font-size:.6em">mm</span></b><span>finest layer</span></div>
           <div class="fact"><b class="num">2-4</b><span>days to dispatch</span></div>
           <div class="fact"><b>Your design</b><span>printed too</span></div>
@@ -222,8 +222,6 @@ function home() {
 
   ${occasionBanner()}
 
-  <div id="homeRevs">${pinnedReviews()}</div>
-
   ${CFG.rails.map(r => {
     const list = S.rail(r);
     const o = window.OCC_NOW;
@@ -246,7 +244,28 @@ function home() {
     </div>
   </section>
 
-  ${reviewsBlock()}`;
+  <div id="homeRevs">${pinnedReviews()}</div>
+  ${reviewsBlock()}
+  ${trustStrip()}`;
+}
+
+/* Every line here is read from settings the owner controls, so the strip can
+   never promise something the shop does not do. Returns only appear once the
+   policy pages are published; card payment only once a live Razorpay key is set. */
+function trustStrip() {
+  const L = CFG.legal || {};
+  const payLive = CFG.razorpay?.keyId && !/REPLACE_ME/.test(CFG.razorpay.keyId);
+  const items = [
+    [esc(CFG.brand.origin), 'Designed and printed here'],
+    ['Made to order', L.dispatchDays ? `Dispatched in ${esc(L.dispatchDays)} working days` : 'Printed after you order'],
+    [`Free over ${money(CFG.shipping.freeAbove)}`, `Flat ${money(CFG.shipping.flat)} below that`],
+    L.published && L.returnDays ? [`${esc(L.returnDays)}-day returns`, 'On unused shelf items'] : null,
+    payLive ? ['UPI, card, netbanking', 'Checkout by Razorpay'] : null,
+    ['Order on WhatsApp', '<span id="waNumber2"></span>'],
+  ].filter(Boolean);
+  return `<section class="band band--tight wrap"><div class="trust r">
+    ${items.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}
+  </div></section>`;
 }
 
 /* the occasion banner — empty when nothing is running today */
