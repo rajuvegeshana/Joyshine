@@ -239,12 +239,12 @@ function home() {
       <p class="lede r" style="--d:120ms">Nothing sits in a warehouse. Each piece is printed after you order it, in the colour you chose, then finished by hand and posted from our studio.</p></div></div>
     <div class="how">
       ${[
-        ['upload',  'Pick or ask', 'Buy off the shelf, or send a photo, an STL or a MakerWorld link and we quote it.'],
-        ['vase',    'We slice it', 'Layer height, walls and infill chosen per piece. Lamps get thin walls, bookends get thick ones.'],
-        ['bust',    'It prints', 'Filament pieces come off the bed warm. Resin is washed, UV cured, then sanded by hand.'],
-        ['giftbox', 'Packed and posted', `Recycled fill, boxed, tracked. Dispatch in ${esc(CFG.legal?.dispatchDays || '2-4')} working days.`],
+        ['1-pick',  'Pick or ask', 'Buy off the shelf, or send a photo, an STL or a MakerWorld link and we quote it.'],
+        ['2-slice', 'We slice it', 'Layer height, walls and infill chosen per piece. Lamps get thin walls, bookends get thick ones.'],
+        ['3-print', 'It prints', 'Filament pieces come off the bed warm. Resin is washed, UV cured, then sanded by hand.'],
+        ['4-pack',  'Packed and posted', `Recycled fill, boxed, tracked. Dispatch in ${esc(CFG.legal?.dispatchDays || '2-4')} working days.`],
       ].map(([pic, h, p]) => `<div class="how__row">
-        <div class="how__art r" aria-hidden="true"><svg viewBox="0 0 200 200">${window.ART[pic] || ''}</svg></div>
+        <div class="how__art r" aria-hidden="true"><img src="assets/img/how/${pic}.jpg" alt="" loading="lazy" decoding="async"></div>
         <div class="how__text r" style="--d:90ms"><h3>${h}</h3><p>${p}</p></div>
       </div>`).join('')}
     </div>

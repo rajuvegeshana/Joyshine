@@ -291,7 +291,7 @@ section { position: relative; }
   background: var(--stage); border: var(--card-border); box-shadow: var(--shadow-1);
   display: grid; place-items: center;
 }
-.how__art svg { width: 62%; height: 62%; overflow: visible; }
+.how__art img { width: 100%; height: 100%; object-fit: cover; }
 .how__text { padding-bottom: clamp(0rem, 2vw, 2rem); max-width: 40ch; }
 .how__text::before {
   content: counter(s, decimal-leading-zero); display: block; margin-bottom: .6rem;

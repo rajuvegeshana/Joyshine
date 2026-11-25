@@ -1,0 +1,12 @@
+Stock photographs for the "How it's made" section on the homepage.
+All from Unsplash, under the Unsplash License (free for commercial use,
+no permission needed). Credit is not required but is recorded here.
+
+They illustrate each step in general; they are not pictures of the
+Joyshine studio. Replace any of them with your own photo of the same
+step by saving it here under the same file name.
+
+1-pick.jpg   https://unsplash.com/photos/FB1vd3XT_zQ   ZMorph All-in-One 3D Printers
+2-slice.jpg  https://unsplash.com/photos/G5XX7B__FeQ   Jakub Żerdzicki
+3-print.jpg  https://unsplash.com/photos/FED1QYdR1qI   Jakub Żerdzicki
+4-pack.jpg   https://unsplash.com/photos/MGaFENpDCsw   Bench Accounting
