@@ -259,10 +259,10 @@ function home() {
 /* Every line here is read from settings the owner controls, so the strip can
    never promise something the shop does not do. Returns only appear once the
    policy pages are published; card payment only once a live Razorpay key is set. */
-function trustStrip() {
+function trustItems() {
   const L = CFG.legal || {};
   const payLive = CFG.razorpay?.keyId && !/REPLACE_ME/.test(CFG.razorpay.keyId);
-  const items = [
+  return [
     [esc(CFG.brand.origin), 'Designed and printed here'],
     ['Made to order', L.dispatchDays ? `Dispatched in ${esc(L.dispatchDays)} working days` : 'Printed after you order'],
     [`Free over ${money(CFG.shipping.freeAbove)}`, `Flat ${money(CFG.shipping.flat)} below that`],
@@ -270,9 +270,26 @@ function trustStrip() {
     payLive ? ['UPI, card, netbanking', 'Checkout by Razorpay'] : null,
     ['Order on WhatsApp', '<span id="waNumber2"></span>'],
   ].filter(Boolean);
-  return `<section class="band band--tight wrap"><div class="trust r">
+}
+const trustGrid = (items, cls = '') => `<div class="trust${cls} r">
     ${items.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}
-  </div></section>`;
+  </div>`;
+function trustStrip() {
+  return `<section class="band band--tight wrap">${trustGrid(trustItems())}</section>`;
+}
+
+/* An arrival window built only from the dispatch and courier days the owner
+   set. Sundays are skipped because neither the studio nor most couriers
+   move parcels on them. Quoted, unavailable and per-variant-timed pieces get
+   no window: their timing is not known until someone says so. */
+function arrivalLine(p, status, pt) {
+  if (p.quote || pt || status === 'out-of-stock' || status === 'coming-soon') return '';
+  const span = s => String(s || '').split('-').map(n => parseInt(n, 10)).filter(n => n >= 0);
+  const [d0, d1 = d0] = span(CFG.legal?.dispatchDays), [c0, c1 = c0] = span(CFG.legal?.deliveryDays);
+  if (d0 == null || c0 == null) return '';
+  const after = n => { const d = new Date(); while (n > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) n--; } return d; };
+  const fmt = d => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  return `<p class="pdp__eta">Order today and it should reach you between <b>${fmt(after(d0 + c0))}</b> and <b>${fmt(after(d1 + c1))}</b>.</p>`;
 }
 
 /* the occasion banner — empty when nothing is running today */
@@ -417,7 +434,7 @@ function product(id, sel) {
   }).join('');
 
   const mainImg = imgs.length
-    ? `<img src="${esc(imgs[0])}" alt="${esc(p.name)}" id="pdpMainImg" loading="eager">`
+    ? `<img src="${esc(imgs[0])}" alt="${esc(p.name)}, open full screen" id="pdpMainImg" tabindex="0" loading="eager">`
     : (p.art ? `<svg class="pdp__art" viewBox="0 0 200 200"${hex ? ` style="--art-1:${esc(hex)}"` : ''}>${p.art}</svg>` : '');
 
   const thumbList = imgs.length > 1
@@ -480,6 +497,8 @@ function product(id, sel) {
              <button class="btn btn--wa" id="pdpWa">${ico('wa')}Order on WhatsApp</button>
              <button class="btn btn--ghost btn--block" id="pdpAdd"${status === 'out-of-stock' ? ' disabled' : ''}>Add to cart</button>`}
       </div>
+      ${arrivalLine(p, status, pt)}
+      ${trustGrid(trustItems().filter(([b]) => !/WhatsApp/.test(b)), ' trust--pdp')}
 
       ${p.bulk ? `<details class="bulk">
         <summary><b>Need ${CFG.bulk.askAbove}+ pieces?</b></summary>

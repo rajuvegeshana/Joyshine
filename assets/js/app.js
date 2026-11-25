@@ -98,6 +98,7 @@ function render() {
   const view = $('#view');
   /* the homepage wears the SEO title; inner pages prefix their own */
   let html, title = CFG.seo?.title || CFG.brand.name;
+  closeLightbox();
   pdp = null;
 
   /* the engineering line wears its own look, whatever else is on */
@@ -298,7 +299,7 @@ function syncPdp() {
       const svg = stage.querySelector('svg');
       if (svg) {
         const el = document.createElement('img');
-        el.id = 'pdpMainImg'; el.alt = p.name; el.loading = 'eager'; el.src = imgs[0];
+        el.id = 'pdpMainImg'; el.alt = p.name + ', open full screen'; el.tabIndex = 0; el.loading = 'eager'; el.src = imgs[0];
         svg.replaceWith(el);
       }
     }
@@ -324,24 +325,15 @@ function syncPdp() {
   /* swipe on the stage to advance images */
   if (stage && !stage.dataset.swipeWired) {
     stage.dataset.swipeWired = '1';
-    let tx0 = 0, ty0 = 0;
-    stage.addEventListener('touchstart', e => {
-      tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY;
-    }, { passive: true });
-    stage.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - tx0;
-      const dy = e.changedTouches[0].clientY - ty0;
-      if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return; /* too short or mostly vertical */
-      const cur = pdp;
-      if (!cur) return;
-      const list = S.variantImages(cur.p, cur.v);
-      if (list.length < 2) return;
-      const active = $$('#pdpThumbs .thumb').findIndex(b => b.classList.contains('on'));
-      const next = ((active < 0 ? 0 : active) + (dx < 0 ? 1 : -1) + list.length) % list.length;
-      const mainImg = $('#pdpMainImg');
-      if (mainImg) mainImg.src = list[next];
-      $$('#pdpThumbs .thumb').forEach((b, i) => b.classList.toggle('on', i === next));
-    }, { passive: true });
+    onSwipe(stage, dir => pdpGo(pdpIndex() + dir));
+    /* the hover zoom grows from wherever the pointer is, so it magnifies
+       the part being looked at rather than always the middle */
+    stage.addEventListener('pointermove', e => {
+      const m = $('#pdpMainImg');
+      if (e.pointerType !== 'mouse' || !m) return;
+      const r = stage.getBoundingClientRect();
+      m.style.transformOrigin = `${((e.clientX - r.left) / r.width * 100).toFixed(1)}% ${((e.clientY - r.top) / r.height * 100).toFixed(1)}%`;
+    });
   }
 
   /* processing time */
@@ -363,6 +355,68 @@ function syncPdp() {
   $$('[data-v]').forEach(b => b.classList.toggle('on', v[b.dataset.v] === b.dataset.val));
   const now = $('.sel__now');
   if (now) now.innerHTML = V.selNow(p, v);
+}
+
+/* ===== PDP gallery: one place that knows which photo is showing ===== */
+const pdpImgs = () => (pdp ? S.variantImages(pdp.p, pdp.v) : []);
+function pdpIndex() {
+  const i = $$('#pdpThumbs .thumb').findIndex(b => b.classList.contains('on'));
+  return i < 0 ? 0 : i;
+}
+function pdpGo(idx) {
+  const list = pdpImgs();
+  if (!list.length) return;
+  idx = (idx + list.length) % list.length;
+  const m = $('#pdpMainImg');
+  if (m) m.src = list[idx];
+  $$('#pdpThumbs .thumb').forEach((b, i) => b.classList.toggle('on', i === idx));
+  const lb = $('.lb');
+  if (lb) { $('.lb__img', lb).src = list[idx]; const c = $('.lb__count', lb); if (c) c.textContent = `${idx + 1} / ${list.length}`; }
+}
+function onSwipe(el, go) {
+  let x0 = 0, y0 = 0;
+  el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return; /* too short or mostly vertical */
+    go(dx < 0 ? 1 : -1);
+  }, { passive: true });
+}
+
+let lbReturn = null;
+function openLightbox() {
+  const list = pdpImgs();
+  if (!list.length || $('.lb')) return;
+  const i = pdpIndex(), many = list.length > 1;
+  const el = document.createElement('div');
+  el.className = 'lb';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-label', 'Photos of ' + pdp.p.name);
+  el.innerHTML = `<img class="lb__img" src="${esc(list[i])}" alt="${esc(pdp.p.name)}">
+    <button class="lb__btn lb__x" data-lb="close" aria-label="Close">${I.x}</button>
+    ${many ? `<button class="lb__btn lb__prev" data-lb="-1" aria-label="Previous photo">&lsaquo;</button>
+      <button class="lb__btn lb__next" data-lb="1" aria-label="Next photo">&rsaquo;</button>
+      <span class="lb__count">${i + 1} / ${list.length}</span>` : ''}`;
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-lb]');
+    if (b) { b.dataset.lb === 'close' ? closeLightbox() : pdpGo(pdpIndex() + +b.dataset.lb); return; }
+    if (e.target === el) closeLightbox();
+  });
+  if (many) onSwipe(el, dir => pdpGo(pdpIndex() + dir));
+  lbReturn = document.activeElement;
+  document.body.appendChild(el);
+  document.documentElement.style.overflow = 'hidden';
+  /* a timeout, not requestAnimationFrame, so the fade still completes if the tab is hidden */
+  setTimeout(() => el.classList.add('on'), 10);
+  $('.lb__x', el).focus();
+}
+function closeLightbox() {
+  const el = $('.lb');
+  if (!el) return;
+  el.remove();
+  document.documentElement.style.overflow = '';
+  lbReturn?.focus?.();
+  lbReturn = null;
 }
 
 function pdpItem() {
@@ -1086,15 +1140,9 @@ async function boot() {
     const quote = t.closest('[data-quote]'); if (quote) { location.hash = '#/custom?p=' + quote.dataset.quote; return; }
 
     /* pdp */
+    if (t.id === 'pdpMainImg' && pdp) { openLightbox(); return; }
     const gi = t.closest('[data-gi]');
-    if (gi && pdp) {
-      const idx = +gi.dataset.gi;
-      const mainImg = $('#pdpMainImg');
-      const imgs = S.variantImages(pdp.p, pdp.v);
-      if (mainImg && imgs[idx]) mainImg.src = imgs[idx];
-      $$('#pdpThumbs .thumb').forEach((b, i) => b.classList.toggle('on', i === idx));
-      return;
-    }
+    if (gi && pdp) { pdpGo(+gi.dataset.gi); return; }
     const vb = t.closest('[data-v]');
     if (vb && pdp) { pdp.v = { ...pdp.v, [vb.dataset.v]: vb.dataset.val }; syncPdp(); return; }
     const pq = t.closest('[data-pq]');
@@ -1182,6 +1230,12 @@ async function boot() {
   });
 
   addEventListener('keydown', e => {
+    if ($('.lb')) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') pdpGo(pdpIndex() + (e.key === 'ArrowRight' ? 1 : -1));
+      return;
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.id === 'pdpMainImg' && pdp) { e.preventDefault(); openLightbox(); return; }
     if (e.key === 'Escape') closePanels();
     if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) { e.preventDefault(); openSearch(); }
   });
