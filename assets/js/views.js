@@ -28,6 +28,15 @@ function art(p, hex, cls = '') {
   return `<svg class="${cls}" viewBox="0 0 200 200" role="img" aria-label="${esc(p.name)}"${style}>${p.art}</svg>`;
 }
 
+/* the second photo, faded in on hover so a shopper sees another angle
+   without opening the product. Only when there really is a second photo. */
+function altPic(p) {
+  const imgs = S.variantImages ? S.variantImages(p, {}) : [];
+  return imgs.length > 1
+    ? `<img class="card__alt" src="${esc(imgs[1])}" alt="" aria-hidden="true" loading="lazy">`
+    : '';
+}
+
 /* "90 x 90 x 120 mm" when we know it, the old text if we only have that */
 function dims(o) {
   if (o.l && o.b && o.h) return `${o.l} \u00d7 ${o.b} \u00d7 ${o.h} mm`;
@@ -81,7 +90,7 @@ function card(p, i = 0) {
       <button class="heart${S.inWish(p.id) ? ' on' : ''}" data-wish="${p.id}"
         aria-label="${S.inWish(p.id) ? 'Remove from' : 'Save to'} wishlist">${S.inWish(p.id) ? I.heartOn : I.heart}</button>
     </div>
-    <div class="card__art">${art(p)}</div>
+    <div class="card__art">${art(p)}${altPic(p)}</div>
     <div class="card__body">
       <span class="card__cat">${esc(S.catName(p.cat))}</span>
       <h3><a class="card__link" href="#/p/${p.id}">${esc(p.name)}</a></h3>
