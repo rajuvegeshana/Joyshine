@@ -416,7 +416,7 @@ function productForm(r) {
     <p class="ad-p">Upload multiple photos — they show in the gallery. First image is the primary. Adding images per option/variant below overrides these on a per-colour basis.</p>
     <div id="prodGallery" class="ad-gallery"></div>
     <div class="ad-up" data-gallerydrop="product">
-      <input type="file" id="f_galfile" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+      <input type="file" id="f_galfile" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple hidden>
       <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" data-x="galpick" data-gal="product">+ Add Images</button>
       <span class="ad-hint" id="f_galmsg">or drag images here</span>
     </div>
@@ -1739,7 +1739,7 @@ function wire(t) {
         <p class="ad-p">These photos show in the gallery when a customer picks this colour. They override the main product photos.</p>
         <div id="valGallery" class="ad-gallery"></div>
         <div class="ad-up" style="margin-top:.7rem">
-          <input type="file" id="vg_file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+          <input type="file" id="vg_file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple hidden>
           <button type="button" class="ad-btn ad-btn--ghost ad-btn--sm" id="vg_pick">+ Add photos</button>
           <span class="ad-hint" id="vg_msg">or drag here</span>
         </div>
