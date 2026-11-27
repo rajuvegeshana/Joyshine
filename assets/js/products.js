@@ -11,7 +11,7 @@
 /* ---------- categories ------------------------------------- */
 window.CATEGORIES = [
   { id: 'home',     name: 'Home & Living',  note: 'Decor, organisers, things that earn their shelf.' },
-  { id: 'puja',     name: 'Puja & Spiritual', note: 'Kumkum barni, diya stands, festival decor.' },
+  { id: 'puja',     name: 'Puja & Spiritual', note: 'Incense holders, agarbatti stands and wall pieces for the puja corner.' },
   { id: 'desk',     name: 'Desk & Office',  note: 'Organisers, stands, cable wrangling.' },
   { id: 'kids',     name: 'Kids',           note: 'Toys, animals, puzzles, small adventures.' },
   { id: 'gifts',    name: 'Gifts',          note: 'Birthdays, return gifts, festivals, corporate.' },

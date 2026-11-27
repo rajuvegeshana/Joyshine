@@ -23,9 +23,13 @@
 .iconbtn:hover { transform: translateY(-2px); color: var(--brand); }
 
 /* ===== rails ============================================= */
-.headrow--rail { margin-bottom: 1.1rem; align-items: baseline; }
+.headrow--rail { margin-bottom: 1rem; align-items: baseline; }
+.headrow--rail h2 { font-size: clamp(1.45rem, 1.1rem + 1.3vw, 2.2rem); margin-top: 0; }
 .rail {
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+  /* snap cards to the page margin, not the screen edge, or the first card
+     loads scrolled half out of view */
+  scroll-padding-inline: max(1rem, calc((100vw - 1220px) / 2));
   scrollbar-width: none; padding-block: .6rem 1.2rem;
 }
 .rail::-webkit-scrollbar { display: none; }
@@ -35,8 +39,10 @@
 }
 @media (min-width: 720px) {
   .rail__track { padding-inline: max(2.5rem, calc((100vw - 1220px) / 2)); }
+  .rail { scroll-padding-inline: max(2.5rem, calc((100vw - 1220px) / 2)); }
 }
-.rail .card { width: clamp(230px, 62vw, 280px); flex: none; scroll-snap-align: start; }
+/* about two cards on a phone with the next one peeking, five on a desktop */
+.rail .card { width: clamp(158px, 43vw, 236px); flex: none; scroll-snap-align: start; }
 
 /* ===== categories ======================================== */
 .cats { display: grid; gap: clamp(.7rem, .4rem + 1vw, 1.1rem); grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
@@ -52,6 +58,15 @@
 .catcard__t { display: grid; gap: .15rem; min-width: 0; }
 .catcard__t b { font-family: var(--font-display); font-size: 1rem; color: var(--ink-strong); }
 .catcard__t span { font-size: .78rem; color: var(--ink-quiet); }
+/* on a phone the tiles go two across with just the name, so the shelves
+   fit on one screen instead of a tall stack of paragraphs */
+@media (max-width: 599px) {
+  .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .catcard { padding: .6rem; gap: .6rem; }
+  .catcard__art { width: 44px; height: 44px; }
+  .catcard__t b { font-size: .9rem; }
+  .catcard__t span { display: none; }
+}
 
 /* ===== promo band ======================================== */
 .promo {

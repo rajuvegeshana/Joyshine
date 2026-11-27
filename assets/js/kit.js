@@ -17,7 +17,7 @@ window.KIT = (() => {
 const K = {
 
   clay: {
-    words: { browse: 'Eight shelves, one little studio.', strip: 'Pressed, sanded, packed by hand', empty: 'Nothing here yet — the shelf is waiting.' },
+    words: { browse: 'Every shelf, one little studio.', strip: 'Pressed, sanded, packed by hand', empty: 'Nothing here yet — the shelf is waiting.' },
     note: 'Pressed soft, printed slow',
     hud: 'Nova bust',
     count: 9,
@@ -27,7 +27,7 @@ const K = {
   },
 
   retro: {
-    words: { browse: 'Eight shelves, one loud little studio.', strip: 'Airbrushed finish, chrome trim', empty: 'Empty shelf. Cue the tumbleweed.' },
+    words: { browse: 'Every shelf, one loud little studio.', strip: 'Airbrushed finish, chrome trim', empty: 'Empty shelf. Cue the tumbleweed.' },
     note: 'Airbrushed and chrome trimmed',
     hud: 'Sunset badge',
     count: 10,
@@ -37,7 +37,7 @@ const K = {
   },
 
   future: {
-    words: { browse: 'Eight shelves. One calibrated studio.', strip: 'Tolerance ±0.3 mm', empty: 'No results in this sector.' },
+    words: { browse: 'Every shelf. One calibrated studio.', strip: 'Tolerance ±0.3 mm', empty: 'No results in this sector.' },
     note: 'Calibrated to 0.05 mm',
     hud: 'Bracket v4',
     count: 12,
@@ -47,7 +47,7 @@ const K = {
   },
 
   halloween: {
-    words: { browse: 'Eight shelves, one haunted studio.', strip: 'Printed after dark', empty: 'Nothing here. Spooky, really.' },
+    words: { browse: 'Every shelf, one haunted studio.', strip: 'Printed after dark', empty: 'Nothing here. Spooky, really.' },
     note: 'Spooky, but make it pastel',
     hud: 'Pumpkin lamp',
     count: 9,
@@ -57,7 +57,7 @@ const K = {
   },
 
   diwali: {
-    words: { browse: 'Eight shelves, lit for the season.', strip: 'Lamps, rangoli and little gifts', empty: 'Nothing here yet — light it up another day.' },
+    words: { browse: 'Every shelf, lit for the season.', strip: 'Lamps, rangoli and little gifts', empty: 'Nothing here yet — light it up another day.' },
     note: 'Lamps lit, rangoli drawn',
     hud: 'Diya set',
     count: 11,
@@ -67,7 +67,7 @@ const K = {
   },
 
   holi: {
-    words: { browse: 'Eight shelves, every colour going.', strip: 'Colour on everything', empty: 'Nothing here. Go throw some colour instead.' },
+    words: { browse: 'Every shelf, every colour going.', strip: 'Colour on everything', empty: 'Nothing here. Go throw some colour instead.' },
     note: 'Colour on everything',
     hud: 'Powder pots',
     count: 14,
@@ -77,7 +77,7 @@ const K = {
   },
 
   christmas: {
-    words: { browse: 'Eight shelves, wrapped and waiting.', strip: 'Wrapped, named, ready', empty: 'Nothing under this tree yet.' },
+    words: { browse: 'Every shelf, wrapped and waiting.', strip: 'Wrapped, named, ready', empty: 'Nothing under this tree yet.' },
     note: 'Snow on the print bed',
     hud: 'Tree topper',
     count: 14,
@@ -87,7 +87,7 @@ const K = {
   },
 
   navratri: {
-    words: { browse: 'Eight shelves, nine nights.', strip: 'Nine nights, nine colours', empty: 'Nothing here — the floor is still empty.' },
+    words: { browse: 'Every shelf, nine nights.', strip: 'Nine nights, nine colours', empty: 'Nothing here — the floor is still empty.' },
     note: 'Nine nights, nine colours',
     hud: 'Dandiya pair',
     count: 12,
@@ -97,7 +97,7 @@ const K = {
   },
 
   ganesh: {
-    words: { browse: 'Eight shelves for the season.', strip: 'Modaks on the print bed', empty: 'Nothing here yet.' },
+    words: { browse: 'Every shelf for the season.', strip: 'Modaks on the print bed', empty: 'Nothing here yet.' },
     note: 'Modaks on the print bed',
     hud: 'Modak tray',
     count: 10,
@@ -107,7 +107,7 @@ const K = {
   },
 
   krishna: {
-    words: { browse: 'Eight shelves, one flute.', strip: 'Feather, flute and butter', empty: 'Nothing here — the pot is empty.' },
+    words: { browse: 'Every shelf, one flute.', strip: 'Feather, flute and butter', empty: 'Nothing here — the pot is empty.' },
     note: 'Feather, flute and butter',
     hud: 'Flute charm',
     count: 10,
@@ -117,7 +117,7 @@ const K = {
   },
 
   tiranga: {
-    words: { browse: 'Eight shelves, made in India.', strip: 'Designed and printed here', empty: 'Nothing here yet.' },
+    words: { browse: 'Every shelf, made in India.', strip: 'Designed and printed here', empty: 'Nothing here yet.' },
     note: 'Saffron, white and green',
     hud: 'Chakra badge',
     count: 10,
@@ -129,7 +129,7 @@ const K = {
   /* ---- Valentine's week: seven days, seven rooms --------- */
 
   rose: {
-    words: { browse: 'Eight shelves, in full bloom.', strip: 'Printed roses do not wilt', empty: 'Nothing in bloom here yet.' },
+    words: { browse: 'Every shelf, in full bloom.', strip: 'Printed roses do not wilt', empty: 'Nothing in bloom here yet.' },
     note: 'Petals on the print bed',
     hud: 'Rose stem',
     count: 12,
@@ -139,7 +139,7 @@ const K = {
   },
 
   propose: {
-    words: { browse: 'Eight shelves. One good question.', strip: 'Made to be handed over', empty: 'Nothing here to go down on one knee for.' },
+    words: { browse: 'Every shelf. One good question.', strip: 'Made to be handed over', empty: 'Nothing here to go down on one knee for.' },
     note: 'On one knee, nicely finished',
     hud: 'Ring box',
     count: 10,
@@ -149,7 +149,7 @@ const K = {
   },
 
   chocolate: {
-    words: { browse: 'Eight shelves, one sweet counter.', strip: 'Everything but the cocoa', empty: 'The box is empty.' },
+    words: { browse: 'Every shelf, one sweet counter.', strip: 'Everything but the cocoa', empty: 'The box is empty.' },
     note: 'Cocoa, caramel and cream',
     hud: 'Truffle box',
     count: 11,
@@ -159,7 +159,7 @@ const K = {
   },
 
   teddy: {
-    words: { browse: 'Eight shelves of soft things.', strip: 'Soft, stuffed and printed', empty: 'Nothing to cuddle here yet.' },
+    words: { browse: 'Every shelf of soft things.', strip: 'Soft, stuffed and printed', empty: 'Nothing to cuddle here yet.' },
     note: 'Soft, stuffed and printed',
     hud: 'Teddy set',
     count: 10,
@@ -169,7 +169,7 @@ const K = {
   },
 
   promise: {
-    words: { browse: 'Eight shelves, written down.', strip: 'Written down and kept', empty: 'Nothing promised here yet.' },
+    words: { browse: 'Every shelf, written down.', strip: 'Written down and kept', empty: 'Nothing promised here yet.' },
     note: 'Written down and kept',
     hud: 'Knot charm',
     count: 10,
@@ -179,7 +179,7 @@ const K = {
   },
 
   hug: {
-    words: { browse: 'Eight shelves, arms open.', strip: 'Round, warm and palm-sized', empty: 'Nothing here — have a hug instead.' },
+    words: { browse: 'Every shelf, arms open.', strip: 'Round, warm and palm-sized', empty: 'Nothing here — have a hug instead.' },
     note: 'Arms out, printer warm',
     hud: 'Round plush',
     count: 9,
@@ -189,7 +189,7 @@ const K = {
   },
 
   kiss: {
-    words: { browse: 'Eight shelves, sealed with one.', strip: 'Sealed with one', empty: 'Nothing here yet.' },
+    words: { browse: 'Every shelf, sealed with one.', strip: 'Sealed with one', empty: 'Nothing here yet.' },
     note: 'Sealed with one',
     hud: 'Lip charm',
     count: 12,
@@ -199,7 +199,7 @@ const K = {
   },
 
   valentine: {
-    words: { browse: 'Eight shelves, hearts and all.', strip: 'Hearts wherever they fit', empty: 'Nothing here yet — try another shelf.' },
+    words: { browse: 'Every shelf, hearts and all.', strip: 'Hearts wherever they fit', empty: 'Nothing here yet — try another shelf.' },
     note: 'Hearts wherever they fit',
     hud: 'Heart plaque',
     count: 13,

@@ -1086,7 +1086,7 @@ async function boot() {
       const html = `${rv.length ? `${V.stars(Math.round(+avg))} <b>${avg}</b>` : ''}${
         rv.length && n ? '<span class="social__dot">·</span>' : ''}${n ? `${n} sold` : ''}`;
       if (line) line.innerHTML = html;
-      else c.querySelector('.card__blurb')?.insertAdjacentHTML('afterend', `<p class="card__social">${html}</p>`);
+      else c.querySelector('.card__body h3')?.insertAdjacentHTML('afterend', `<p class="card__social">${html}</p>`);
     });
   });
 
@@ -1137,7 +1137,10 @@ async function boot() {
     if (wab) { const p = S.byId(wab.dataset.wa);
       if (window.CUSTOM.has(p)) { location.hash = '#/p/' + p.id; return; }
       return openWA([{ id: p.id, v: S.defaults(p), note: '', qty: 1 }]); }
-    const quote = t.closest('[data-quote]'); if (quote) { location.hash = '#/custom?p=' + quote.dataset.quote; return; }
+    /* card button: custom work goes to the file form, shelf pieces to their page to pick options */
+    const quote = t.closest('[data-quote]'); if (quote) {
+      const qp = S.byId(quote.dataset.quote);
+      location.hash = qp && qp.cat !== 'custom' ? '#/p/' + qp.id : '#/custom?p=' + quote.dataset.quote; return; }
 
     /* pdp */
     if (t.id === 'pdpMainImg' && pdp) { openLightbox(); return; }
@@ -1158,6 +1161,9 @@ async function boot() {
       return; }
     if (t.closest('#pdpBuy') && pdp) { if (pdpNeedsNote()) return; return pay([pdpItem()], $('#pdpBuy')); }
     if (t.closest('#pdpWa') && pdp)  { if (pdpNeedsNote()) return; return openWA([pdpItem()]); }
+    if (t.closest('#pdpAsk') && pdp) {
+      return openWhatsApp(`*Price enquiry*\n\n${pdp.p.name}\n${S.variantText(pdp.p, pdp.v)}\nQuantity: ${pdp.qty}\n${location.href}\n\nSent from ${CFG.brand.name.toLowerCase()} website`);
+    }
     if (t.closest('#pdpBulk2') && pdp) {
       return openWhatsApp(`*${CFG.whatsapp.bulkGreeting}*\n\n${pdp.p.name}\nQuantity: (tell us how many)\n${S.variantText(pdp.p, pdp.v)}\n\nSent from ${CFG.brand.name.toLowerCase()} website`);
     }

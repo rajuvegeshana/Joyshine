@@ -65,7 +65,7 @@ function selNow(p, v) {
 }
 
 const priceBlock = p => {
-  if (p.quote) return `<div class="price"><b>Quoted</b><em>on WhatsApp</em></div>`;
+  if (p.quote) return `<div class="price price--ask"><b>Price on request</b></div>`;
   const from = S.fromPrice ? S.fromPrice(p) : null;
   const show = from || p.price;
   return `<div class="price"><b class="num">${from ? 'From ' : ''}${money(show)}</b>${!from && p.was
@@ -94,23 +94,22 @@ function card(p, i = 0) {
     <div class="card__body">
       <span class="card__cat">${esc(S.catName(p.cat))}</span>
       <h3><a class="card__link" href="#/p/${p.id}">${esc(p.name)}</a></h3>
-      <p class="card__blurb">${esc(p.blurb)}</p>
       ${(() => { const n = soldCount(p.id); const rv = reviewsFor(p.id);
         if (!n && !rv.length) return '';
         const avg = rv.length ? (rv.reduce((t, r) => t + (+r.rating || 0), 0) / rv.length).toFixed(1) : '';
         return `<p class="card__social">${rv.length ? `${stars(Math.round(+avg))} <b>${avg}</b>` : ''}${
           rv.length && n ? '<span class="social__dot">·</span>' : ''}${n ? `${n} sold` : ''}</p>`;
       })()}
-      ${swatches(p)}
+      <div class="card__swatch">${swatches(p)}</div>
       <div class="card__foot">
         ${priceBlock(p)}
         ${p.personalise ? `<span class="hint">${I.spark}${esc(p.personalise.label)}</span>` : ''}
         <div class="card__buys">
-          ${p.quote
-            ? `<button class="btn btn--wa btn--sm card__add" data-quote="${p.id}">${ico('wa')}Get a quote</button>`
-            : `<button class="btn btn--pay btn--sm" data-buy="${p.id}">${ico('bolt')}Buy now</button>
-               <button class="btn btn--wa btn--sm" data-wa="${p.id}">${ico('wa')}WhatsApp</button>
-               <button class="btn btn--ghost btn--sm card__add" data-add="${p.id}">Add to cart</button>`}
+          ${/* one row of controls on every card, so a row of cards lines up; Buy now
+               lives on the product page, where colour and size are chosen first */ p.quote
+            ? `<button class="btn btn--wa btn--sm" data-quote="${p.id}">${ico('wa')}Ask for price</button>`
+            : `<button class="btn btn--pay btn--sm" data-add="${p.id}">Add to cart</button>
+               <button class="btn btn--wa btn--sm card__wa" data-wa="${p.id}" aria-label="Order ${esc(p.name)} on WhatsApp" title="Order on WhatsApp">${ico('wa')}</button>`}
         </div>
       </div>
     </div>
@@ -134,7 +133,10 @@ function railBlock(title, note, list, href) {
   </section>`;
 }
 
-const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="#/c/${c.id}">
+/* the Custom shelf holds bespoke work, not stock, so its tile opens the
+   custom-print page rather than an empty product grid */
+const catHref = id => (id === 'custom' ? '#/custom' : `#/c/${id}`);
+const catCard = (c, i) => `<a class="catcard r" style="--d:${i * 50}ms" href="${catHref(c.id)}">
     <span class="catcard__art">${art({ name: c.name, art: window.ART[({
       home:'planter', puja:'barni', desk:'organizer', kids:'minis',
       gifts:'giftbox', keys:'keys', light:'lamp', custom:'upload' })[c.id]] })}</span>
@@ -157,6 +159,16 @@ const booting = () => `<div class="booting" aria-busy="true" aria-live="polite">
 </div>`;
 
 /* ---------- HOME ----------------------------------------- */
+const RAIL_MIN = 4;
+/* The homepage only shows shelves with enough on them to be worth a click.
+   A shelf with one piece, or the Custom shelf (it has its own hero button),
+   stays reachable from the shop filters and comes back here by itself once
+   it holds two or more. */
+function homeCats() {
+  const live = window.PRODUCTS.filter(p => !p.hidden);
+  return window.CATEGORIES.filter(c => c.id !== 'custom' && live.filter(p => p.cat === c.id).length >= 2);
+}
+
 function home() {
   return `
   <section class="hero wrap">
@@ -225,14 +237,17 @@ function home() {
   <div class="strip" aria-hidden="true"><div class="strip__track" id="stripTrack"><span>${esc(W('strip', 'Hand finished'))}</span><span>Hand finished</span><span>Made to order</span><span>Free shipping over <i data-freeabove></i></span><span>UPI, card, netbanking</span><span>Or just WhatsApp us</span><span>Your design printed too</span></div></div>
 
   <section class="band band--tight wrap" id="cats">
-    <div class="headrow"><div><p class="eyebrow r">Browse</p><h2 class="r" style="--d:60ms">${esc(W('browse', 'Eight shelves, one little studio.'))}</h2></div></div>
-    <div class="cats">${window.CATEGORIES.map(catCard).join('')}</div>
+    <div class="headrow"><div><p class="eyebrow r">Browse</p><h2 class="r" style="--d:60ms">${esc(W('browse', 'Shop by shelf.'))}</h2></div></div>
+    <div class="cats">${homeCats().map(catCard).join('')}</div>
   </section>
 
   ${occasionBanner()}
 
   ${CFG.rails.map(r => {
     const list = S.rail(r);
+    /* a rail of one or two cards fills a whole band with the same few pieces
+       already shown above, which made the page long and repetitive */
+    if (r.kind !== 'recent' && list.length < RAIL_MIN) return '';
     const o = window.OCC_NOW;
     const title = r.kind === 'festival' ? (o ? o.name : '') : r.title;
     const note  = r.kind === 'festival' ? (o ? o.banner.note : '') : r.note;
@@ -350,7 +365,8 @@ function shop(q) {
   if (sort === 'new')  list = [...list].sort((a, b) => (S.has(b, 'new') ? 1 : 0) - (S.has(a, 'new') ? 1 : 0));
 
   const c = window.CATEGORIES.find(x => x.id === cat);
-  const heading = c ? c.name : tag ? ({ gift: 'Gift Ideas', festival: CFG.festival.name, personalised: 'Personalised',
+  const heading = c ? c.name : tag ? ({ gift: 'Gift Ideas', festival: window.OCC_NOW?.name || 'Festival picks',  /* CFG.festival is gone; reading .name off it crashed every ?tag= link */
+      personalised: 'Personalised',
       quirky: 'Cute & Quirky', bestseller: 'Best Sellers', trending: 'Trending', new: 'New Arrivals' }[tag] || 'Shop')
     : max ? `Under ${money(max)}` : 'Everything';
 
@@ -364,7 +380,7 @@ function shop(q) {
   <nav class="catbar" aria-label="Categories">
     <div class="catbar__in wrap">
       <a class="chip${!cat && !tag && !max ? ' on' : ''}" href="#/shop">All</a>
-      ${window.CATEGORIES.map(x => `<a class="chip${cat === x.id ? ' on' : ''}" href="#/c/${x.id}">${esc(x.name)}</a>`).join('')}
+      ${window.CATEGORIES.map(x => `<a class="chip${cat === x.id ? ' on' : ''}" href="${catHref(x.id)}">${esc(x.name)}</a>`).join('')}
     </div>
   </nav>
 
@@ -478,7 +494,7 @@ function product(id, sel) {
         ${p.quote ? `<b>Quoted on WhatsApp</b>`
           : `<b class="num" id="pdpPrice">${money(unit)}</b>
              ${vp.was ? `<s class="num" id="pdpWas">${money(vp.was)}</s><em id="pdpOff">${Math.round((1 - vp.price / vp.was) * 100)}% off</em>` : `<s class="num" id="pdpWas" hidden></s><em id="pdpOff" hidden></em>`}`}
-        <span class="quiet">${p.quote ? 'Send the file, we price it' : 'Inclusive of taxes'}</span>
+        <span class="quiet">${p.quote ? (p.cat === 'custom' ? 'Send the file, we price it' : 'Price on request') : 'Inclusive of taxes'}</span>
       </div>
       ${status === 'out-of-stock' ? `<p class="pdp__status pdp__status--oos">Out of stock</p>` : ''}
       ${status === 'made-to-order' ? `<p class="pdp__status pdp__status--mto">Made to order${pt ? ` &middot; ${esc(pt)}` : ''}</p>` : ''}
@@ -500,8 +516,12 @@ function product(id, sel) {
       </div>
 
       <div class="pdp__buys">
-        ${p.quote
+        ${p.quote && p.cat === 'custom'
           ? `<a class="btn btn--wa btn--block" href="#/custom?p=${p.id}">${ico('wa')}Send your file for a quote</a>`
+          /* a shelf piece without a price yet: ask about this exact item and
+             options on WhatsApp, rather than the custom-file form */
+          : p.quote
+          ? `<button class="btn btn--wa btn--block" id="pdpAsk">${ico('wa')}Ask for a price on WhatsApp</button>`
           : `<button class="btn btn--pay" id="pdpBuy"${status === 'out-of-stock' ? ' disabled' : ''}>${ico('bolt')}Buy now</button>
              <button class="btn btn--wa" id="pdpWa">${ico('wa')}Order on WhatsApp</button>
              <button class="btn btn--ghost btn--block" id="pdpAdd"${status === 'out-of-stock' ? ' disabled' : ''}>Add to cart</button>`}

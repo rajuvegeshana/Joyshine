@@ -87,15 +87,11 @@
 /* ===== PRODUCT GRID ====================================== */
 .grid {
   display: grid; gap: clamp(1rem, .5rem + 1.6vw, 1.75rem);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
 }
-/* deliberate rhythm break: two products run wide on big screens */
-@media (min-width: 1040px) {
-  .grid > .card:nth-child(1),
-  .grid > .card:nth-child(8) { grid-column: span 2; }
-  .grid > .card:nth-child(1) .card__art,
-  .grid > .card:nth-child(8) .card__art { aspect-ratio: 16 / 9; }
-}
+/* every card the same width; two columns on a phone, as shoppers expect,
+   instead of one long column of oversized cards */
+@media (max-width: 599px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; } }
 
 .card {
   container-type: inline-size;
@@ -107,10 +103,10 @@
   overflow: hidden;
   transition: transform .4s var(--ease), box-shadow .4s var(--ease);
 }
-.card:hover { transform: translateY(-7px); box-shadow: var(--shadow-2); }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
 
 .card__art {
-  position: relative; aspect-ratio: 4 / 3.4;
+  position: relative; aspect-ratio: 1 / 1;
   background: var(--stage); display: grid; place-items: center;
   overflow: hidden;
 }
@@ -144,10 +140,16 @@
   box-shadow: var(--tag-shadow);
 }
 
-.card__body { padding: 1.1rem 1.15rem 1.25rem; display: flex; flex-direction: column; gap: .55rem; flex: 1; }
-.card__cat { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-quiet); }
-.card__body h3 { font-size: 1.05rem; }
-.card__blurb { font-size: .88rem; color: var(--ink-soft); }
+.card__body { padding: .85rem .9rem .95rem; display: flex; flex-direction: column; gap: .35rem; flex: 1; }
+.card__cat { font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-quiet);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* names are held to two lines and that space is always reserved, so the
+   prices in a row of cards sit on one line whatever the names are */
+.card__body h3 {
+  font-size: .98rem; line-height: 1.3; min-height: 2.6em;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
+.card__swatch { min-height: 14px; display: flex; align-items: center; }
 
 .spec {
   display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .15rem;
@@ -159,20 +161,28 @@
   font-variant-numeric: tabular-nums;
 }
 
-.card__foot { margin-top: auto; padding-top: .9rem; display: flex; flex-direction: column; gap: .7rem; }
+.card__foot { margin-top: auto; padding-top: .35rem; display: flex; flex-direction: column; gap: .6rem; }
 .price { display: flex; align-items: baseline; gap: .5rem; }
-.price b { font-family: var(--font-display); font-size: 1.35rem; color: var(--ink-strong); }
+.price { min-height: 1.6rem; flex-wrap: wrap; row-gap: .1rem; }
+.price b { font-family: var(--font-display); font-size: 1.2rem; color: var(--ink-strong); }
+.price--ask b { font-size: .95rem; color: var(--ink-soft); }
 .price s { font-size: .85rem; color: var(--ink-quiet); }
 .price em { font-style: normal; font-size: .7rem; padding: .16rem .4rem; border-radius: 4px; background: var(--save-bg); color: var(--save-ink); }
-.card__buys { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.card__buys { display: grid; grid-template-columns: 1fr auto; gap: .45rem; }
+.card__buys > .btn:only-child { grid-column: 1 / -1; }
+.card__wa { width: 2.4rem; padding-inline: 0 !important; justify-content: center; }
+.card__wa [data-ico] { margin: 0; }
 .card__buys .btn {
   padding-inline: .55rem; font-size: .78rem;
   letter-spacing: min(var(--btn-tracking, .02em), .04em);
   white-space: nowrap;
 }
-/* on a genuinely narrow card the two buy buttons stack rather than clip */
-@container (max-width: 252px) { .card__buys { grid-template-columns: 1fr; } }
-.card__add { grid-column: 1 / -1; }
+@container (max-width: 190px) {
+  .card__body { padding: .7rem .7rem .8rem; }
+  .card__body h3 { font-size: .9rem; }
+  .price b { font-size: 1.05rem; }
+  .card__buys .btn { font-size: .74rem; }
+}
 
 /* ===== DRAWERS (cart + whatsapp form) ==================== */
 .scrim {
